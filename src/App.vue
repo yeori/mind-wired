@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <div id="nav">
-      <router-link to="/">홈</router-link> |
-      <router-link to="/about">소개</router-link>
+      <router-link to="/">HOME</router-link> |
+      <router-link to="/about">ABOUT</router-link>
     </div>
     <router-view/>
   </div>
@@ -10,7 +10,6 @@
 
 <style lang="less">
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
