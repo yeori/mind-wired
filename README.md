@@ -1,0 +1,3 @@
+# mind-wired
+
+- ready
