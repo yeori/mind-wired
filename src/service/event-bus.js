@@ -1,3 +1,9 @@
+const EVENT = {
+  DRAG: {
+    VIEWPORT: { name: "viewport dragged", desc: "" },
+    NODE: { name: "node dragged", desc: "" },
+  },
+};
 const EMPTY_SET = new Set();
 class EventBus {
   constructor() {
@@ -25,4 +31,4 @@ class EventBus {
   }
 }
 
-export default EventBus;
+export { EventBus, EVENT };

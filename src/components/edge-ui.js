@@ -29,14 +29,15 @@ class EdgeUI {
     createEdges(rootNode, this.edges);
   }
   repaint() {
+    this.canvas.clear();
     this.edges.forEach((e) => {
       const { src, dst } = e;
-      console.log(
-        `${src.uid}(${src.level()})`,
-        src.offset(),
-        `${dst.uid}(${dst.level()})`,
-        dst.offset()
-      );
+      // console.log(
+      //   `${src.uid}(${src.level()})`,
+      //   src.offset(),
+      //   `${dst.uid}(${dst.level()})`,
+      //   dst.offset()
+      // );
       rendering["LINE"](this.canvas, src, dst);
     });
   }

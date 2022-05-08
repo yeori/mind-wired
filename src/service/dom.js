@@ -185,15 +185,14 @@ const findOne = (el, cssSelector) => el.querySelector(cssSelector);
 const is = (el, cssSelector, callback) => {
   const found = el.matches(cssSelector);
   if (found) {
-    callback(el);
+    if (callback) callback(el);
     return found;
   }
   const elem = closest(el, cssSelector);
   if (elem) {
-    callback(elem);
-    return true;
+    if (callback) callback(elem);
   }
-  return false;
+  return elem;
 };
 export default {
   tag,

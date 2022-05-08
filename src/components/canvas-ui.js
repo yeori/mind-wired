@@ -1,4 +1,7 @@
 import { dom } from "../service";
+import { DndContext } from "../service/dnd";
+import viewportDndHandler from "./dnd/viewport-dnd";
+import nodeDndHandler from "./dnd/node-dnd";
 const template = {
   viewport: `<div data-mind-wired-viewport>
     <canvas></canvas>
@@ -11,6 +14,11 @@ const template = {
     <div class="mwd-body"></div>
   </div>`,
 };
+
+const drawGrid = (ctx, rect) => {
+  ctx.rect(rect.width / 2 - 50, rect.height / 2 - 50, 100, 100);
+  ctx.stroke();
+};
 const installCanvasElem = (canvasUI) => {
   const { el, ui } = canvasUI.config;
   const width = ui.width || 600;
@@ -21,17 +29,9 @@ const installCanvasElem = (canvasUI) => {
     el.append(viewport);
   }
   dom.css(viewport, { width, height });
-  /*
-  dom.css(viewport.querySelector("[mind-wired-nodes]"), {
-    width: 3,
-    height: 3,
-    "background-color": "red",
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-  });
-  */
+
+  const scale = ui.scale || 1.0;
+
   const canvas = viewport.querySelector("canvas");
   dom.attr(canvas, "width", width);
   dom.attr(canvas, "height", height);
@@ -40,32 +40,81 @@ const installCanvasElem = (canvasUI) => {
 };
 const registerElement = (canvasUI, nodeUI) => {
   const { x, y } = nodeUI;
-  nodeUI.$el = dom.parseTemplate(
+  const $el = dom.parseTemplate(
     nodeUI.isRoot() ? template.vroot : template.node
   );
+  $el.dataset.uid = nodeUI.uid;
+  nodeUI.$el = $el;
   const placeHolder = canvasUI.elemOf(".mwd-nodes");
   placeHolder.append(nodeUI.$el);
+};
+const installDnd = (canvasUI) => {
+  return new DndContext({
+    accept: (el) => {
+      if (dom.is(el, "canvas")) {
+        canvasUI.dndContext.capture("handler", viewportDndHandler(canvasUI));
+        return true;
+      } else if (dom.is(el, ".mwd-node")) {
+        const nodeId = el.dataset.uid;
+        canvasUI.dndContext.capture("handler", nodeDndHandler(canvasUI));
+        canvasUI.dndContext.capture("nodeId", nodeId);
+        return true;
+      } else {
+        return false;
+      }
+    },
+    beforeDrag: (e) => {
+      const handler = canvasUI.dndContext.getData("handler");
+      handler.beforeDrag(e);
+    },
+    dragging: (e) => {
+      const handler = canvasUI.dndContext.getData("handler");
+      handler.dragging(e);
+    },
+    afterDrag: (e) => {
+      const handler = canvasUI.dndContext.getData("handler");
+      handler.afterDrag(e);
+    },
+  });
 };
 class CanvasUI {
   constructor(config) {
     this.config = config;
     this.$viewport = installCanvasElem(this);
     this.$ctx = this.$canvas.getContext("2d");
+    this.dndContext = installDnd(this);
   }
   get $canvas() {
     return this.$viewport.querySelector("canvas");
+  }
+  get $holder() {
+    return this.$viewport.querySelector(".mwd-nodes");
+  }
+  get scale() {
+    return this.config.scale;
   }
   getContext() {
     return this.$ctx;
   }
   getHolderOffset() {
-    const el = this.$viewport.querySelector(".mwd-nodes");
+    const el = this.$holder;
+    // const baseOffset = this.config.getOffset();
     return { x: el.offsetLeft, y: el.offsetTop };
+  }
+  getDimension() {
+    const el = this.$canvas;
+    return { width: el.offsetWidth, height: el.offsetHeight };
   }
   elemOf(cssSelector) {
     return this.$viewport.querySelector(cssSelector);
   }
-
+  shiftBy(dx, dy) {
+    const offset = this.config.getOffset();
+    offset.x += dx;
+    offset.y += dy;
+    this.config.setOffset(offset);
+    this.repaintNodeHolder();
+  }
   drawPath(points, options) {
     const ctx = this.getContext();
     Object.keys(options || {}).forEach((key) => {
@@ -84,12 +133,28 @@ class CanvasUI {
     ctx.closePath();
     ctx.stroke();
   }
+  clear() {
+    const dim = this.getDimension();
+    const ctx = this.getContext();
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, dim.width, dim.height);
+    // drawGrid(ctx, dim);
+  }
 
-  repaint(nodeUI, offset) {
+  repaintNodeHolder() {
+    const baseOffset = this.config.getOffset();
+    const { scale } = this.config;
+    dom.css(this.$holder, {
+      top: `calc(50% + ${baseOffset.y}px)`,
+      left: `calc(50% + ${baseOffset.x}px)`,
+      transform: `scale(${scale})`,
+    });
+  }
+  repaint(nodeUI) {
     if (!nodeUI.$el) {
       registerElement(this, nodeUI);
     }
-    nodeUI.repaint(offset);
+    nodeUI.repaint();
   }
 }
 export default CanvasUI;
