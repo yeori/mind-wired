@@ -11,11 +11,20 @@ module.exports = {
     path: path.join(__dirname, "/dist"),
     filename: `${DEPLOYED_FILENAME}.js`,
     library: {
-      name: DEPLOYED_FILENAME,
+      name: "mindwired",
       type: "umd",
     },
   },
+  devtool: "source-map",
   devServer: {
-    contentBase: path.join(__dirname, "dist"),
+    static: {
+      directory: path.join(__dirname, "dist"),
+    },
+    compress: true,
+    https: false,
+    port: 8080,
+    host: "0.0.0.0",
+    allowedHosts: "all",
+    hot: true,
   },
 };
