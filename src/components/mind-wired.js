@@ -2,6 +2,8 @@ import { EVENT } from "../service/event-bus";
 import CanvasUI from "./canvas-ui";
 import EdgeUI from "./edge-ui";
 import NodeUI from "./node-ui";
+import layoutManager from "./layout";
+import Direction from "./direction";
 
 const repaintTree = (mwd, node) => {
   mwd.canvas.repaint(node);
@@ -23,12 +25,21 @@ class MindWired {
     this.config.listen(EVENT.DRAG.NODE, (e) => {
       if (e.before) {
         const node = this.rootUI.find((node) => node.uid === e.nodeId);
-        this.draggingNode = { target: node, pos: { x: node.x, y: node.y } };
+        this.draggingNode = {
+          target: node,
+          dir: new Direction(node),
+          pos: { x: node.x, y: node.y },
+        };
       } else {
-        const { pos } = this.draggingNode;
-        this.draggingNode.target.setPos(e.x + pos.x, e.y + pos.y);
-        repaintTree(this, this.rootUI);
+        const { target, dir, pos } = this.draggingNode;
+        dir.capture();
+        target.setPos(e.x + pos.x, e.y + pos.y);
+        layoutManager.layout(target, { dir, layoutManager });
+        repaintTree(this, target);
         this.edgeUI.repaint();
+        if (e.after) {
+          target.dir = null;
+        }
       }
     });
   }
@@ -39,6 +50,7 @@ class MindWired {
   }
   repaint() {
     this.canvas.repaintNodeHolder();
+    layoutManager.layout(this.rootUI, { dir: null });
     repaintTree(this, this.rootUI);
     this.edgeUI.repaint();
   }

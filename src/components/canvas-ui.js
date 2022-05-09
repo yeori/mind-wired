@@ -11,7 +11,7 @@ const template = {
     <div class="mwd-body"><span class="mwd-node-text"></span></div>
   </div>`,
   vroot: `<div class="mwd-node vroot">
-    <div class="mwd-body"></div>
+    <div class="mwd-body"><span class="mwd-node-text"></span></div>
   </div>`,
 };
 

@@ -5,13 +5,10 @@ import { EVENT } from "../../service/event-bus";
 
 const viewportDndHandler = (canvasUI) => ({
   beforeDrag: (e) => {
-    // console.log("[DND BEFORE]", e);
     canvasUI.dndContext.capture("offset", canvasUI.config.getOffset());
   },
   dragging: (e) => {
-    // console.log("[DND dragging]", e);
     const { dx, dy } = e;
-    // canvasUI.shiftBy(dx, dy);
     const offset = canvasUI.dndContext.getData("offset");
     canvasUI.config.emit(EVENT.DRAG.VIEWPORT, {
       x: offset.x + dx,

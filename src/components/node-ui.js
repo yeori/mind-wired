@@ -19,6 +19,7 @@ class NodeUI {
     this.$el = null;
     this.uid = `uuid-${uid++}`;
     this.subs = parseSubs(this);
+    this.parent = null;
   }
   get x() {
     return this.config.view.x;
@@ -29,9 +30,16 @@ class NodeUI {
   get title() {
     return this.config.model.text;
   }
+  get layout() {
+    let { layout } = this.config.view;
+    if (layout) {
+      return { ...layout };
+    } else return this.parent.layout;
+  }
   level() {
     return this.isRoot() ? 0 : this.parent.level() + 1;
   }
+
   offset(scale) {
     scale = scale || 1.0;
     const offset = this.isRoot()
@@ -65,6 +73,9 @@ class NodeUI {
   repaint() {
     const { $el } = this;
     if (this.isRoot()) {
+      $el.querySelector(".mwd-body .mwd-node-text").innerHTML = this.title;
+      const offset = this.offset();
+      dom.css($el, { top: offset.y, left: offset.x });
     } else {
       $el.querySelector(".mwd-body .mwd-node-text").innerHTML = this.title;
       const offset = this.offset();
@@ -73,15 +84,9 @@ class NodeUI {
   }
 }
 
-NodeUI.virtualRoot = (elems, config) => {
-  const vroot = new NodeUI(
-    {
-      root: true,
-      view: { x: config.width / 2, y: config.height / 2 },
-      subs: [...elems],
-    },
-    config
-  );
+NodeUI.virtualRoot = (elem, config) => {
+  elem.root = true;
+  const vroot = new NodeUI(elem, config);
   return vroot;
 };
 export default NodeUI;
