@@ -22,13 +22,14 @@ const viewportDndHandler = (canvasUI) => ({
   dragging: (e) => {
     const { dx, dy } = e;
     const nodeId = canvasUI.dndContext.getData("nodeId");
+    const { scale } = canvasUI.config;
     canvasUI.config.emit(EVENT.DRAG.NODE, {
       nodeId,
       before: false,
       dragging: true,
       after: false,
-      x: dx,
-      y: dy,
+      x: dx / scale,
+      y: dy / scale,
     });
   },
   afterDrag: (e) => {
@@ -36,13 +37,14 @@ const viewportDndHandler = (canvasUI) => ({
     const { dx, dy } = e;
     // canvasUI.shiftBy(dx, dy);
     const nodeId = canvasUI.dndContext.getData("nodeId");
+    const { scale } = canvasUI.config;
     canvasUI.config.emit(EVENT.DRAG.NODE, {
       nodeId,
       before: false,
       dragging: false,
       after: true,
-      x: dx,
-      y: dy,
+      x: dx / scale,
+      y: dy / scale,
     });
   },
 });
