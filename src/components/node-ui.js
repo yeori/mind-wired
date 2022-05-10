@@ -19,6 +19,7 @@ class NodeUI {
     this.sharedConfig = sharedConfig;
     this.$el = null;
     this.selected = false;
+    this.editing = false;
     this.uid = `uuid-${uid++}`;
     this.zIndex = 0;
     this.subs = parseSubs(this);
@@ -50,6 +51,11 @@ class NodeUI {
     this.zIndex = ++zIndex;
     this.repaint();
   }
+  setTitle(title) {
+    const { model } = this.config;
+    model.text = title;
+    this.repaint();
+  }
   offset(scale) {
     scale = scale || 1.0;
     const offset = this.isRoot()
@@ -60,6 +66,13 @@ class NodeUI {
   setPos(x, y) {
     this.config.view.x = x;
     this.config.view.y = y;
+  }
+  isEditingState() {
+    return this.editing;
+  }
+  setEditingState(editing) {
+    this.editing = editing;
+    this.repaint();
   }
   isRoot() {
     return this.config.root;
@@ -83,12 +96,14 @@ class NodeUI {
   repaint() {
     const { $el } = this;
     const body = $el.querySelector(".mwd-body");
+    const canvasUI = this.sharedConfig.getCanvas();
+    canvasUI.drawNode(this);
     if (this.isRoot()) {
-      body.querySelector(".mwd-node-text").innerHTML = this.title;
+      // body.querySelector(".mwd-node-text").innerHTML = this.title;
       const offset = this.offset();
       dom.css($el, { top: offset.y, left: offset.x, zIndex: this.zIndex });
     } else {
-      body.querySelector(".mwd-node-text").innerHTML = this.title;
+      // body.querySelector(".mwd-node-text").innerHTML = this.title;
       const offset = this.offset();
       dom.css($el, { top: offset.y, left: offset.x, zIndex: this.zIndex });
     }

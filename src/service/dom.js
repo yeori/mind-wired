@@ -119,6 +119,49 @@ const registerEvent = (target, eventName, callback, options) => {
   el.addEventListener(eventName, callback, options);
 };
 
+const registerKeyEvent = (target, eventName, callback, option) => {
+  target.addEventListener(eventName, (e) => {
+    const code = e.code.toLowerCase();
+    const { keys } = option;
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const { ctrlKey, shiftKey, altKey, metaKey } = e;
+      if (
+        key.code === "*" ||
+        (key.code === code &&
+          key.alt === altKey &&
+          key.meta === metaKey &&
+          key.shift === shiftKey &&
+          key.ctrl === ctrlKey)
+      ) {
+        callback(e);
+        break;
+      }
+    }
+  });
+};
+/**
+ * 'enter', 'space',
+ * 'enter@ctrl'
+ * 'space@alt+shift'
+ * @param {string} keyFormat
+ */
+const parseKeyOption = (keyFormat) => {
+  let [metaKeys, code] = keyFormat.split("@");
+  if (!code) {
+    // 'enter', 'space'
+    code = metaKeys;
+    metaKeys = "";
+  }
+  const metas = metaKeys.split("+");
+  return {
+    ctrl: metas.includes("ctrl"),
+    shift: metas.includes("shift"),
+    alt: metas.includes("alt"),
+    meta: metas.includes("meta"),
+    code,
+  };
+};
 const data = {
   int: (el, attrList) => {
     const d = {};
@@ -156,6 +199,25 @@ const event = {
   click: (target, callback, options) => {
     registerEvent(target, "click", callback, options);
   },
+  keydown: (target, callback, options) => {
+    options = options || "*";
+    const keys = options
+      .split(" ")
+      .filter((key) => key.trim().length > 0)
+      .map((key) => parseKeyOption(key));
+    registerKeyEvent(target, "keydown", callback, { keys });
+  },
+  keyup: (target, callback, options) => {
+    options = options || "*";
+    const keys = options
+      .split(" ")
+      .filter((key) => key.trim().length > 0)
+      .map((key) => parseKeyOption(key));
+    registerKeyEvent(target, "keyup", callback, {
+      keys,
+    });
+    // registerEvent(target, "keyup", callback, options);
+  },
 };
 const css = (el, styles) => {
   const converters = {
@@ -164,7 +226,12 @@ const css = (el, styles) => {
       return type === "number" ? `${val}px` : val;
     },
   };
-  converters.top = converters.left = converters.height = converters.width;
+  converters.top =
+    converters.left =
+    converters.height =
+    converters.minWidth =
+    converters.minHeight =
+      converters.width;
 
   Object.keys(styles).forEach((key) => {
     const fn = converters[key] || ((val) => val);
@@ -198,6 +265,7 @@ const is = (el, cssSelector, callback) => {
   }
   return elem;
 };
+const domRect = (el) => el.getBoundingClientRect();
 export default {
   tag,
   attr,
@@ -211,4 +279,5 @@ export default {
   findOne,
   is,
   data,
+  domRect,
 };

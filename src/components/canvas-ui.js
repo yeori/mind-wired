@@ -13,6 +13,7 @@ const template = {
   vroot: `<div class="mwd-node vroot">
     <div class="mwd-body"><span class="mwd-node-text"></span></div>
   </div>`,
+  nodeEdit: `<div class="mwd-node-editbox"><textarea value=""></textarea></div>`,
 };
 
 const drawGrid = (ctx, rect) => {
@@ -51,6 +52,7 @@ const registerElement = (canvasUI, nodeUI) => {
 const installDnd = (canvasUI) => {
   return new DndContext({
     accept: (el) => {
+      const mwd = canvasUI.config.mindWired();
       if (dom.is(el, "canvas")) {
         canvasUI.dndContext.capture("handler", viewportDndHandler(canvasUI));
         return true;
@@ -58,6 +60,7 @@ const installDnd = (canvasUI) => {
         const nodeId = el.dataset.uid;
         canvasUI.dndContext.capture("handler", nodeDndHandler(canvasUI));
         canvasUI.dndContext.capture("nodeId", nodeId);
+        canvasUI.dndContext.capture("editing", mwd.isEditing());
         return true;
       } else {
         return false;
@@ -68,12 +71,18 @@ const installDnd = (canvasUI) => {
       handler.beforeDrag(e);
     },
     dragging: (e) => {
-      const handler = canvasUI.dndContext.getData("handler");
-      handler.dragging(e);
+      const editing = canvasUI.dndContext.getData("editing");
+      if (!editing) {
+        const handler = canvasUI.dndContext.getData("handler");
+        handler.dragging(e);
+      }
     },
     afterDrag: (e) => {
-      const handler = canvasUI.dndContext.getData("handler");
-      handler.afterDrag(e);
+      const editing = canvasUI.dndContext.getData("editing");
+      if (!editing) {
+        const handler = canvasUI.dndContext.getData("handler");
+        handler.afterDrag(e);
+      }
     },
   });
 };
@@ -149,6 +158,57 @@ class CanvasUI {
       left: `calc(50% + ${baseOffset.x}px)`,
       transform: `scale(${scale})`,
     });
+  }
+  drawNode(nodeUI) {
+    const { uid } = nodeUI;
+    const titleEl = dom.findOne(
+      this.$holder,
+      `[data-uid="${uid}"] .mwd-node-text`
+    );
+    //const body = dom.findOne($el, ".mwd-body");
+    const lines = nodeUI.title
+      .split("\n")
+      .map((text) => `<p>${text}</p>`)
+      .join("");
+    titleEl.innerHTML = lines;
+  }
+  showNodeEditor(nodeUI, inputCallback) {
+    const { uid } = nodeUI;
+    const nodeEl = this.$holder.querySelector(`[data-uid=${uid}]`);
+    const editBox = dom.parseTemplate(template.nodeEdit, {});
+    nodeEl.append(editBox);
+
+    const textArea = dom.findOne(editBox, "textarea");
+    textArea.value = nodeUI.title;
+    textArea.select();
+    textArea.focus();
+
+    const nodeBody = dom.findOne(nodeEl, ".mwd-body");
+    const rect = dom.domRect(nodeBody);
+    dom.css(textArea, {
+      width: rect.width * 1.5,
+      height: rect.height * 1.5,
+      minWidth: rect.width,
+      minHeight: rect.height,
+    });
+    dom.event.keyup(
+      textArea,
+      (e) => {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      },
+      "shift@enter"
+    );
+    dom.event.keydown(textArea, inputCallback, "enter esc");
+    return editBox;
+  }
+  hideNodeEditor(nodeUI) {
+    const { uid } = nodeUI;
+    const nodeEl = this.$holder.querySelector(`[data-uid=${uid}]`);
+    const editBox = dom.findOne(nodeEl, ".mwd-node-editbox");
+    if (editBox) {
+      editBox.remove();
+    }
   }
   repaint(nodeUI) {
     if (!nodeUI.$el) {

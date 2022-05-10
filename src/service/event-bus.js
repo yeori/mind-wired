@@ -15,6 +15,12 @@ const EVENT = {
       desc: "",
     },
   },
+  EDIT: {
+    NODE: {
+      name: "editing state of a node",
+      desc: "",
+    },
+  },
 };
 const EMPTY_SET = new Set();
 class EventBus {
