@@ -4,6 +4,10 @@ const DEFAULT_UI_CONFIG = {
   width: 600,
   height: 600,
   scale: 1.0,
+  clazz: {
+    node: "active-node",
+    edge: "active-edge",
+  },
   offset: { x: 0, y: 0 },
 };
 class Configuration {
@@ -31,6 +35,13 @@ class Configuration {
   relativeOffset(offset) {
     const baseOffset = this.ui.offset;
     return { x: baseOffset.x + offset.x, y: baseOffset.y + offset.y };
+  }
+  activeClassName(type) {
+    const className = this.ui.clazz[type];
+    if (!className) {
+      throw new Error(`[MINDWIRED][ERROR] no classname of type : "${type}"`);
+    }
+    return className;
   }
   listen(eventName, callback) {
     this.ebus.on(eventName, callback);

@@ -4,6 +4,7 @@ import EdgeUI from "./edge-ui";
 import NodeUI from "./node-ui";
 import layoutManager from "./layout";
 import Direction from "./direction";
+import selection from "./selection";
 
 const repaintTree = (mwd, node) => {
   mwd.canvas.repaint(node);
@@ -12,9 +13,16 @@ const repaintTree = (mwd, node) => {
   });
 };
 class MindWired {
+  /**
+   *
+   * @param {Configuration} configuration (config.js)
+   */
   constructor(config) {
     this.config = config;
     this.canvas = new CanvasUI(config);
+    this.nodeSelectionModel = selection.createSelectionModel("node", config);
+    // install reverse dependency
+    config.mindWired = () => this;
     this.config.listen(EVENT.DRAG.VIEWPORT, (baseOffset) => {
       this.config.setOffset(baseOffset);
       // this.repaint();
@@ -47,6 +55,9 @@ class MindWired {
     this.rootUI = NodeUI.virtualRoot(elems, this.config);
     this.edgeUI = new EdgeUI(this.config, this.rootUI, this.canvas);
     this.repaint();
+  }
+  findNode(predicate) {
+    return this.rootUI.find(predicate);
   }
   repaint() {
     this.canvas.repaintNodeHolder();

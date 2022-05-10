@@ -12,12 +12,15 @@ const parseSubs = (nodeUi) => {
   });
 };
 let uid = 100;
+let zIndex = 1;
 class NodeUI {
   constructor(config, sharedConfig) {
     this.config = config;
     this.sharedConfig = sharedConfig;
     this.$el = null;
+    this.selected = false;
     this.uid = `uuid-${uid++}`;
+    this.zIndex = 0;
     this.subs = parseSubs(this);
     this.parent = null;
   }
@@ -39,7 +42,14 @@ class NodeUI {
   level() {
     return this.isRoot() ? 0 : this.parent.level() + 1;
   }
-
+  isSelected() {
+    return this.selected;
+  }
+  setSelected(selected) {
+    this.selected = selected;
+    this.zIndex = ++zIndex;
+    this.repaint();
+  }
   offset(scale) {
     scale = scale || 1.0;
     const offset = this.isRoot()
@@ -72,15 +82,19 @@ class NodeUI {
   }
   repaint() {
     const { $el } = this;
+    const body = $el.querySelector(".mwd-body");
     if (this.isRoot()) {
-      $el.querySelector(".mwd-body .mwd-node-text").innerHTML = this.title;
+      body.querySelector(".mwd-node-text").innerHTML = this.title;
       const offset = this.offset();
-      dom.css($el, { top: offset.y, left: offset.x });
+      dom.css($el, { top: offset.y, left: offset.x, zIndex: this.zIndex });
     } else {
-      $el.querySelector(".mwd-body .mwd-node-text").innerHTML = this.title;
+      body.querySelector(".mwd-node-text").innerHTML = this.title;
       const offset = this.offset();
-      dom.css($el, { top: offset.y, left: offset.x });
+      dom.css($el, { top: offset.y, left: offset.x, zIndex: this.zIndex });
     }
+    const methodName = this.isSelected() ? "add" : "remove";
+    const className = this.sharedConfig.activeClassName("node");
+    dom.clazz[methodName](body, className);
   }
 }
 

@@ -46,6 +46,9 @@ const viewportDndHandler = (canvasUI) => ({
       x: dx / scale,
       y: dy / scale,
     });
+    const mrd = canvasUI.config.mindWired();
+    const node = mrd.findNode((node) => node.uid === nodeId);
+    canvasUI.config.emit(EVENT.SELECTION.NODE, { node });
   },
 });
 

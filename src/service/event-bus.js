@@ -3,6 +3,18 @@ const EVENT = {
     VIEWPORT: { name: "viewport dragged", desc: "" },
     NODE: { name: "node dragged", desc: "" },
   },
+  CLICK: {
+    VIEWPORT: {
+      name: "viewport clicked",
+      desc: "",
+    },
+  },
+  SELECTION: {
+    NODE: {
+      name: "node selected",
+      desc: "",
+    },
+  },
 };
 const EMPTY_SET = new Set();
 class EventBus {

@@ -87,6 +87,10 @@ const attr = (el, attrName, attrValue) => {
     el.setAttribute(attrName, attrValue);
   }
 };
+const clazz = {
+  add: (el, className) => el.classList.add(className),
+  remove: (el, className) => el.classList.remove(className),
+};
 const imageSize = (imgUrl) => {
   const xhr = new XMLHttpRequest();
   xhr.open("HEAD", imgUrl, true);
@@ -197,6 +201,7 @@ const is = (el, cssSelector, callback) => {
 export default {
   tag,
   attr,
+  clazz,
   closest,
   imageSize,
   fileToImage,
