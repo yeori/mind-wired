@@ -21,6 +21,12 @@ const EVENT = {
       desc: "",
     },
   },
+  NEW: {
+    NODE: {
+      name: "new.node",
+      desc: "",
+    },
+  },
 };
 const EMPTY_SET = new Set();
 class EventBus {

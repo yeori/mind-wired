@@ -14,13 +14,18 @@ const getLayoutManager = (type) => {
   let fn = layoutMap.get(type) || defaultLayout;
   return fn;
 };
-
+const setPosition = (nodeUI, context) => {
+  const { layout } = nodeUI;
+  const manager = getLayoutManager(layout.type);
+  manager.setPosition(nodeUI, context);
+};
 const layout = (nodeUI, context) => {
   const { layout } = nodeUI;
-  const doLayout = getLayoutManager(layout.type);
-  doLayout(nodeUI, context);
+  const manager = getLayoutManager(layout.type);
+  manager.doLayout(nodeUI, context);
 };
 export default {
   getLayoutManager,
+  setPosition,
   layout,
 };

@@ -23,6 +23,8 @@ export default class NodeEditing {
     }
     const canvasUI = this.config.getCanvas();
     canvasUI.showNodeEditor(nodeUI, (e) => {
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       this.node.setTitle(e.target.value.trim());
       this.close();
     });

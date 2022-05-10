@@ -4,4 +4,5 @@
  */
 
 const doLayout = (nodeUI) => {};
-export default doLayout;
+const setPosition = () => {};
+export default { doLayout, setPosition };

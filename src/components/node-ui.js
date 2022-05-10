@@ -25,6 +25,10 @@ class NodeUI {
     this.subs = parseSubs(this);
     this.parent = null;
   }
+  get $bodyEl() {
+    const canvas = this.sharedConfig.getCanvas();
+    return canvas.getNodeBody(this);
+  }
   get x() {
     return this.config.view.x;
   }
@@ -92,6 +96,10 @@ class NodeUI {
       }
     }
     return found;
+  }
+  addChild(childUI) {
+    childUI.parent = this;
+    this.subs.push(childUI);
   }
   repaint() {
     const { $el } = this;

@@ -6,6 +6,7 @@ import layoutManager from "./layout";
 import Direction from "./direction";
 import selection from "./selection";
 import { NodeEditing } from "./editing";
+import { dom } from "../service";
 
 const repaintTree = (mwd, node) => {
   mwd.canvas.repaint(node);
@@ -74,6 +75,33 @@ class MindWired {
   }
   findNode(predicate) {
     return this.rootUI.find(predicate);
+  }
+  addNode(parentNode, nodeData) {
+    const data = {
+      model: nodeData.model,
+      view: nodeData.view,
+    };
+    if (!data.view) {
+      data.view = {
+        x: 100,
+        y: -100,
+      };
+    }
+    const nodeUI = new NodeUI(data, this.config);
+    parentNode.addChild(nodeUI);
+    // this.canvas.repaint(nodeUI);
+    this.canvas.regsiterNode(nodeUI);
+
+    if (nodeData.siblingNode) {
+      const rect = dom.domRect(nodeData.siblingNode.$bodyEl);
+      layoutManager.setPosition(nodeUI, {
+        baseNode: nodeData.siblingNode,
+        rect,
+      });
+    }
+    this.config.emit(EVENT.NEW.NODE, nodeUI);
+    this.config.emit(EVENT.SELECTION.NODE, { node: nodeUI });
+    this.nodeEditor.edit(nodeUI);
   }
   repaint() {
     this.canvas.repaintNodeHolder();

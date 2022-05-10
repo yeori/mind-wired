@@ -5,8 +5,8 @@
 const reverseYPos = (node, context) => {
   const { x, y } = node;
   node.setPos(x, -y);
-  const doLayout = context.layoutManager.getLayoutManager(node.layout.type);
-  doLayout(node, context);
+  const manager = context.layoutManager.getLayoutManager(node.layout.type);
+  manager.doLayout(node, context);
 };
 const doLayout = (nodeUI, context) => {
   const { dir } = context;
@@ -19,4 +19,7 @@ const doLayout = (nodeUI, context) => {
     });
   }
 };
-export default doLayout;
+const setPosition = (nodeUI, context) => {
+  console.log(nodeUI);
+};
+export default { doLayout, setPosition };

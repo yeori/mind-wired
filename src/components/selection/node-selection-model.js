@@ -36,11 +36,29 @@ class NodeSelectionModel {
       }
       const { code } = e;
       const [nodeUI] = [...this.nodeMap.values()];
-      if ("Space" === code && !nodeUI.isEditingState()) {
+      const editing = nodeUI.isEditingState();
+      if ("Space" === code && !editing) {
         e.stopPropagation();
         this.config.emit(EVENT.EDIT.NODE, { editing: true, nodeUI });
       } else if ("Escape" === code) {
         this.config.emit(EVENT.EDIT.NODE, { editing: false, nodeUI });
+      }
+    });
+    dom.event.keydown(document, (e) => {
+      if (this.isEmpty()) {
+        return;
+      }
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      const { code } = e;
+      const [nodeUI] = [...this.nodeMap.values()];
+      const editing = nodeUI.isEditingState();
+      if ("Enter" === code && !editing) {
+        const mwd = this.config.mindWired();
+        mwd.addNode(nodeUI.parent, {
+          model: { text: "TITLE" },
+          siblingNode: nodeUI,
+        });
       }
     });
   }

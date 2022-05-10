@@ -40,6 +40,9 @@ const installCanvasElem = (canvasUI) => {
   return viewport;
 };
 const registerElement = (canvasUI, nodeUI) => {
+  if (nodeUI.$el) {
+    throw new Error(`[MINDWIRED][ERROR] already installed. (${nodeUI.uid})`);
+  }
   const { x, y } = nodeUI;
   const $el = dom.parseTemplate(
     nodeUI.isRoot() ? template.vroot : template.node
@@ -180,8 +183,6 @@ class CanvasUI {
 
     const textArea = dom.findOne(editBox, "textarea");
     textArea.value = nodeUI.title;
-    textArea.select();
-    textArea.focus();
 
     const nodeBody = dom.findOne(nodeEl, ".mwd-body");
     const rect = dom.domRect(nodeBody);
@@ -191,6 +192,10 @@ class CanvasUI {
       minWidth: rect.width,
       minHeight: rect.height,
     });
+    setTimeout(() => {
+      textArea.select();
+      textArea.focus();
+    }, 0);
     dom.event.keyup(
       textArea,
       (e) => {
@@ -215,6 +220,13 @@ class CanvasUI {
       registerElement(this, nodeUI);
     }
     nodeUI.repaint();
+  }
+  regsiterNode(nodeUI) {
+    registerElement(this, nodeUI);
+    nodeUI.repaint();
+  }
+  getNodeBody(nodeUI) {
+    return this.$holder.querySelector(`[data-uid=${nodeUI.uid}] .mwd-body`);
   }
 }
 export default CanvasUI;

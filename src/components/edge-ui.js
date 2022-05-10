@@ -1,3 +1,4 @@
+import { EVENT } from "../service/event-bus";
 import line_edge from "./edge/line-edge-renderer";
 const rendering = {
   LINE: line_edge,
@@ -27,17 +28,16 @@ class EdgeUI {
     this.canvas = canvas;
     this.edges = [];
     createEdges(rootNode, this.edges);
+    this.config.listen(EVENT.NEW.NODE, (nodeUI) => {
+      const e = new Edge(nodeUI.parent, nodeUI);
+      this.edges.push(e);
+      this.repaint();
+    });
   }
   repaint() {
     this.canvas.clear();
     this.edges.forEach((e) => {
       const { src, dst } = e;
-      // console.log(
-      //   `${src.uid}(${src.level()})`,
-      //   src.offset(),
-      //   `${dst.uid}(${dst.level()})`,
-      //   dst.offset()
-      // );
       rendering["LINE"](this.canvas, src, dst);
     });
   }
