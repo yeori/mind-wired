@@ -81,9 +81,9 @@ const tag = {
   div: (attr) => createEl("DIV", parseAttr(attr)),
   canvas: (attr) => createEl("CANVAS", parseAttr(attr)),
 };
-const attr = (el, attrName, attrValue) => {
+const attr = (el, attrName, attrValue, always) => {
   const v = el.getAttribute(attrName);
-  if (!v) {
+  if (always || !v) {
     el.setAttribute(attrName, attrValue);
   }
 };
@@ -218,6 +218,7 @@ const event = {
     });
     // registerEvent(target, "keyup", callback, options);
   },
+  resize: (target, callback) => {},
 };
 const css = (el, styles) => {
   const converters = {

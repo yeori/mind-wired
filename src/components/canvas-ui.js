@@ -2,6 +2,7 @@ import { dom } from "../service";
 import { DndContext } from "../service/dnd";
 import viewportDndHandler from "./dnd/viewport-dnd";
 import nodeDndHandler from "./dnd/node-dnd";
+import { EVENT } from "../service/event-bus";
 const template = {
   viewport: `<div data-mind-wired-viewport>
     <canvas></canvas>
@@ -31,13 +32,19 @@ const installCanvasElem = (canvasUI) => {
   }
   dom.css(viewport, { width, height });
 
-  const scale = ui.scale || 1.0;
-
   const canvas = viewport.querySelector("canvas");
   dom.attr(canvas, "width", width);
   dom.attr(canvas, "height", height);
 
   return viewport;
+};
+const captureContext2D = (canvasUI) => {
+  const { config, $viewport, $canvas } = canvasUI;
+  const { offsetWidth, offsetHeight } = $viewport;
+  dom.attr($canvas, "width", offsetWidth, true);
+  dom.attr($canvas, "height", offsetHeight, true);
+  canvasUI.$ctx = $canvas.getContext("2d");
+  config.emit(EVENT.VIEWPORT.RESIZED);
 };
 const registerElement = (canvasUI, nodeUI) => {
   if (nodeUI.$el) {
@@ -93,8 +100,16 @@ class CanvasUI {
   constructor(config) {
     this.config = config;
     this.$viewport = installCanvasElem(this);
-    this.$ctx = this.$canvas.getContext("2d");
+    captureContext2D(this);
     this.dndContext = installDnd(this);
+
+    let timer = null;
+    const resizer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(captureContext2D, 150, this);
+    };
+    this.resizeObserver = new ResizeObserver(resizer);
+    this.resizeObserver.observe(this.$viewport);
   }
   get $canvas() {
     return this.$viewport.querySelector("canvas");

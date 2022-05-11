@@ -27,6 +27,12 @@ const EVENT = {
       desc: "",
     },
   },
+  VIEWPORT: {
+    RESIZED: {
+      name: "viewport.resized",
+      desc: "viewport size chaged",
+    },
+  },
 };
 const EMPTY_SET = new Set();
 class EventBus {

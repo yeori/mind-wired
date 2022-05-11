@@ -28,11 +28,15 @@ class EdgeUI {
     this.canvas = canvas;
     this.edges = [];
     createEdges(rootNode, this.edges);
-    this.config.listen(EVENT.NEW.NODE, (nodeUI) => {
-      const e = new Edge(nodeUI.parent, nodeUI);
-      this.edges.push(e);
-      this.repaint();
-    });
+    this.config
+      .listen(EVENT.NEW.NODE, (nodeUI) => {
+        const e = new Edge(nodeUI.parent, nodeUI);
+        this.edges.push(e);
+        this.repaint();
+      })
+      .listen(EVENT.VIEWPORT.RESIZED, () => {
+        this.repaint();
+      });
   }
   repaint() {
     this.canvas.clear();

@@ -45,9 +45,11 @@ class Configuration {
   }
   listen(eventName, callback) {
     this.ebus.on(eventName, callback);
+    return this;
   }
   emit(eventName, args) {
     this.ebus.emit(eventName, args);
+    return this;
   }
 }
 
