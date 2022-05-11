@@ -101,6 +101,12 @@ class NodeUI {
     childUI.parent = this;
     this.subs.push(childUI);
   }
+  lastChild() {
+    if (this.subs.length === 0) {
+      return null;
+    }
+    return this.subs[this.subs.length - 1];
+  }
   repaint() {
     const { $el } = this;
     const body = $el.querySelector(".mwd-body");

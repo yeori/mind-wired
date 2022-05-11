@@ -9,6 +9,22 @@ const clearSelection = (nodeMap) => {
   }
   nodeMap.clear();
 };
+const skipStateForInsert = (nodes) => {
+  if (nodes.length !== 1) {
+    return true;
+  }
+  if (nodes[0].isEditingState()) {
+    return true;
+  }
+  return false;
+};
+const appendNode = (selectionModel, parent, sibling) => {
+  const mwd = selectionModel.config.mindWired();
+  mwd.addNode(parent, {
+    model: { text: "TITLE" },
+    siblingNode: sibling,
+  });
+};
 class NodeSelectionModel {
   /**
    *
@@ -47,23 +63,32 @@ class NodeSelectionModel {
         this.config.emit(EVENT.EDIT.NODE, { editing: false, nodeUI });
       }
     });
-    dom.event.keydown(document, (e) => {
-      if (this.isEmpty()) {
-        return;
-      }
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      const { code } = e;
-      const [nodeUI] = [...this.nodeMap.values()];
-      const editing = nodeUI.isEditingState();
-      if ("Enter" === code && !editing) {
-        const mwd = this.config.mindWired();
-        mwd.addNode(nodeUI.parent, {
-          model: { text: "TITLE" },
-          siblingNode: nodeUI,
-        });
-      }
-    });
+    dom.event.keydown(
+      document,
+      (e) => {
+        const nodes = this.getNodes();
+        if (skipStateForInsert(nodes)) {
+          return;
+        }
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        appendNode(this, nodes[0].parent, nodes[0]);
+      },
+      "enter"
+    );
+    dom.event.keydown(
+      document,
+      (e) => {
+        const nodes = this.getNodes();
+        if (skipStateForInsert(nodes)) {
+          return;
+        }
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        appendNode(this, nodes[0], nodes[0].lastChild());
+      },
+      "shift@enter"
+    );
   }
   isEmpty() {
     return this.nodeMap.size === 0;
