@@ -20,6 +20,9 @@ const doLayout = (nodeUI, context) => {
   }
 };
 const setPosition = (nodeUI, context) => {
-  console.log(nodeUI);
+  const { baseNode, rect } = context;
+  const x = baseNode.x + rect.width + 10;
+  const y = baseNode.y;
+  nodeUI.setPos(x, y);
 };
 export default { doLayout, setPosition };
