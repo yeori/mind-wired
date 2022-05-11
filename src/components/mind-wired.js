@@ -14,6 +14,19 @@ const repaintTree = (mwd, node) => {
     repaintTree(mwd, childNode);
   });
 };
+/**
+ * captures current pos(x,y) and direction for each nodes
+ * @param {[NodeUI]} nodes
+ */
+const capatureDragData = (nodes) =>
+  nodes.map((node) => {
+    return {
+      node,
+      pos: { x: node.x, y: node.y },
+      dir: new Direction(node),
+    };
+  });
+
 class MindWired {
   /**
    *
@@ -35,25 +48,21 @@ class MindWired {
       this.canvas.repaintNodeHolder();
       this.edgeUI.repaint();
     });
-    this.draggingNode = null;
+    this.draggingNodes = null;
     this.config.listen(EVENT.DRAG.NODE, (e) => {
       if (e.before) {
         const node = this.rootUI.find((node) => node.uid === e.nodeId);
-        this.draggingNode = {
-          target: node,
-          dir: new Direction(node),
-          pos: { x: node.x, y: node.y },
-        };
+        const nodes = this.nodeSelectionModel.getNodes();
+        this.draggingNodes = capatureDragData(nodes);
       } else {
-        const { target, dir, pos } = this.draggingNode;
-        dir.capture();
-        target.setPos(e.x + pos.x, e.y + pos.y);
-        layoutManager.layout(target, { dir, layoutManager });
-        repaintTree(this, target);
+        this.draggingNodes.forEach((dragging) => {
+          const { node, dir, pos } = dragging;
+          dir.capture();
+          node.setPos(e.x + pos.x, e.y + pos.y);
+          layoutManager.layout(node, { dir, layoutManager });
+          repaintTree(this, node);
+        });
         this.edgeUI.repaint();
-        if (e.after) {
-          target.dir = null;
-        }
       }
     });
     this.config.listen(EVENT.EDIT.NODE, ({ editing, nodeUI }) => {

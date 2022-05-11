@@ -10,6 +10,12 @@ const viewportDndHandler = (canvasUI) => ({
     const nodeEl = dom.closest(target, ".mwd-node");
     const nodeId = nodeEl.dataset.uid;
     canvasUI.dndContext.capture("nodeId", nodeId);
+    const mrd = canvasUI.config.mindWired();
+    const node = mrd.findNode((node) => node.uid === nodeId);
+    canvasUI.config.emit(EVENT.SELECTION.NODE, {
+      node,
+      append: e.originalEvent.shiftKey,
+    });
     canvasUI.config.emit(EVENT.DRAG.NODE, {
       nodeId,
       before: true,
@@ -46,9 +52,10 @@ const viewportDndHandler = (canvasUI) => ({
       x: dx / scale,
       y: dy / scale,
     });
-    const mrd = canvasUI.config.mindWired();
-    const node = mrd.findNode((node) => node.uid === nodeId);
-    canvasUI.config.emit(EVENT.SELECTION.NODE, { node });
+    // const { shiftKey } = e.originalEvent;
+    // const mrd = canvasUI.config.mindWired();
+    // const node = mrd.findNode((node) => node.uid === nodeId);
+    // canvasUI.config.emit(EVENT.SELECTION.NODE, { node, append: shiftKey });
   },
 });
 

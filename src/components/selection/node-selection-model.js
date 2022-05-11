@@ -17,12 +17,15 @@ class NodeSelectionModel {
   constructor(config) {
     this.config = config;
     this.nodeMap = new Map(); // [uid:strng, NodeUI]
-    this.config.listen(EVENT.SELECTION.NODE, ({ node }) => {
+    this.config.listen(EVENT.SELECTION.NODE, ({ node, append }) => {
       const selected = this.nodeMap.has(node.uid);
-      if (!selected) {
+      if (append) {
+        this.nodeMap.set(node.uid, node);
+        node.setSelected(true);
+      } else if (!selected) {
         clearSelection(this.nodeMap);
         this.nodeMap.set(node.uid, node);
-        node.setSelected(!selected); // toggling
+        node.setSelected(true); // toggling
       } else {
       }
     });
@@ -64,6 +67,9 @@ class NodeSelectionModel {
   }
   isEmpty() {
     return this.nodeMap.size === 0;
+  }
+  getNodes() {
+    return [...this.nodeMap.values()];
   }
 }
 export default NodeSelectionModel;
