@@ -12,7 +12,7 @@ const template = {
     <div class="mwd-body" tabIndex="0"><span class="mwd-node-text"></span></div>
   </div>`,
   vroot: `<div class="mwd-node vroot">
-    <div class="mwd-body"><span class="mwd-node-text"></span></div>
+    <div class="mwd-body" tabIndex="0"><span class="mwd-node-text"></span></div>
   </div>`,
   nodeEdit: `<div class="mwd-node-editbox"><textarea value=""></textarea></div>`,
 };
@@ -104,13 +104,28 @@ const installDnd = (canvasUI) => {
     },
   });
 };
+const installFocusHandler = (canvasUI) => {
+  dom.event.focus(
+    canvasUI.$viewport,
+    (e) => {
+      if (dom.is(e.target, "textarea", false)) {
+      } else if (dom.is(e.target, ".mwd-node")) {
+        const uid = e.target.parentNode.dataset.uid;
+        const mwd = canvasUI.config.mindWired();
+        const node = mwd.findNode((node) => node.uid === uid);
+        canvasUI.config.emit(EVENT.SELECTION.NODE, { node });
+      }
+    },
+    true
+  );
+};
 class CanvasUI {
   constructor(config) {
     this.config = config;
     this.$viewport = installCanvasElem(this);
     captureContext2D(this);
+    installFocusHandler(this);
     this.dndContext = installDnd(this);
-
     let timer = null;
     const resizer = () => {
       clearTimeout(timer);
@@ -237,7 +252,7 @@ class CanvasUI {
     if (editBox) {
       editBox.remove();
     }
-    this.$viewport.focus();
+    dom.findOne(nodeEl, ".mwd-body").focus();
   }
   repaint(nodeUI) {
     if (!nodeUI.$el) {

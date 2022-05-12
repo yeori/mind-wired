@@ -116,7 +116,7 @@ const fileToImage = (file) => {
 
 const registerEvent = (target, eventName, callback, options) => {
   const el = target || window;
-  el.addEventListener(eventName, callback, options);
+  el.addEventListener(eventName, callback, options || false);
 };
 
 const registerKeyEvent = (target, eventName, callback, option) => {
@@ -178,6 +178,8 @@ const event = {
   consume: (target, eventName) => {
     target.addEventListener(eventName, stopPropagation);
   },
+  focus: (target, callback, options) =>
+    registerEvent(target, "focus", callback, options),
   mousedown: (callback, target, options) => {
     registerEvent(target, "mousedown", callback, options);
   },
@@ -254,17 +256,17 @@ const parseTemplate = (template, params) => {
   // return virtualDiv.firstElementChild;
 };
 const findOne = (el, cssSelector) => el.querySelector(cssSelector);
-const is = (el, cssSelector, callback) => {
+const is = (el, cssSelector, searchParent = true) => {
   const found = el.matches(cssSelector);
   if (found) {
-    if (callback) callback(el);
     return found;
   }
-  const elem = closest(el, cssSelector);
-  if (elem) {
-    if (callback) callback(elem);
+  if (searchParent) {
+    const elem = closest(el, cssSelector);
+    return !!elem;
+  } else {
+    return false;
   }
-  return elem;
 };
 const domRect = (el) => el.getBoundingClientRect();
 export default {
