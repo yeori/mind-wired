@@ -63,6 +63,17 @@ class NodeUI {
       this.repaint();
     }
   }
+  isDescendantOf(dstNode) {
+    let ref = this;
+    while (ref) {
+      if (ref === dstNode) {
+        return true;
+      } else {
+        ref = ref.parent;
+      }
+    }
+    return false;
+  }
   setTitle(title) {
     const { model } = this.config;
     model.text = title;
@@ -112,6 +123,9 @@ class NodeUI {
    */
   addChild(childUI) {
     const prevParent = childUI.parent;
+    if (prevParent) {
+      prevParent.removeChild(childUI);
+    }
     childUI.parent = this;
     this.subs.push(childUI);
     return prevParent;

@@ -15,6 +15,14 @@ module.exports = {
       type: "umd",
     },
   },
+  module: {
+    rules: [
+      {
+        test: /\.svg/,
+        type: "asset/resource",
+      },
+    ],
+  },
   devtool: "source-map",
   devServer: {
     static: {

@@ -2,7 +2,9 @@ import { dom } from "../service";
 import { DndContext } from "../service/dnd";
 import viewportDndHandler from "./dnd/viewport-dnd";
 import nodeDndHandler from "./dnd/node-dnd";
+import changeParentDndHandler from "./dnd/change-parent-node";
 import { EVENT } from "../service/event-bus";
+import iconSetPara from "../assets/icon-chng-parent.svg";
 const template = {
   viewport: `<div data-mind-wired-viewport>
     <canvas></canvas>
@@ -10,11 +12,13 @@ const template = {
   </div>`,
   node: `<div class="mwd-node">
     <div class="mwd-body" tabIndex="0"><span class="mwd-node-text"></span></div>
+    <div class="mwd-node-ctrl"></div>
   </div>`,
   vroot: `<div class="mwd-node vroot">
     <div class="mwd-body" tabIndex="0"><span class="mwd-node-text"></span></div>
   </div>`,
   nodeEdit: `<div class="mwd-node-editbox"><textarea value=""></textarea></div>`,
+  nodeControl: `<div data-cmd="set-para" style="background-image: url(${iconSetPara});"></div>`,
 };
 
 const drawGrid = (ctx, rect) => {
@@ -52,9 +56,7 @@ const registerElement = (canvasUI, nodeUI) => {
     throw new Error(`[MINDWIRED][ERROR] already installed. (${nodeUI.uid})`);
   }
   const { x, y } = nodeUI;
-  const $el = dom.parseTemplate(
-    nodeUI.isRoot() ? template.vroot : template.node
-  );
+  const $el = dom.parseTemplate(template.node);
   $el.dataset.uid = nodeUI.uid;
   nodeUI.$el = $el;
   const placeHolder = canvasUI.elemOf(".mwd-nodes");
@@ -71,7 +73,13 @@ const installDnd = (canvasUI) => {
   return new DndContext({
     accept: (el) => {
       const mwd = canvasUI.config.mindWired();
-      if (dom.is(el, "canvas")) {
+      if (dom.is(el, `[data-cmd="set-para"]`)) {
+        canvasUI.dndContext.capture(
+          "handler",
+          changeParentDndHandler(canvasUI)
+        );
+        return true;
+      } else if (dom.is(el, "canvas")) {
         canvasUI.dndContext.capture("handler", viewportDndHandler(canvasUI));
         return true;
       } else if (dom.is(el, ".mwd-node")) {
@@ -165,6 +173,29 @@ class CanvasUI {
     this.config.setOffset(offset);
     this.repaintNodeHolder();
   }
+  findNodeAt(x, y) {
+    const nodeBodies = this.$holder.querySelectorAll(".mwd-body");
+    let found = null;
+    for (let i = 0; i < nodeBodies.length; i++) {
+      const rect = dom.domRect(nodeBodies[i]);
+      if (
+        rect.left <= x &&
+        rect.right >= x &&
+        rect.top <= y &&
+        rect.bottom >= y
+      ) {
+        found = nodeBodies[i];
+        break;
+      }
+    }
+    if (!found) {
+      return null;
+    }
+    const mwd = this.config.mindWired();
+    const nodeEl = dom.closest(found, ".mwd-node");
+    const node = mwd.findNode((node) => node.uid === nodeEl.dataset.uid);
+    return node;
+  }
   drawPath(points, options) {
     const ctx = this.getContext();
     Object.keys(options || {}).forEach((key) => {
@@ -202,16 +233,30 @@ class CanvasUI {
   }
   drawNode(nodeUI) {
     const { uid } = nodeUI;
-    const titleEl = dom.findOne(
-      this.$holder,
-      `[data-uid="${uid}"] .mwd-node-text`
-    );
+    const nodeEl = dom.findOne(this.$holder, `[data-uid="${uid}"]`);
+    const titleEl = dom.findOne(nodeEl, ".mwd-node-text");
     //const body = dom.findOne($el, ".mwd-body");
     const lines = nodeUI.title
       .split("\n")
       .map((text) => `<p>${text}</p>`)
       .join("");
     titleEl.innerHTML = lines;
+
+    const ctrlEl = dom.findOne(nodeEl, ".mwd-node-ctrl");
+    ctrlEl.innerHTML = "";
+    if (!nodeUI.isRoot() && nodeUI.isSelected()) {
+      const rect = dom.domRect(nodeUI.$bodyEl);
+      dom.css(ctrlEl, { top: rect.height / 2 });
+      const ctrl = dom.parseTemplate(template.nodeControl, {});
+      dom.css(ctrl, {
+        width: 24,
+        height: 24,
+        backgroundColor: "white",
+        borderRadius: "12px",
+        boxShadow: "1px 1px 4px #0000007d",
+      });
+      ctrlEl.append(ctrl);
+    }
   }
   showNodeEditor(nodeUI, inputCallback) {
     const { uid } = nodeUI;
