@@ -18,12 +18,24 @@ const skipStateForInsert = (nodes) => {
   }
   return false;
 };
+const skipStateForDelete = (nodes) => {
+  if (nodes.length === 0) {
+    return true;
+  }
+  // root node cannot be deleted
+  const rootNode = nodes.find((node) => node.root);
+  return !!rootNode;
+};
 const appendNode = (selectionModel, parent, sibling) => {
   const mwd = selectionModel.config.mindWired();
   mwd.addNode(parent, {
     model: { text: "TITLE" },
     siblingNode: sibling,
   });
+};
+const deleteNodes = (selectionModel, nodesToDel) => {
+  const mwd = selectionModel.config.mindWired();
+  mwd.deleteNodes(nodesToDel);
 };
 class NodeSelectionModel {
   /**
@@ -49,7 +61,8 @@ class NodeSelectionModel {
       clearSelection(this.nodeMap);
     });
 
-    dom.event.keyup(document, (e) => {
+    const canvasUI = this.config.getCanvas();
+    dom.event.keyup(canvasUI.$viewport, (e) => {
       if (this.isEmpty()) {
         return;
       }
@@ -64,7 +77,7 @@ class NodeSelectionModel {
       }
     });
     dom.event.keydown(
-      document,
+      canvasUI.$viewport,
       (e) => {
         const nodes = this.getNodes();
         if (skipStateForInsert(nodes)) {
@@ -77,7 +90,7 @@ class NodeSelectionModel {
       "enter"
     );
     dom.event.keydown(
-      document,
+      canvasUI.$viewport,
       (e) => {
         const nodes = this.getNodes();
         if (skipStateForInsert(nodes)) {
@@ -88,6 +101,21 @@ class NodeSelectionModel {
         appendNode(this, nodes[0], nodes[0].lastChild());
       },
       "shift@enter"
+    );
+
+    dom.event.keydown(
+      canvasUI.$viewport,
+      (e) => {
+        const nodes = this.getNodes();
+        if (skipStateForDelete(nodes)) {
+          return;
+        }
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        deleteNodes(this, nodes);
+        clearSelection(this.nodeMap);
+      },
+      "delete"
     );
   }
   isEmpty() {

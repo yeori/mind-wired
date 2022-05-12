@@ -44,6 +44,12 @@ class NodeUI {
       return { ...layout };
     } else return this.parent.layout;
   }
+  get active() {
+    return !!this.$el;
+  }
+  get childNodes() {
+    return [...this.subs];
+  }
   level() {
     return this.isRoot() ? 0 : this.parent.level() + 1;
   }
@@ -53,7 +59,9 @@ class NodeUI {
   setSelected(selected) {
     this.selected = selected;
     this.zIndex = ++zIndex;
-    this.repaint();
+    if (this.active) {
+      this.repaint();
+    }
   }
   setTitle(title) {
     const { model } = this.config;
@@ -97,9 +105,30 @@ class NodeUI {
     }
     return found;
   }
+  /**
+   *
+   * @param {NodeUI} childUI
+   * @returns prev parentUI
+   */
   addChild(childUI) {
+    const prevParent = childUI.parent;
     childUI.parent = this;
     this.subs.push(childUI);
+    return prevParent;
+  }
+  removeChild(childUI) {
+    if (childUI.parent !== this) {
+      // not a child node
+      return null;
+    }
+    const pos = this.subs.findIndex((node) => node.uid === childUI.uid);
+    if (pos === -1) {
+      // not a child node
+      return null;
+    }
+    const deletedNodes = this.subs.splice(pos, 1);
+    deletedNodes.forEach((node) => (node.parent = null)); // clear ref to parent(this)
+    return deletedNodes[0];
   }
   lastChild() {
     if (this.subs.length === 0) {

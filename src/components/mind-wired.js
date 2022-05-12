@@ -112,6 +112,30 @@ class MindWired {
     this.config.emit(EVENT.SELECTION.NODE, { node: nodeUI });
     this.nodeEditor.edit(nodeUI);
   }
+  moveNodes(parentNode, childNodes) {
+    childNodes.forEach((child) => {
+      const prevParent = parentNode.addChild(child);
+      this.config.emit(EVENT.NODE.MOVED, { node: child, prevParent });
+    });
+    repaintTree(this, parentNode);
+  }
+  deleteNodes(nodes) {
+    nodes.forEach((node) => {
+      const { parent, childNodes } = node;
+      // 1. move grand-children to parent
+      childNodes.forEach((child) => {
+        // keep position
+        child.setPos(child.x + node.x, child.y + node.y);
+      });
+      this.moveNodes(parent, childNodes);
+      // 2. delete node(which has no children)
+      const deletedChild = node.parent.removeChild(node);
+      if (deletedChild) {
+        this.canvas.unregisterNode(deletedChild);
+        this.config.emit(EVENT.NODE.DELETED, deletedChild);
+      }
+    });
+  }
   repaint() {
     this.canvas.repaintNodeHolder();
     layoutManager.layout(this.rootUI, { dir: null });

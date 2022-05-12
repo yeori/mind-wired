@@ -9,7 +9,7 @@ const template = {
     <div class="mwd-nodes"></div>
   </div>`,
   node: `<div class="mwd-node">
-    <div class="mwd-body"><span class="mwd-node-text"></span></div>
+    <div class="mwd-body" tabIndex="0"><span class="mwd-node-text"></span></div>
   </div>`,
   vroot: `<div class="mwd-node vroot">
     <div class="mwd-body"><span class="mwd-node-text"></span></div>
@@ -30,6 +30,7 @@ const installCanvasElem = (canvasUI) => {
     viewport = dom.parseTemplate(template.viewport, {});
     el.append(viewport);
   }
+  dom.attr(viewport, "tabIndex", "0");
   dom.css(viewport, { width, height });
 
   const canvas = viewport.querySelector("canvas");
@@ -58,6 +59,13 @@ const registerElement = (canvasUI, nodeUI) => {
   nodeUI.$el = $el;
   const placeHolder = canvasUI.elemOf(".mwd-nodes");
   placeHolder.append(nodeUI.$el);
+};
+const unregisterElement = (canvasUI, nodeUI) => {
+  if (!nodeUI.$el) {
+    throw new Error(`[MINDWIRED][ERROR] not registered node. (${nodeUI.uid})`);
+  }
+  nodeUI.$el.remove();
+  delete nodeUI.$el;
 };
 const installDnd = (canvasUI) => {
   return new DndContext({
@@ -229,6 +237,7 @@ class CanvasUI {
     if (editBox) {
       editBox.remove();
     }
+    this.$viewport.focus();
   }
   repaint(nodeUI) {
     if (!nodeUI.$el) {
@@ -239,6 +248,9 @@ class CanvasUI {
   regsiterNode(nodeUI) {
     registerElement(this, nodeUI);
     nodeUI.repaint();
+  }
+  unregisterNode(nodeUI) {
+    unregisterElement(this, nodeUI);
   }
   getNodeBody(nodeUI) {
     return this.$holder.querySelector(`[data-uid=${nodeUI.uid}] .mwd-body`);

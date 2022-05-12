@@ -27,6 +27,12 @@ const EVENT = {
       desc: "",
     },
   },
+  NODE: {
+    DELETED: {
+      name: "node.deleted",
+      desc: "node has been deleted",
+    },
+  },
   VIEWPORT: {
     RESIZED: {
       name: "viewport.resized",

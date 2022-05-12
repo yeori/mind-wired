@@ -10,6 +10,15 @@ const createEdges = (srcNode, edges) => {
     createEdges(child, edges);
   });
 };
+const filterIndex = (edges, callback) => {
+  const pos = [];
+  edges.forEach((e, index) => {
+    if (callback(e)) {
+      pos.push(index);
+    }
+  });
+  return pos;
+};
 class Edge {
   constructor(srcNode, dstNode) {
     this.srcNode = srcNode;
@@ -20,6 +29,12 @@ class Edge {
   }
   get dst() {
     return this.dstNode;
+  }
+  matched(node) {
+    return this.srcNode === node || this.dstNode === node;
+  }
+  matchedDst(node) {
+    return this.dstNode === node;
   }
 }
 class EdgeUI {
@@ -35,6 +50,28 @@ class EdgeUI {
         this.repaint();
       })
       .listen(EVENT.VIEWPORT.RESIZED, () => {
+        this.repaint();
+      })
+      .listen(EVENT.NODE.DELETED, (node) => {
+        const pos = filterIndex(this.edges, (e) => e.matched(node));
+        if (pos.length === 0) {
+          // MEMO invalid state: the deleted node does not exist.
+        } else {
+          pos.reverse().forEach((index) => this.edges.splice(index, 1));
+          // this.edges.splice(pos, 1);
+          this.repaint();
+        }
+      })
+      .listen(EVENT.NODE.MOVED, ({ node, prevParent }) => {
+        const pos = filterIndex(
+          this.edges,
+          (e) => e.src === prevParent && e.dst === node
+        );
+        if (pos.length > 0) {
+          pos.reverse().forEach((index) => this.edges.splice(index, 1));
+        }
+        const e = new Edge(node.parent, node);
+        this.edges.push(e);
         this.repaint();
       });
   }
