@@ -3,11 +3,13 @@
  *
  * supported style
  * - name:string
+ * - option:object(edge dependant)
  * - color:string(name of color, #aaccss, etc)
  * - width:number(line width)
  */
 const DEFAULT_EDGE_STYLE = {
   name: "line",
+  option: {},
   color: "#000000",
   width: 1,
 };
@@ -26,6 +28,9 @@ class EdgeStyle {
   }
   get name() {
     return findProp(this.nodeUI, "name");
+  }
+  get option() {
+    return findProp(this.nodeUI, "option");
   }
   get color() {
     return findProp(this.nodeUI, "color");

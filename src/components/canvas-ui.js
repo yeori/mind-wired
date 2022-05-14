@@ -5,6 +5,8 @@ import nodeDndHandler from "./dnd/node-dnd";
 import changeParentDndHandler from "./dnd/change-parent-node";
 import { EVENT } from "../service/event-bus";
 import iconSetPara from "../assets/icon-chng-parent.svg";
+import geom from "../service/geom";
+
 const template = {
   viewport: `<div data-mind-wired-viewport>
     <canvas></canvas>
@@ -212,6 +214,38 @@ class CanvasUI {
       ctx.lineTo(offset.x + e.x, offset.y + e.y);
     });
     ctx.closePath();
+    ctx.stroke();
+  }
+  drawCurve(s, e, option) {
+    const lenSE = Math.sqrt(
+      (s.x - e.x) * (s.x - e.x) + (s.y - e.y) * (s.y - e.y)
+    );
+    const degree = option.degree;
+    const length = lenSE * option.ratio;
+    const scale = length / lenSE;
+    const cp1 = geom.rotate(s, e, degree, { scale });
+    const cp2 = geom.rotate(e, s, degree, { scale });
+    const offset = this.getHolderOffset();
+    const ctx = this.getContext();
+    Object.keys(option.props || {}).forEach((key) => {
+      const val = option.props[key];
+      ctx[key] = val;
+    });
+    // ctx.setLineDash([3]);
+    // ctx.shadowColor = "#0000004d";
+    // ctx.shadowOffsetX = 1;
+    // ctx.shadowOffsetY = 2;
+    // const curve = option.path2D;
+    ctx.beginPath();
+    ctx.moveTo(offset.x + s.x, offset.y + s.y);
+    ctx.bezierCurveTo(
+      offset.x + cp1.x,
+      offset.y + cp1.y,
+      offset.x + cp2.x,
+      offset.y + cp2.y,
+      offset.x + e.x,
+      offset.y + e.y
+    );
     ctx.stroke();
   }
   clear() {
