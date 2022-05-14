@@ -1,3 +1,4 @@
+import EdgeStyle from "./edge-style";
 /**
  * @param {CanvasUI} canvas
  * @param {NodeUI} srcNode
@@ -7,7 +8,12 @@ const renderByLine = (canvas, srcNode, dstNode) => {
   const ctx = canvas.getContext();
   const { scale } = canvas;
   const [s, e] = [srcNode, dstNode].map((node) => node.offset(scale));
-  canvas.drawPath([s, e], { lineWidth: 0.5 * scale, strokeStyle: "red" });
+  const style = srcNode.$cachedStyle || new EdgeStyle(srcNode);
+  srcNode.$cachedStyle = style;
+  canvas.drawPath([s, e], {
+    lineWidth: style.width * scale,
+    strokeStyle: style.color,
+  });
 };
 
 export default renderByLine;

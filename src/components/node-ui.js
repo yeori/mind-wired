@@ -53,6 +53,10 @@ class NodeUI {
   level() {
     return this.isRoot() ? 0 : this.parent.level() + 1;
   }
+  getStyle(type) {
+    // type: 'edge', 'node'
+    return Object.assign({}, this.config.view[type]);
+  }
   isSelected() {
     return this.selected;
   }
