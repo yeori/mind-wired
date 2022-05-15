@@ -6,6 +6,7 @@ import layoutManager from "./layout";
 import Direction from "./direction";
 import selection from "./selection";
 import { NodeEditing } from "./editing";
+import nodeRenderer from "./node";
 import { dom } from "../service";
 
 const repaintTree = (mwd, node) => {
@@ -35,12 +36,15 @@ class MindWired {
   constructor(config) {
     this.config = config;
     config.mindWired = () => this;
-    config.getCanvas = () => this.canvas;
 
     this.canvas = new CanvasUI(config);
+    config.getCanvas = () => this.canvas;
+
+    this.nodeRenderingContext = nodeRenderer.install(this.canvas);
+    config.getNodeRenderer = () => this.nodeRenderingContext;
+
     this.nodeSelectionModel = selection.createSelectionModel("node", config);
     this.nodeEditor = new NodeEditing(config);
-    // install reverse dependency
 
     this.config.listen(EVENT.DRAG.VIEWPORT, (baseOffset) => {
       this.config.setOffset(baseOffset);
@@ -78,7 +82,7 @@ class MindWired {
     return this.nodeEditor.isEditing();
   }
   nodes(elems) {
-    this.rootUI = NodeUI.virtualRoot(elems, this.config);
+    this.rootUI = NodeUI.build(elems, this.config);
     this.edgeUI = new EdgeUI(this.config, this.rootUI, this.canvas);
     this.repaint();
   }

@@ -25,6 +25,9 @@ class NodeUI {
     this.subs = parseSubs(this);
     this.parent = null;
   }
+  get model() {
+    return { ...this.config.model };
+  }
   get $bodyEl() {
     const canvas = this.sharedConfig.getCanvas();
     return canvas.getNodeBody(this);
@@ -159,24 +162,18 @@ class NodeUI {
     const body = $el.querySelector(".mwd-body");
     const canvasUI = this.sharedConfig.getCanvas();
     canvasUI.drawNode(this);
-    if (this.isRoot()) {
-      // body.querySelector(".mwd-node-text").innerHTML = this.title;
-      const offset = this.offset();
-      dom.css($el, { top: offset.y, left: offset.x, zIndex: this.zIndex });
-    } else {
-      // body.querySelector(".mwd-node-text").innerHTML = this.title;
-      const offset = this.offset();
-      dom.css($el, { top: offset.y, left: offset.x, zIndex: this.zIndex });
-    }
+
+    const offset = this.offset();
+    dom.css($el, { top: offset.y, left: offset.x, zIndex: this.zIndex });
+
     const methodName = this.isSelected() ? "add" : "remove";
     const className = this.sharedConfig.activeClassName("node");
     dom.clazz[methodName](body, className);
   }
 }
 
-NodeUI.virtualRoot = (elem, config) => {
+NodeUI.build = (elem, config) => {
   elem.root = true;
-  const vroot = new NodeUI(elem, config);
-  return vroot;
+  return new NodeUI(elem, config);
 };
 export default NodeUI;

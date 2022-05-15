@@ -13,20 +13,13 @@ const template = {
     <div class="mwd-nodes"></div>
   </div>`,
   node: `<div class="mwd-node">
-    <div class="mwd-body" tabIndex="0"><span class="mwd-node-text"></span></div>
+    <div class="mwd-body" tabIndex="0"></div>
     <div class="mwd-node-ctrl"></div>
-  </div>`,
-  vroot: `<div class="mwd-node vroot">
-    <div class="mwd-body" tabIndex="0"><span class="mwd-node-text"></span></div>
   </div>`,
   nodeEdit: `<div class="mwd-node-editbox"><textarea value=""></textarea></div>`,
   nodeControl: `<div data-cmd="set-para" style="background-image: url(${iconSetPara});"></div>`,
 };
 
-const drawGrid = (ctx, rect) => {
-  ctx.rect(rect.width / 2 - 50, rect.height / 2 - 50, 100, 100);
-  ctx.stroke();
-};
 const installCanvasElem = (canvasUI) => {
   const { el, ui } = canvasUI.config;
   const width = ui.width || 600;
@@ -57,12 +50,17 @@ const registerElement = (canvasUI, nodeUI) => {
   if (nodeUI.$el) {
     throw new Error(`[MINDWIRED][ERROR] already installed. (${nodeUI.uid})`);
   }
-  const { x, y } = nodeUI;
-  const $el = dom.parseTemplate(template.node);
-  $el.dataset.uid = nodeUI.uid;
-  nodeUI.$el = $el;
+  const $el = (nodeUI.$el = dom.parseTemplate(template.node));
+  const renderingContext = canvasUI.config.getNodeRenderer();
+  const { model } = nodeUI;
+  const nodeRenderer = renderingContext.getRenderer(model.type);
+  nodeRenderer.install(nodeUI);
+
   const placeHolder = canvasUI.elemOf(".mwd-nodes");
-  placeHolder.append(nodeUI.$el);
+  placeHolder.append($el);
+  // apply uuid for node instance
+  $el.dataset.uid = nodeUI.uid;
+  return nodeUI.$el;
 };
 const unregisterElement = (canvasUI, nodeUI) => {
   if (!nodeUI.$el) {
@@ -268,13 +266,12 @@ class CanvasUI {
   drawNode(nodeUI) {
     const { uid } = nodeUI;
     const nodeEl = dom.findOne(this.$holder, `[data-uid="${uid}"]`);
-    const titleEl = dom.findOne(nodeEl, ".mwd-node-text");
-    //const body = dom.findOne($el, ".mwd-body");
-    const lines = nodeUI.title
-      .split("\n")
-      .map((text) => `<p>${text}</p>`)
-      .join("");
-    titleEl.innerHTML = lines;
+    const renderingContext = this.config.getNodeRenderer();
+
+    const { model } = nodeUI;
+    const type = model.type || "text";
+    const nodeRenderer = renderingContext.getRenderer(type);
+    nodeRenderer.render(nodeUI);
 
     const ctrlEl = dom.findOne(nodeEl, ".mwd-node-ctrl");
     ctrlEl.innerHTML = "";
@@ -347,7 +344,12 @@ class CanvasUI {
     unregisterElement(this, nodeUI);
   }
   getNodeBody(nodeUI) {
-    return this.$holder.querySelector(`[data-uid=${nodeUI.uid}] .mwd-body`);
+    let nodeEl = nodeUI.$el;
+    // let bodyEl = this.$holder.querySelector(`[data-uid=${nodeUI.uid}] .mwd-body`);
+    if (!nodeEl) {
+      nodeEl = registerElement(this, nodeUI);
+    }
+    return nodeEl.querySelector(`.mwd-body`);
   }
 }
 export default CanvasUI;
