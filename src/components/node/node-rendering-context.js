@@ -27,5 +27,8 @@ class NodeRenderingContext {
   select(nodeUI, cssSelector) {
     return nodeUI.$bodyEl.querySelector(cssSelector);
   }
+  css(el, styles) {
+    dom.css(el, styles);
+  }
 }
 export default NodeRenderingContext;

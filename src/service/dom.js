@@ -222,24 +222,20 @@ const event = {
   },
   resize: (target, callback) => {},
 };
-const css = (el, styles) => {
-  const converters = {
-    width: (val) => {
-      const type = typeof val;
-      return type === "number" ? `${val}px` : val;
-    },
-  };
-  converters.top =
-    converters.left =
-    converters.height =
-    converters.minWidth =
-    converters.minHeight =
-      converters.width;
+const converters = {
+  width: (val) => {
+    const type = typeof val;
+    return type === "number" ? `${val}px` : val;
+  },
+};
+"top,left,height,minWidth,minHeight".split(",").forEach((prop) => {
+  converters[prop] = converters.width;
+});
 
+const css = (el, styles) => {
   Object.keys(styles).forEach((key) => {
     const fn = converters[key] || ((val) => val);
     const value = fn(styles[key]);
-    // eslint-disable-next-line no-param-reassign
     el.style[key] = value;
   });
 };

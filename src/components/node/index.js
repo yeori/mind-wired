@@ -1,7 +1,7 @@
 import PlainTextRenderer from "./renderer/plain-text-renderer";
 import IconBadgeRenderer from "./renderer/icon-badge-renderer";
+import ThumbnailRenderer from "./renderer/thumbnail-renderer";
 import NodeRenderingContext from "./node-rendering-context";
-
 const createRenderingContext = (canvasUI) => new NodeRenderingContext(canvasUI);
 
 const getRenderer = (type) => {
@@ -14,6 +14,8 @@ const install = (canvasUI) => {
   ctx.register(plainTextRenderer);
   const iconBadgeRenderer = new IconBadgeRenderer(ctx);
   ctx.register(iconBadgeRenderer);
+  const thumnailRenderer = new ThumbnailRenderer(ctx);
+  ctx.register(thumnailRenderer);
   return ctx;
 };
 export default {
