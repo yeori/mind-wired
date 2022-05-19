@@ -211,7 +211,6 @@ class CanvasUI {
     points.forEach((e) => {
       ctx.lineTo(offset.x + e.x, offset.y + e.y);
     });
-    ctx.closePath();
     ctx.stroke();
   }
   drawCurve(s, e, option) {
@@ -246,11 +245,32 @@ class CanvasUI {
     );
     ctx.stroke();
   }
+  drawBeizeCurve(s, e, option) {
+    const ctx = this.getContext();
+    Object.keys(option.props || {}).forEach((key) => {
+      const val = option.props[key];
+      ctx[key] = val;
+    });
+    const [cp1, cp2] = option.cpoints;
+    const offset = this.getHolderOffset();
+    ctx.beginPath();
+    ctx.moveTo(offset.x + s.x, offset.y + s.y);
+    ctx.bezierCurveTo(
+      offset.x + cp1.x,
+      offset.y + cp1.y,
+      offset.x + cp2.x,
+      offset.y + cp2.y,
+      offset.x + e.x,
+      offset.y + e.y
+    );
+    ctx.stroke();
+  }
   clear() {
     const dim = this.getDimension();
     const ctx = this.getContext();
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, dim.width, dim.height);
+
     // drawGrid(ctx, dim);
   }
 

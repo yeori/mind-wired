@@ -1,7 +1,6 @@
 /**
  * natural curve
  */
-import EdgeStyle from "./edge-style";
 /**
  * @param {CanvasUI} canvas
  * @param {NodeUI} srcNode
@@ -10,8 +9,7 @@ import EdgeStyle from "./edge-style";
 const renderByCurve = (canvas, srcNode, dstNode) => {
   const { scale } = canvas;
   const [s, e] = [srcNode, dstNode].map((node) => node.offset(scale));
-  const style = srcNode.$cachedStyle || new EdgeStyle(srcNode);
-  srcNode.$cachedStyle = style;
+  const style = srcNode.$style;
   canvas.drawCurve(s, e, {
     degree: style.option.deg || 20,
     ratio: style.option.ratio || 0.4,

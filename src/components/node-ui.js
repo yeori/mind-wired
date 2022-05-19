@@ -1,4 +1,5 @@
 import { dom } from "../service";
+import EdgeStyle from "./edge/edge-style";
 
 const parseSubs = (nodeUi) => {
   const { subs } = nodeUi.config;
@@ -24,6 +25,7 @@ class NodeUI {
     this.zIndex = 0;
     this.subs = parseSubs(this);
     this.parent = null;
+    this.$style = new EdgeStyle(this);
   }
   get model() {
     return { ...this.config.model };
@@ -106,6 +108,9 @@ class NodeUI {
   }
   isRoot() {
     return this.config.root;
+  }
+  isLeaf() {
+    return this.subs.length === 0;
   }
   children(callback) {
     this.subs.forEach((child) => callback(child, this));

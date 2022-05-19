@@ -2,10 +2,12 @@ import { EVENT } from "../service/event-bus";
 import EdgeStyle from "./edge/edge-style";
 import line_edge from "./edge/line-edge-renderer";
 import curve_edge from "./edge/natural-curve-renderer";
+import mustache_edge from "./edge/mustache-renderer";
 
 const rendering = {
   LINE: line_edge,
   NATURAL_CURVE: curve_edge,
+  MUSTACHE: mustache_edge,
 };
 const createEdges = (srcNode, edges) => {
   srcNode.children((child) => {
