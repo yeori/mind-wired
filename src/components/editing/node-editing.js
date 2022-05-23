@@ -4,7 +4,7 @@ export default class NodeEditing {
   constructor(config) {
     this.config = config;
     this.node = null;
-    this.config.listen(EVENT.CLICK.VIEWPORT, () => {
+    this.config.listen(EVENT.VIEWPORT.CLICKED, () => {
       this.close();
     });
     this.config.listen(EVENT.SELECTION.NODE, ({ node }) => {
@@ -21,13 +21,9 @@ export default class NodeEditing {
       this.close();
       this.node = null;
     }
-    const canvasUI = this.config.getCanvas();
-    canvasUI.showNodeEditor(nodeUI, (e) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      this.node.setTitle(e.target.value.trim());
-      this.close();
-    });
+    const renderingContext = this.config.getNodeRenderer();
+    const nodeRenderer = renderingContext.getRenderer(nodeUI.model.type);
+    nodeRenderer.editor(nodeUI);
     this.node = nodeUI;
     this.node.setEditingState(true);
   }

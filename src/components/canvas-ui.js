@@ -116,7 +116,9 @@ const installFocusHandler = (canvasUI) => {
   dom.event.focus(
     canvasUI.$viewport,
     (e) => {
-      if (dom.is(e.target, "textarea", false)) {
+      if (dom.is(e.target, "[data-editor-element]", true)) {
+        // prevents focus to propaga to root elem
+        // it breaks editing process
       } else if (dom.is(e.target, ".mwd-node")) {
         const uid = e.target.parentNode.dataset.uid;
         const mwd = canvasUI.config.mindWired();
@@ -309,42 +311,21 @@ class CanvasUI {
       ctrlEl.append(ctrl);
     }
   }
-  showNodeEditor(nodeUI, inputCallback) {
+  showNodeEditor(nodeUI, $editorEl) {
     const { uid } = nodeUI;
     const nodeEl = this.$holder.querySelector(`[data-uid=${uid}]`);
-    const editBox = dom.parseTemplate(template.nodeEdit, {});
-    nodeEl.append(editBox);
-
-    const textArea = dom.findOne(editBox, "textarea");
-    textArea.value = nodeUI.title;
-
-    const nodeBody = dom.findOne(nodeEl, ".mwd-body");
-    const rect = dom.domRect(nodeBody);
-    dom.css(textArea, {
-      width: rect.width * 1.5,
-      height: rect.height * 1.5,
-      minWidth: rect.width,
-      minHeight: rect.height,
+    nodeEl.append($editorEl);
+    // mark editor element for focus management
+    // see installFocusHandler();
+    $editorEl.dataset.editorElement = "";
+    return new Promise((ok) => {
+      setTimeout(ok);
     });
-    setTimeout(() => {
-      textArea.select();
-      textArea.focus();
-    }, 0);
-    dom.event.keyup(
-      textArea,
-      (e) => {
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-      },
-      "shift@enter"
-    );
-    dom.event.keydown(textArea, inputCallback, "enter esc");
-    return editBox;
   }
   hideNodeEditor(nodeUI) {
     const { uid } = nodeUI;
     const nodeEl = this.$holder.querySelector(`[data-uid=${uid}]`);
-    const editBox = dom.findOne(nodeEl, ".mwd-node-editbox");
+    const editBox = dom.findOne(nodeEl, "[data-editor-element]");
     if (editBox) {
       editBox.remove();
     }
