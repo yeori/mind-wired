@@ -1,6 +1,7 @@
 import { dom } from "./service";
 import { MindWired } from "./components/mind-wired";
 import Configuration from "./components/config";
+import "./assets/mind-wired.scss";
 
 const injectCanvas = (el) => {
   const canvas = dom.tag.canvas();
@@ -8,7 +9,6 @@ const injectCanvas = (el) => {
 };
 const autoInstallation = () => {
   const el = document.querySelector("[mind-wired-holder]");
-  // el.innerHTML = `<canvas width="400" height="400"></canvas>`;
   if (el) {
     let canvasEl = dom.findOne(el, "canvas");
     if (!canvasEl) {

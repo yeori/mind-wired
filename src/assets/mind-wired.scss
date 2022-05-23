@@ -1,0 +1,93 @@
+[data-mind-wired-viewport] {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  background-color: white;
+  canvas {
+    background-color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  &:focus-within {
+    outline: none;
+    box-shadow: rgb(0 0 0 / 16%) 0px 3px 6px, rgb(0 0 0 / 23%) 0px 3px 6px;
+  }
+  .mwd-nodes {
+    width: 0px;
+    height: 0px;
+    background-color: red;
+    position: absolute;
+    top: 50%;
+    left: calc(50%);
+    transform: translate(-50%, -50%);
+    .mwd-node {
+      position: absolute;
+      width: 0px;
+      height: 0px;
+      .mwd-node-editbox {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        textarea {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 100%;
+          height: 100%;
+          padding: 0;
+          border: none;
+          outline: 1px solid green;
+        }
+      }
+      .mwd-body {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+        background-color: white;
+        border-radius: 6px;
+        &.active-node {
+          background-color: rgb(210, 255, 120);
+        }
+        .mwd-node-text {
+          white-space: nowrap;
+          padding: 4px 6px;
+          /*border: 1px solid gray;*/
+          user-select: none;
+          display: block;
+          p {
+            margin: 0;
+            pointer-events: none;
+          }
+        }
+        .icon-badge-node {
+          display: flex;
+          border-radius: 6px;
+          overflow: hidden;
+          > img {
+            width: 28px;
+            height: auto;
+          }
+        }
+      }
+      .mwd-node-ctrl {
+        position: absolute;
+        transform: translate(-50%, 6px);
+        cursor: pointer;
+      }
+      &.vroot {
+        width: 28px;
+        height: 28px;
+        background-color: rgba(38, 255, 0, 0.332);
+        top: 0;
+        left: 0;
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
+}

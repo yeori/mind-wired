@@ -1,4 +1,5 @@
 const path = require("path");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const mode = process.env.NODE_ENV;
 const DEPLOYED_FILENAME = "mind-wired";
@@ -15,11 +16,21 @@ module.exports = {
       type: "umd",
     },
   },
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: "mind-wired.css",
+    }),
+  ],
   module: {
     rules: [
       {
         test: /\.svg/,
         type: "asset/resource",
+      },
+      {
+        test: /\.s[ac]ss$/i,
+        exclude: /node_modules/,
+        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
       },
     ],
   },
