@@ -10,18 +10,18 @@ layoutMap.set("DEFAULT", defaultLayout);
 layoutMap.set("X-AXIS", xAxisLayout);
 layoutMap.set("Y-AXIS", yAxisLayout);
 
-const getLayoutManager = (type) => {
-  let fn = layoutMap.get(type) || defaultLayout;
+const getLayoutManager = (layout) => {
+  let fn = layout ? layoutMap.get(layout.type) : defaultLayout;
   return fn;
 };
 const setPosition = (nodeUI, context) => {
   const { layout } = nodeUI;
-  const manager = getLayoutManager(layout.type);
+  const manager = getLayoutManager(layout);
   manager.setPosition(nodeUI, context);
 };
 const layout = (nodeUI, context) => {
   const { layout } = nodeUI;
-  const manager = getLayoutManager(layout.type);
+  const manager = getLayoutManager(layout);
   manager.doLayout(nodeUI, context);
 };
 export default {

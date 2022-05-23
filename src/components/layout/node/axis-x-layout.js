@@ -5,7 +5,7 @@
 const reverseXPos = (node, context) => {
   const { x, y } = node;
   node.setPos(-x, y);
-  const manager = context.layoutManager.getLayoutManager(node.layout.type);
+  const manager = context.layoutManager.getLayoutManager(node.layout);
   manager.doLayout(node, context);
 };
 const doLayout = (nodeUI, context) => {

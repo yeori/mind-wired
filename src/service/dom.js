@@ -265,6 +265,10 @@ const is = (el, cssSelector, searchParent = true) => {
   }
 };
 const domRect = (el) => el.getBoundingClientRect();
+
+const types = {
+  method: (obj) => typeof obj === "function",
+};
 export default {
   tag,
   attr,
@@ -279,4 +283,5 @@ export default {
   is,
   data,
   domRect,
+  types,
 };
