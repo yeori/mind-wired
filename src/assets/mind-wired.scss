@@ -4,7 +4,6 @@
   display: flex;
   background-color: white;
   canvas {
-    background-color: white;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -17,7 +16,6 @@
   .mwd-nodes {
     width: 0px;
     height: 0px;
-    background-color: red;
     position: absolute;
     top: 50%;
     left: calc(50%);
@@ -49,11 +47,7 @@
         left: 50%;
         transform: translate(-50%, -50%);
         cursor: pointer;
-        background-color: white;
-        border-radius: 6px;
-        &.active-node {
-          background-color: rgb(210, 255, 120);
-        }
+
         .mwd-node-text {
           white-space: nowrap;
           padding: 4px 6px;
@@ -80,14 +74,12 @@
         transform: translate(-50%, 6px);
         cursor: pointer;
       }
-      &.vroot {
-        width: 28px;
-        height: 28px;
-        background-color: rgba(38, 255, 0, 0.332);
-        top: 0;
-        left: 0;
-        transform: translate(-50%, -50%);
-      }
+    }
+  }
+  .mwd-body {
+    background-color: white;
+    &.active-node {
+      background-color: rgb(210, 255, 120);
     }
   }
 }
