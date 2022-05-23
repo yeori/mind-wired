@@ -15,6 +15,11 @@ const repaintTree = (mwd, node) => {
     repaintTree(mwd, childNode);
   });
 };
+const updateLevelClass = (nodeUI, method, config) => {
+  const className = config.nodeLevelClassName(nodeUI);
+  dom.clazz[method](nodeUI.$bodyEl, className);
+  nodeUI.subs.forEach((childUI) => updateLevelClass(childUI, method, config));
+};
 /**
  * captures current pos(x,y) and direction for each nodes
  * @param {[NodeUI]} nodes
@@ -55,7 +60,6 @@ class MindWired {
     this.draggingNodes = null;
     this.config.listen(EVENT.DRAG.NODE, (e) => {
       if (e.before) {
-        const node = this.rootUI.find((node) => node.uid === e.nodeId);
         const nodes = this.nodeSelectionModel.getNodes();
         this.draggingNodes = capatureDragData(nodes);
       } else {
@@ -118,7 +122,10 @@ class MindWired {
   }
   moveNodes(parentNode, childNodes) {
     childNodes.forEach((child) => {
+      updateLevelClass(child, "remove", this.config);
       const prevParent = parentNode.addChild(child);
+      updateLevelClass(child, "add", this.config);
+
       this.config.emit(EVENT.NODE.MOVED, { node: child, prevParent });
     });
     repaintTree(this, parentNode);

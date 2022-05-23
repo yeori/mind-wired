@@ -1,3 +1,4 @@
+import { dom } from "../service";
 import { EventBus } from "../service/event-bus";
 
 const DEFAULT_UI_CONFIG = {
@@ -7,6 +8,7 @@ const DEFAULT_UI_CONFIG = {
   clazz: {
     node: "active-node",
     edge: "active-edge",
+    level: (level) => `level-${level}`,
   },
   offset: { x: 0, y: 0 },
 };
@@ -43,6 +45,19 @@ class Configuration {
     }
     return className;
   }
+  nodeLevelClassName(node) {
+    const method = this.ui.clazz.level;
+    if (!dom.types.method(method)) {
+      throw new Error(
+        `clazz.level should be function, but ${typeof method}. (level, node) => {} `
+      );
+    }
+    const className = method
+      ? method(node.level(), node)
+      : `level-${node.level()}`;
+
+    return className;
+  }
   listen(eventName, callback) {
     this.ebus.on(eventName, callback);
     return this;
@@ -55,7 +70,7 @@ class Configuration {
 
 Configuration.parse = (config) => {
   const cssSelector = config.el;
-  const ui = config.ui || DEFAULT_UI_CONFIG;
+  const ui = Object.assign({}, DEFAULT_UI_CONFIG, config.ui);
 
   const el = document.querySelector(cssSelector);
   return new Configuration({ el, ui });

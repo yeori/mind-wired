@@ -47,7 +47,7 @@ class NodeUI {
     let { layout } = this.config.view;
     if (layout) {
       return { ...layout };
-    } else return this.parent.layout;
+    } else return this.parent?.layout;
   }
   get active() {
     return !!this.$el;
@@ -174,6 +174,9 @@ class NodeUI {
     const methodName = this.isSelected() ? "add" : "remove";
     const className = this.sharedConfig.activeClassName("node");
     dom.clazz[methodName](body, className);
+
+    const levelClassName = this.sharedConfig.nodeLevelClassName(this);
+    dom.clazz.add(body, levelClassName);
   }
 }
 
