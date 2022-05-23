@@ -1,4 +1,5 @@
 import { dom } from "../service";
+import { EVENT } from "../service/event-bus";
 import EdgeStyle from "./edge/edge-style";
 
 const parseSubs = (nodeUi) => {
@@ -83,10 +84,24 @@ class NodeUI {
     }
     return false;
   }
+  /**
+   *
+   * @param {string} title
+   * @returns true if title changed, false otherise
+   */
   setTitle(title) {
     const { model } = this.config;
+    const changed = model.text !== title;
     model.text = title;
     this.repaint();
+    return changed;
+  }
+  updateModel(callback) {
+    const { model } = this.config;
+    if (callback(model)) {
+      this.repaint();
+      this.sharedConfig.emit(EVENT.NODE.UPDATED, [this]);
+    }
   }
   offset(scale) {
     scale = scale || 1.0;

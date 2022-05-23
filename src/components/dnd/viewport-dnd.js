@@ -27,8 +27,7 @@ const viewportDndHandler = (canvasUI) => ({
     });
     const dragged = canvasUI.dndContext.getData("dragged");
     if (!dragged) {
-      // clicked, no drag
-      canvasUI.config.emit(EVENT.CLICK.VIEWPORT);
+      canvasUI.config.emit(EVENT.VIEWPORT.CLICKED);
     }
   },
 });

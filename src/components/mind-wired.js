@@ -73,7 +73,7 @@ class MindWired {
         this.edgeUI.repaint();
       }
     });
-    this.config.listen(EVENT.EDIT.NODE, ({ editing, nodeUI }) => {
+    this.config.listen(EVENT.NODE.EDITING, ({ editing, nodeUI }) => {
       // console.log("[edit]", nodeUI);
       if (editing) {
         this.nodeEditor.edit(nodeUI);
@@ -89,6 +89,7 @@ class MindWired {
     this.rootUI = NodeUI.build(elems, this.config);
     this.edgeUI = new EdgeUI(this.config, this.rootUI, this.canvas);
     this.repaint();
+    return this;
   }
   findNode(predicate) {
     return this.rootUI.find(predicate);
@@ -101,7 +102,7 @@ class MindWired {
     if (!data.view) {
       data.view = {
         x: 100,
-        y: -100,
+        y: 0,
       };
     }
     const nodeUI = new NodeUI(data, this.config);
@@ -116,7 +117,7 @@ class MindWired {
         rect,
       });
     }
-    this.config.emit(EVENT.NEW.NODE, nodeUI);
+    this.config.emit(EVENT.NODE.CREATED, [nodeUI]);
     this.config.emit(EVENT.SELECTION.NODE, { node: nodeUI });
     this.nodeEditor.edit(nodeUI);
   }
@@ -152,6 +153,10 @@ class MindWired {
     layoutManager.layout(this.rootUI, { dir: null });
     repaintTree(this, this.rootUI);
     this.edgeUI.repaint();
+  }
+  listen(event, callback) {
+    this.config.ebus.listen(event, callback);
+    return this;
   }
 }
 

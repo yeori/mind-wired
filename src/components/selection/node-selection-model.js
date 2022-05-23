@@ -57,7 +57,7 @@ class NodeSelectionModel {
       } else {
       }
     });
-    this.config.listen(EVENT.CLICK.VIEWPORT, () => {
+    this.config.listen(EVENT.VIEWPORT.CLICKED, () => {
       clearSelection(this.nodeMap);
     });
 
@@ -71,9 +71,9 @@ class NodeSelectionModel {
       const editing = nodeUI.isEditingState();
       if ("Space" === code && !editing) {
         e.stopPropagation();
-        this.config.emit(EVENT.EDIT.NODE, { editing: true, nodeUI });
+        this.config.emit(EVENT.NODE.EDITING, { editing: true, nodeUI });
       } else if ("Escape" === code) {
-        this.config.emit(EVENT.EDIT.NODE, { editing: false, nodeUI });
+        this.config.emit(EVENT.NODE.EDITING, { editing: false, nodeUI });
       }
     });
     dom.event.keydown(

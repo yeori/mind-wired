@@ -50,9 +50,11 @@ class EdgeUI {
     this.edges = [];
     createEdges(rootNode, this.edges);
     this.config
-      .listen(EVENT.NEW.NODE, (nodeUI) => {
-        const e = new Edge(nodeUI.parent, nodeUI);
-        this.edges.push(e);
+      .listen(EVENT.NODE.CREATED, (nodes) => {
+        nodes.forEach((nodeUI) => {
+          const e = new Edge(nodeUI.parent, nodeUI);
+          this.edges.push(e);
+        });
         this.repaint();
       })
       .listen(EVENT.VIEWPORT.RESIZED, () => {
