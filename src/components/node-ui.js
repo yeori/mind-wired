@@ -41,9 +41,6 @@ class NodeUI {
   get y() {
     return this.config.view.y;
   }
-  get title() {
-    return this.config.model.text;
-  }
   get layout() {
     let { layout } = this.config.view;
     if (layout) {

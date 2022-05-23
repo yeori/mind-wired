@@ -16,7 +16,6 @@ const template = {
     <div class="mwd-body" tabIndex="0"></div>
     <div class="mwd-node-ctrl"></div>
   </div>`,
-  nodeEdit: `<div class="mwd-node-editbox"><textarea value=""></textarea></div>`,
   nodeControl: `<div data-cmd="set-para" style="background-image: url(${iconSetPara});"></div>`,
 };
 

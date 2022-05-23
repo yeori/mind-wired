@@ -16,7 +16,8 @@ class PlainTextRenderer {
   }
   render(nodeUI) {
     const $titleEl = this.ctx.select(nodeUI, ".mwd-node-text");
-    const lines = nodeUI.title
+    const { model } = nodeUI;
+    const lines = model.text
       .split("\n")
       .map((text) => `<p>${text}</p>`)
       .join("");
@@ -26,11 +27,11 @@ class PlainTextRenderer {
     const $editorEl = this.ctx.parse(template.editor, true);
 
     const textArea = this.ctx.query($editorEl, "textarea");
-    textArea.value = nodeUI.title;
+
+    const { model } = nodeUI;
+    textArea.value = model.text;
     this.ctx.css(textArea, { width: 120, height: 40 });
     this.ctx.event.click($editorEl, (e) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
       if (e.target.dataset.cmd === "save") {
         nodeUI.updateModel((model) => {
           model.text = textArea.value.trim();
