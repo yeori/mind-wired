@@ -1,6 +1,6 @@
 const template = {
   text: '<span class="mwd-node-text"></span>',
-  editor: `<div class="mwd-text-editbox">
+  editor: `<div class="mwd-node-editor plain-text-editbox">
     <textarea value=""></textarea>
     <button data-cmd="save">SAVE</button>
   </div>`,

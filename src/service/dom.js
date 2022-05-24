@@ -141,9 +141,10 @@ const registerKeyEvent = (target, eventName, callback, option) => {
   });
 };
 /**
- * 'enter', 'space',
- * 'enter@ctrl'
- * 'space@alt+shift'
+ * 'enter'
+ * 'space'
+ * 'ctrl@enter'
+ * 'alt+shift@space'
  * @param {string} keyFormat
  */
 const parseKeyOption = (keyFormat) => {
@@ -269,6 +270,26 @@ const domRect = (el) => el.getBoundingClientRect();
 const types = {
   method: (obj) => typeof obj === "function",
 };
+const valid = {
+  path: (value) =>
+    new Promise((yes, no) => {
+      const v = value && value.trim();
+      if (v.length > 0) {
+        yes(v);
+      } else {
+        no(value);
+      }
+    }),
+  number: (value) =>
+    new Promise((yes, no) => {
+      const n = parseFloat(value);
+      if (Number.isNaN(n)) {
+        no(value);
+      } else {
+        yes(n);
+      }
+    }),
+};
 export default {
   tag,
   attr,
@@ -284,4 +305,5 @@ export default {
   data,
   domRect,
   types,
+  valid,
 };

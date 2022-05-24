@@ -2,8 +2,8 @@
  * dummy dnd handlers
  */
 const beforeDrag = () => {};
-const dragging = () => {};
-const afterDrag = () => {};
+const dragging = beforeDrag;
+const afterDrag = beforeDrag;
 
 const convToMouseEvent = (te) => {
   let touch = te.touches[0];

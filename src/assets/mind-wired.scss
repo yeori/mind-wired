@@ -82,4 +82,14 @@
       background-color: rgb(210, 255, 120);
     }
   }
+  .mwd-node-editor {
+    background-color: white;
+    padding: 8px;
+    box-shadow: 2px 2px 6px #0000004d, 0px 0px 2px #0000004d;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    row-gap: 8px;
+  }
 }

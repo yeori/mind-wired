@@ -72,6 +72,9 @@ const installDnd = (canvasUI) => {
   return new DndContext({
     accept: (el) => {
       const mwd = canvasUI.config.mindWired();
+      if (dom.closest(el, "[data-editor-element]")) {
+        return false;
+      }
       if (dom.is(el, `[data-cmd="set-para"]`)) {
         canvasUI.dndContext.capture(
           "handler",

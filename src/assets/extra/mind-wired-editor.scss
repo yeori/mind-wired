@@ -1,0 +1,36 @@
+[data-mind-wired-viewport] {
+  .mwd-thumbnail-node {
+    display: flex;
+    padding: 4px;
+    > img {
+      user-select: none;
+    }
+  }
+  .thumnail-editor {
+    position: relative;
+    min-width: 180px;
+    .inline-mwd-form {
+      display: flex;
+      input {
+        width: 100%;
+      }
+    }
+    .preview {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      > .img {
+        background-position: center center;
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+    }
+    .path-form {
+      display: none;
+      > textarea {
+        flex: 1 1 auto;
+        resize: none;
+      }
+    }
+  }
+}

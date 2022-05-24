@@ -2,6 +2,7 @@ import { dom } from "./service";
 import { MindWired } from "./components/mind-wired";
 import Configuration from "./components/config";
 import "./assets/mind-wired.scss";
+import "./assets/extra/mind-wired-editor.scss";
 
 const injectCanvas = (el) => {
   const canvas = dom.tag.canvas();

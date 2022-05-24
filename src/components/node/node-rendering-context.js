@@ -12,6 +12,9 @@ class NodeRenderingContext {
   get event() {
     return dom.event;
   }
+  get valid() {
+    return dom.valid;
+  }
   parse(htmlTemplate, fitToCenter) {
     const $el = dom.parseTemplate(htmlTemplate);
     if (fitToCenter) {
