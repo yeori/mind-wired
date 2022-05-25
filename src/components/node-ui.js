@@ -27,6 +27,7 @@ class NodeUI {
     this.subs = parseSubs(this);
     this.parent = null;
     this.$style = new EdgeStyle(this);
+    this.folding = false;
   }
   get model() {
     return { ...this.config.model };
@@ -174,11 +175,25 @@ class NodeUI {
     }
     return this.subs[this.subs.length - 1];
   }
+  setFolding(folding) {
+    if (this.folding === folding) {
+      return;
+    }
+    this.folding = folding;
+    this.repaint();
+    this.sharedConfig.emit(EVENT.NODE.FOLDED, {
+      node: this,
+      folded: this.folding,
+    });
+  }
+  isFolded() {
+    return this.folding;
+  }
   repaint() {
-    const { $el } = this;
-    const body = $el.querySelector(".mwd-body");
     const canvasUI = this.sharedConfig.getCanvas();
     canvasUI.drawNode(this);
+    const { $el } = this;
+    const body = $el.querySelector(".mwd-body");
 
     const offset = this.offset();
     dom.css($el, { top: offset.y, left: offset.x, zIndex: this.zIndex });

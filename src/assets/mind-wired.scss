@@ -46,6 +46,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+        z-index: 5;
         cursor: pointer;
 
         .mwd-node-text {
@@ -71,7 +72,7 @@
       }
       .mwd-node-ctrl {
         position: absolute;
-        transform: translate(-50%, 6px);
+        transform: translate(-50%, -50%);
         cursor: pointer;
       }
     }
@@ -91,5 +92,10 @@
     flex-direction: column;
     align-items: stretch;
     row-gap: 8px;
+  }
+  .ctrl-icon {
+    background-position: center;
+    background-repeat: no-repeat;
+    cursor: pointer;
   }
 }

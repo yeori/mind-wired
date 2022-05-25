@@ -32,6 +32,10 @@ const EVENT = {
       name: "node.editing",
       desc: "node's editing state",
     },
+    FOLDED: {
+      name: "node.folded",
+      desc: "node is folded or unfolded",
+    },
   },
   VIEWPORT: {
     RESIZED: {

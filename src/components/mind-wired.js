@@ -10,7 +10,7 @@ import nodeRenderer from "./node";
 import { dom } from "../service";
 
 const repaintTree = (mwd, node) => {
-  mwd.canvas.repaint(node);
+  node.repaint();
   node.subs.forEach((childNode) => {
     repaintTree(mwd, childNode);
   });
@@ -81,6 +81,9 @@ class MindWired {
         this.nodeEditor.close();
       }
     });
+    this.config.listen(EVENT.NODE.FOLDED, ({ node }) => {
+      this.canvas.updateFoldingNodes(node);
+    });
   }
   isEditing() {
     return this.nodeEditor.isEditing();
@@ -129,6 +132,7 @@ class MindWired {
 
       this.config.emit(EVENT.NODE.MOVED, { node: child, prevParent });
     });
+    parentNode.setFolding(false);
     repaintTree(this, parentNode);
   }
   deleteNodes(nodes) {
@@ -147,6 +151,9 @@ class MindWired {
         this.config.emit(EVENT.NODE.DELETED, deletedChild);
       }
     });
+  }
+  getSelectedNodes() {
+    return this.nodeSelectionModel.getNodes();
   }
   repaint() {
     this.canvas.repaintNodeHolder();

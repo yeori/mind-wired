@@ -25,10 +25,20 @@ const filterIndex = (edges, callback) => {
   });
   return pos;
 };
+const updateHiddenState = (edgeUI, edge, folded) => {
+  const childEdges = edgeUI.filterEdges(
+    (e) => e.src === edge.dst && !e.src.isFolded()
+  );
+  childEdges.forEach((edge) => {
+    edge.hidden = folded;
+    updateHiddenState(edgeUI, edge, folded);
+  });
+};
 class Edge {
   constructor(srcNode, dstNode) {
     this.srcNode = srcNode;
     this.dstNode = dstNode;
+    this.hidden = false;
   }
   get src() {
     return this.srcNode;
@@ -81,7 +91,20 @@ class EdgeUI {
         const e = new Edge(node.parent, node);
         this.edges.push(e);
         this.repaint();
+      })
+      .listen(EVENT.NODE.FOLDED, ({ node }) => {
+        const edges = this.edges.filter((edge) => edge.src === node);
+        const folded = node.isFolded();
+        edges.forEach((edge) => {
+          edge.hidden = folded;
+          updateHiddenState(this, edge, folded);
+        });
+
+        this.repaint();
       });
+  }
+  filterEdges(predicate) {
+    return this.edges.filter(predicate);
   }
   repaint() {
     this.canvas.clear();
@@ -89,7 +112,9 @@ class EdgeUI {
       const { src, dst } = e;
       const style = src.$cachedStyle || new EdgeStyle(src);
       src.$cachedStyle = style;
-      rendering[style.name.toUpperCase()](this.canvas, src, dst);
+      if (!e.hidden) {
+        rendering[style.name.toUpperCase()](this.canvas, src, dst);
+      }
     });
   }
 }

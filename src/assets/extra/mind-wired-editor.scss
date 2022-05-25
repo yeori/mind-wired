@@ -1,4 +1,7 @@
 [data-mind-wired-viewport] {
+  .mwd-node-editor {
+    z-index: 10;
+  }
   .mwd-thumbnail-node {
     display: flex;
     padding: 4px;
