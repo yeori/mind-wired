@@ -97,7 +97,7 @@ class MindWired {
   findNode(predicate) {
     return this.rootUI.find(predicate);
   }
-  addNode(parentNode, nodeData) {
+  addNode(parentNode, nodeData, option) {
     const data = {
       model: nodeData.model,
       view: nodeData.view,
@@ -109,10 +109,8 @@ class MindWired {
       };
     }
     const nodeUI = new NodeUI(data, this.config);
-    parentNode.addChild(nodeUI);
-    // this.canvas.repaint(nodeUI);
     this.canvas.regsiterNode(nodeUI);
-
+    parentNode.addChild(nodeUI);
     if (nodeData.siblingNode) {
       const rect = dom.domRect(nodeData.siblingNode.$bodyEl);
       layoutManager.setPosition(nodeUI, {
@@ -120,9 +118,16 @@ class MindWired {
         rect,
       });
     }
+    nodeUI.repaint();
+    // this.canvas.repaint(nodeUI);
+
     this.config.emit(EVENT.NODE.CREATED, [nodeUI]);
-    this.config.emit(EVENT.SELECTION.NODE, { node: nodeUI });
-    this.nodeEditor.edit(nodeUI);
+    if (option?.editing || option?.select) {
+      this.config.emit(EVENT.SELECTION.NODE, { node: nodeUI });
+    }
+    if (option?.editing) {
+      this.nodeEditor.edit(nodeUI);
+    }
   }
   moveNodes(parentNode, childNodes) {
     childNodes.forEach((child) => {
@@ -155,10 +160,21 @@ class MindWired {
   getSelectedNodes() {
     return this.nodeSelectionModel.getNodes();
   }
-  repaint() {
+  setLayout(layoutSpec, nodeUI) {
+    const targetNode = nodeUI || this.rootUI;
+    targetNode.config.view.layout = layoutSpec;
+    this.repaint();
+  }
+  setEdge(edgeSpec, nodeUI) {
+    const targetNode = nodeUI || this.rootUI;
+    targetNode.config.view.edge = edgeSpec;
+    this.repaint(nodeUI);
+  }
+  repaint(nodeUI) {
+    nodeUI = nodeUI || this.rootUI;
     this.canvas.repaintNodeHolder();
-    layoutManager.layout(this.rootUI, { dir: null });
-    repaintTree(this, this.rootUI);
+    layoutManager.layout(nodeUI, { dir: null });
+    repaintTree(this, nodeUI);
     this.edgeUI.repaint();
   }
   listen(event, callback) {

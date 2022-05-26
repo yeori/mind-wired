@@ -26,7 +26,7 @@ const renderCurve = (canvas, srcNode, s, dstNode, e, dx) => {
   const width = Math.min(srcWidth, dstWidth);
   const offset = Math.abs(srcWidth - dstWidth);
   s.y -= offset / 2;
-  const props = { lineWidth: width * scale, strokeStyle: srcNode.$style.color };
+  const props = { lineWidth: width * scale, strokeStyle: dstNode.$style.color };
   canvas.drawBeizeCurve(s, e, {
     cpoints: [
       { x: s.x + dx / 2, y: s.y },
@@ -34,18 +34,23 @@ const renderCurve = (canvas, srcNode, s, dstNode, e, dx) => {
     ],
     props,
   });
-  s.y += offset;
-  canvas.drawBeizeCurve(s, e, {
-    cpoints: [
-      { x: s.x + dx / 2, y: s.y },
-      { x: e.x - dx / 2, y: e.y },
-    ],
-    props,
-  });
+  if (offset > 0) {
+    s.y += offset;
+    canvas.drawBeizeCurve(s, e, {
+      cpoints: [
+        { x: s.x + dx / 2, y: s.y },
+        { x: e.x - dx / 2, y: e.y },
+      ],
+      props,
+    });
+  }
 };
 const renderByMustache = (canvas, srcNode, dstNode) => {
   const { scale } = canvas;
   const [s, e] = [srcNode, dstNode].map((node) => {
+    /*
+     * FIXME scale 적용은 offset() 메소드 안에서 처리되는게 좋아보임
+     */
     const offset = node.offset(scale);
     const rect = dom.domRect(node.$bodyEl);
     const { width, height } = rect;
@@ -81,13 +86,16 @@ const renderByMustache = (canvas, srcNode, dstNode) => {
   const dx = max.x - min.x;
   const dy = max.y - min.y;
   const w = widthOf(srcNode);
-  if (padding.ver > 0) {
+  if (srcNode.isRoot() && srcNode.firstChild() === dstNode) {
     renderUnderline(canvas, srcNode, s, padding);
   }
   renderCurve(canvas, srcNode, s, dstNode, e, s === min ? dx : -dx);
-  if (dstNode.isLeaf() && padding.ver > 0) {
+  if (padding.ver > 0) {
     renderUnderline(canvas, dstNode, e, padding);
   }
+  // renderUnderline(canvas, dstNode, e, padding);
+  // if (dstNode.isLeaf() && padding.ver > 0) {
+  // }
 };
 
 export default renderByMustache;

@@ -8,9 +8,10 @@ const changeParentDndHandler = (canvasUI) => ({
     const mrd = canvasUI.config.mindWired();
     const node = mrd.findNode((node) => node.uid === nodeEl.dataset.uid);
     const rect = dom.domRect(node.$bodyEl);
+    const { scale } = canvasUI.config;
     canvasUI.dndContext.capture("node", node);
     canvasUI.dndContext.capture("iconEl", iconEl);
-    canvasUI.dndContext.capture("iconY", rect.height / 2 + 15);
+    canvasUI.dndContext.capture("iconY", rect.height / scale / 2);
   },
   dragging: (e) => {
     const { dx, dy } = e;
@@ -18,7 +19,9 @@ const changeParentDndHandler = (canvasUI) => ({
     const iconY = canvasUI.dndContext.getData("iconY");
     const { scale } = canvasUI.config;
     dom.css(iconEl, {
-      transform: `translate(${dx / scale}px, ${(iconY + dy) / scale}px)`,
+      transform: `translate(calc(-50% + ${dx / scale}px), ${
+        iconY + dy / scale
+      }px)`,
     });
   },
   afterDrag: () => {
@@ -29,7 +32,7 @@ const changeParentDndHandler = (canvasUI) => ({
     const cx = rect.x + rect.width / 2;
     const cy = rect.y + rect.height / 2;
     dom.css(iconEl, {
-      transform: `translate(0px, ${iconY}px)`,
+      transform: `translate(-50%, ${iconY}px)`,
     });
     const newParentNode = canvasUI.findNodeAt(cx, cy);
     if (newParentNode) {

@@ -2,12 +2,14 @@ import { EVENT } from "../service/event-bus";
 import EdgeStyle from "./edge/edge-style";
 import line_edge from "./edge/line-edge-renderer";
 import curve_edge from "./edge/natural-curve-renderer";
-import mustache_edge from "./edge/mustache-renderer";
+import mustache_edge_lr from "./edge/mustache-lr-renderer";
+import mustache_edge_tb from "./edge/mustache-tb-renderer";
 
 const rendering = {
   LINE: line_edge,
   NATURAL_CURVE: curve_edge,
-  MUSTACHE: mustache_edge,
+  MUSTACHE_LR: mustache_edge_lr,
+  MUSTACHE_TB: mustache_edge_tb,
 };
 const createEdges = (srcNode, edges) => {
   srcNode.children((child) => {
@@ -110,8 +112,8 @@ class EdgeUI {
     this.canvas.clear();
     this.edges.forEach((e) => {
       const { src, dst } = e;
-      const style = src.$cachedStyle || new EdgeStyle(src);
-      src.$cachedStyle = style;
+      const style = dst.$cachedStyle || new EdgeStyle(dst);
+      dst.$cachedStyle = style;
       if (!e.hidden) {
         rendering[style.name.toUpperCase()](this.canvas, src, dst);
       }

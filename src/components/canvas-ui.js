@@ -319,15 +319,18 @@ class CanvasUI {
     ctrlEl.innerHTML = "";
     if (!nodeUI.isRoot() && nodeUI.isSelected()) {
       const rect = dom.domRect(nodeUI.$bodyEl);
+      const { scale } = this.config;
       // dom.css(ctrlEl, { top: rect.height / 2 });
       const ctrl = dom.parseTemplate(template.nodeControl, {});
       dom.css(ctrl, {
-        width: 24,
-        height: 24,
+        width: 24 / Math.max(scale, 1),
+        height: 24 / Math.max(scale, 1),
         backgroundColor: "white",
         borderRadius: "12px",
         boxShadow: "1px 1px 4px #0000007d",
-        transform: `translate(0, ${rect.height / 2 + 15}px)`,
+        transform: `translate(-50%, ${rect.height / scale / 2}px)`,
+        backgroundSize: "contain",
+        backgroundPosition: "center",
       });
       ctrlEl.append(ctrl);
     }
@@ -354,7 +357,7 @@ class CanvasUI {
   }
   regsiterNode(nodeUI) {
     registerElement(this, nodeUI);
-    nodeUI.repaint();
+    // nodeUI.repaint();
   }
   unregisterNode(nodeUI) {
     unregisterElement(this, nodeUI);

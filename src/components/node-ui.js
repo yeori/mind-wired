@@ -169,6 +169,9 @@ class NodeUI {
     deletedNodes.forEach((node) => (node.parent = null)); // clear ref to parent(this)
     return deletedNodes[0];
   }
+  firstChild() {
+    return this.subs[0];
+  }
   lastChild() {
     if (this.subs.length === 0) {
       return null;

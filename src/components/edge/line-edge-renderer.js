@@ -7,7 +7,7 @@ import EdgeStyle from "./edge-style";
 const renderByLine = (canvas, srcNode, dstNode) => {
   const { scale } = canvas;
   const [s, e] = [srcNode, dstNode].map((node) => node.offset(scale));
-  const style = srcNode.$style;
+  const style = dstNode.$style;
   canvas.drawPath([s, e], {
     lineWidth: style.width * scale,
     strokeStyle: style.color,
