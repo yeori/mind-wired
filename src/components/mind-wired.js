@@ -7,6 +7,7 @@ import Direction from "./direction";
 import selection from "./selection";
 import { NodeEditing } from "./editing";
 import nodeRenderer from "./node";
+import AligmentUI from "./alignment/alignment-ui";
 import { dom } from "../service";
 
 const repaintTree = (mwd, node) => {
@@ -25,13 +26,15 @@ const updateLevelClass = (nodeUI, method, config) => {
  * @param {[NodeUI]} nodes
  */
 const capatureDragData = (nodes) =>
-  nodes.map((node) => {
-    return {
-      node,
-      pos: { x: node.x, y: node.y },
-      dir: new Direction(node),
-    };
-  });
+  nodes
+    .filter((node) => !node.isRoot())
+    .map((node) => {
+      return {
+        node,
+        pos: { x: node.x, y: node.y },
+        dir: new Direction(node),
+      };
+    });
 
 class MindWired {
   /**
@@ -50,6 +53,7 @@ class MindWired {
 
     this.nodeSelectionModel = selection.createSelectionModel("node", config);
     this.nodeEditor = new NodeEditing(config);
+    this.aligmentUI = new AligmentUI(config);
 
     this.config.listen(EVENT.DRAG.VIEWPORT, (baseOffset) => {
       this.config.setOffset(baseOffset);
@@ -59,18 +63,27 @@ class MindWired {
     });
     this.draggingNodes = null;
     this.config.listen(EVENT.DRAG.NODE, (e) => {
+      const { scale } = this.canvas;
       if (e.before) {
         const nodes = this.nodeSelectionModel.getNodes();
         this.draggingNodes = capatureDragData(nodes);
-      } else {
+        this.aligmentUI.turnOn(this.rootUI, this.draggingNodes[0]?.node);
+      } else if (e.dragging) {
         this.draggingNodes.forEach((dragging) => {
           const { node, dir, pos } = dragging;
           dir.capture();
           node.setPos(e.x + pos.x, e.y + pos.y);
           layoutManager.layout(node, { dir, layoutManager });
+          // repaintTree(this, node);
+        });
+        this.aligmentUI.repaint();
+        this.draggingNodes.forEach(({ node }) => {
           repaintTree(this, node);
         });
-        this.edgeUI.repaint();
+        this.edgeUI.repaint(false);
+      } else if (e.after) {
+        this.aligmentUI.turnOff();
+        this.edgeUI.repaint(true);
       }
     });
     this.config.listen(EVENT.NODE.EDITING, ({ editing, nodeUI }) => {

@@ -284,6 +284,38 @@ class CanvasUI {
     );
     ctx.stroke();
   }
+  drawVLines(xPoints, option) {
+    const H = this.$viewport.offsetHeight;
+    const ctx = this.getContext();
+    const offset = this.getHolderOffset();
+    ctx.strokeStyle = "#3bdda6";
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([4, 1]);
+    ctx.beginPath();
+    xPoints.forEach((x) => {
+      ctx.moveTo(offset.x + x, 0);
+      ctx.lineTo(offset.x + x, H);
+    });
+    ctx.stroke();
+    ctx.closePath();
+    ctx.setLineDash([]);
+  }
+  drawHLines(yPoints, option) {
+    const W = this.$viewport.offsetWidth;
+    const ctx = this.getContext();
+    const offset = this.getHolderOffset();
+    ctx.strokeStyle = "orange";
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([4, 1]);
+    ctx.beginPath();
+    yPoints.forEach((y) => {
+      ctx.moveTo(0, offset.y + y);
+      ctx.lineTo(W, offset.y + y);
+    });
+    ctx.stroke();
+    ctx.closePath();
+    ctx.setLineDash([]);
+  }
   clear() {
     const dim = this.getDimension();
     const ctx = this.getContext();

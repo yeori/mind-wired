@@ -76,8 +76,20 @@ class EventBus {
     }
     callbackList.add(callback);
   }
+  off(eventObj, callback) {
+    const callbackList = this.callbacks.get(eventObj);
+    if (!callbackList) {
+      return;
+    }
+    const idx = callbackList.findIndex((cb) => cb === callback);
+    callbackList.splice(idx, 1);
+  }
+  /**
+   * used to register client-side callback
+   * @param {string} eventName like "valid.event.path" format
+   * @param {function} callback
+   */
   listen(eventName, callback) {
-    // used to client-side callback
     const event = parseEvent(eventName);
     this.on(event, callback);
   }

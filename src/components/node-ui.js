@@ -28,6 +28,7 @@ class NodeUI {
     this.parent = null;
     this.$style = new EdgeStyle(this);
     this.folding = false;
+    this.$dim = null;
   }
   get model() {
     return { ...this.config.model };
@@ -53,6 +54,25 @@ class NodeUI {
   }
   get childNodes() {
     return [...this.subs];
+  }
+  dimension() {
+    const scale = this.sharedConfig.scale;
+    const el = this.$bodyEl;
+    const offset = this.offset();
+    offset.x *= scale;
+    offset.y *= scale;
+    const w = (el.offsetWidth * scale) / 2;
+    const h = (el.offsetHeight * scale) / 2;
+    return (this.$dim = {
+      x: offset.x - w,
+      y: offset.y - h,
+      width: 2 * w,
+      height: 2 * h,
+      cx: offset.x,
+      cy: offset.y,
+      r: offset.x + w,
+      b: offset.y + h,
+    });
   }
   level() {
     return this.isRoot() ? 0 : this.parent.level() + 1;
@@ -82,31 +102,47 @@ class NodeUI {
     }
     return false;
   }
-  /**
-   *
-   * @param {string} title
-   * @returns true if title changed, false otherise
-   */
-  setTitle(title) {
-    const { model } = this.config;
-    const changed = model.text !== title;
-    model.text = title;
-    this.repaint();
-    return changed;
-  }
   updateModel(callback) {
     const { model } = this.config;
     if (callback(model)) {
+      this.$dim = null;
       this.repaint();
       this.sharedConfig.emit(EVENT.NODE.UPDATED, [this]);
     }
   }
   offset(scale) {
-    scale = scale || 1.0;
-    const offset = this.isRoot()
-      ? { x: -this.x, y: -this.y }
-      : this.parent.offset();
-    return { x: (this.x + offset.x) * scale, y: (this.y + offset.y) * scale };
+    scale = 1; // this.sharedConfig.scale;
+    let ref = this;
+    const p = { x: 0, y: 0 };
+    while (ref) {
+      const dir = 1; // ref.isRoot() ? -1 : 1;
+      p.x += dir * ref.x;
+      p.y += dir * ref.y;
+      ref = ref.parent;
+    }
+    p.x *= scale;
+    p.y *= scale;
+    return p;
+    // const offset = this.isRoot()
+    //   ? { x: -this.x, y: -this.y }
+    //   : this.parent.offset();
+    // return { x: (this.x + offset.x) * scale, y: (this.y + offset.y) * scale };
+  }
+  setOffset({ x, y }) {
+    if (this.isRoot()) {
+      return;
+    }
+    const poff = this.parent.offset();
+    this.setPos(x - poff.x, y - poff.y);
+  }
+  /**
+   * relative pos from the direct parent
+   * @returns (x, y) from the direct parent
+   */
+  getPos() {
+    const dir = 1;
+    // this.isRoot() ? -1 : 1;
+    return { x: dir * this.x, y: dir * this.y };
   }
   setPos(x, y) {
     this.config.view.x = x;

@@ -29,6 +29,7 @@ const viewportDndHandler = (canvasUI) => ({
     const { dx, dy } = e;
     const nodeId = canvasUI.dndContext.getData("nodeId");
     const { scale } = canvasUI.config;
+    // const scale = 1;
     canvasUI.config.emit(EVENT.DRAG.NODE, {
       nodeId,
       before: false,
@@ -44,6 +45,7 @@ const viewportDndHandler = (canvasUI) => ({
     // canvasUI.shiftBy(dx, dy);
     const nodeId = canvasUI.dndContext.getData("nodeId");
     const { scale } = canvasUI.config;
+    // const scale = 1;
     canvasUI.config.emit(EVENT.DRAG.NODE, {
       nodeId,
       before: false,

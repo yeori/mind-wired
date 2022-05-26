@@ -108,8 +108,10 @@ class EdgeUI {
   filterEdges(predicate) {
     return this.edges.filter(predicate);
   }
-  repaint() {
-    this.canvas.clear();
+  repaint(clearCanvas = true) {
+    if (clearCanvas) {
+      this.canvas.clear();
+    }
     this.edges.forEach((e) => {
       const { src, dst } = e;
       const style = dst.$cachedStyle || new EdgeStyle(dst);

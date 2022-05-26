@@ -10,23 +10,23 @@ const valignOf = (node) => {
 };
 const renderUnderline = (canvas, node, rect, padding) => {
   const width = widthOf(node);
-  const { scale } = canvas;
+  // const { scale } = canvas;
   canvas.drawPath(
     [
       { x: rect.left - padding.hor, y: rect.bottom + padding.ver },
       { x: rect.right + padding.hor, y: rect.bottom + padding.ver },
     ],
-    { lineWidth: width * scale, strokeStyle: node.$style.color }
+    { lineWidth: width, strokeStyle: node.$style.color }
   );
 };
 const renderCurve = (canvas, srcNode, s, dstNode, e, dx) => {
-  const { scale } = canvas;
+  // const { scale } = canvas;
   const srcWidth = widthOf(srcNode);
   const dstWidth = widthOf(dstNode);
   const width = Math.min(srcWidth, dstWidth);
   const offset = Math.abs(srcWidth - dstWidth);
   s.y -= offset / 2;
-  const props = { lineWidth: width * scale, strokeStyle: dstNode.$style.color };
+  const props = { lineWidth: width, strokeStyle: dstNode.$style.color };
   canvas.drawBeizeCurve(s, e, {
     cpoints: [
       { x: s.x + dx / 2, y: s.y },
@@ -51,9 +51,11 @@ const renderByMustache = (canvas, srcNode, dstNode) => {
     /*
      * FIXME scale 적용은 offset() 메소드 안에서 처리되는게 좋아보임
      */
-    const offset = node.offset(scale);
+    const offset = node.offset(); // pure logical value
+    offset.x *= scale;
+    offset.y *= scale;
     const rect = dom.domRect(node.$bodyEl);
-    const { width, height } = rect;
+    const { width, height } = rect; // with scale applied
     offset.left = offset.x - width / 2;
     offset.right = offset.x + width / 2;
     offset.top = offset.y - height / 2;
@@ -62,7 +64,7 @@ const renderByMustache = (canvas, srcNode, dstNode) => {
     offset.height = height;
     return offset;
   });
-  const padding = { hor: 2, ver: 0 };
+  const padding = { hor: 0, ver: 0 };
 
   if (valignOf(srcNode) === "bottom") {
     padding.ver = 5;
