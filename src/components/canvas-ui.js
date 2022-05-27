@@ -287,11 +287,11 @@ class CanvasUI {
   drawVLines(xPoints, option) {
     const H = this.$viewport.offsetHeight;
     const ctx = this.getContext();
-    const offset = this.getHolderOffset();
-    ctx.strokeStyle = "#3bdda6";
-    ctx.lineWidth = 0.5;
-    ctx.setLineDash([4, 1]);
+    if (typeof option === "function") {
+      option(ctx);
+    }
     ctx.beginPath();
+    const offset = this.getHolderOffset();
     xPoints.forEach((x) => {
       ctx.moveTo(offset.x + x, 0);
       ctx.lineTo(offset.x + x, H);
@@ -303,11 +303,11 @@ class CanvasUI {
   drawHLines(yPoints, option) {
     const W = this.$viewport.offsetWidth;
     const ctx = this.getContext();
-    const offset = this.getHolderOffset();
-    ctx.strokeStyle = "orange";
-    ctx.lineWidth = 0.5;
-    ctx.setLineDash([4, 1]);
+    if (typeof option === "function") {
+      option(ctx);
+    }
     ctx.beginPath();
+    const offset = this.getHolderOffset();
     yPoints.forEach((y) => {
       ctx.moveTo(0, offset.y + y);
       ctx.lineTo(W, offset.y + y);

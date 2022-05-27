@@ -109,7 +109,7 @@ class MindWired {
         this.draggingNodes.forEach(({ node }) => {
           repaintTree(this, node);
         });
-        this.edgeUI.repaint(false);
+        this.edgeUI.repaint(!this.config.snapEnabled);
       } else if (e.after) {
         this.alignmentUI.turnOff();
         this.edgeUI.repaint(true);

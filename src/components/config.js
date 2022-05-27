@@ -11,6 +11,12 @@ const DEFAULT_UI_CONFIG = {
     level: (level) => `level-${level}`,
   },
   offset: { x: 0, y: 0 },
+  snap: {
+    limit: 3,
+    width: 0.4,
+    dash: [6, 2],
+    color: { horizontal: "#2bc490", vertical: "orange" },
+  },
 };
 class Configuration {
   constructor({ el, ui }) {
@@ -26,6 +32,9 @@ class Configuration {
   }
   get scale() {
     return this.ui.scale;
+  }
+  get snapEnabled() {
+    return this.ui.snap.enabled;
   }
   getOffset() {
     const offset = this.ui.offset;
@@ -71,9 +80,29 @@ class Configuration {
   }
 }
 
+const normalizeSnap = (ui) => {
+  const { snap } = ui;
+  if (snap === false) {
+    ui.snap = Object.assign({}, DEFAULT_UI_CONFIG.snap);
+    ui.snap.enabled = false;
+  } else {
+    if (dom.valid.string(snap.color)) {
+      snap.color = {
+        horizontal: snap.color.trim(),
+        vertical: snap.color.trim(),
+      };
+    }
+    snap.limit = snap.limit || DEFAULT_UI_CONFIG.snap.limit;
+    snap.width = snap.width || DEFAULT_UI_CONFIG.snap.width;
+    snap.dash = snap.dash || DEFAULT_UI_CONFIG.snap.dash;
+    snap.enabled = true;
+  }
+};
 Configuration.parse = (config) => {
   const cssSelector = config.el;
   const ui = Object.assign({}, DEFAULT_UI_CONFIG, config.ui);
+
+  normalizeSnap(ui);
 
   const el = document.querySelector(cssSelector);
   return new Configuration({ el, ui });
