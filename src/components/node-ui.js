@@ -123,10 +123,6 @@ class NodeUI {
     p.x *= scale;
     p.y *= scale;
     return p;
-    // const offset = this.isRoot()
-    //   ? { x: -this.x, y: -this.y }
-    //   : this.parent.offset();
-    // return { x: (this.x + offset.x) * scale, y: (this.y + offset.y) * scale };
   }
   setOffset({ x, y }) {
     if (this.isRoot()) {

@@ -7,7 +7,7 @@ import Direction from "./direction";
 import selection from "./selection";
 import { NodeEditing } from "./editing";
 import nodeRenderer from "./node";
-import AligmentUI from "./alignment/alignment-ui";
+import AlignmentUI from "./alignment/alignment-ui";
 import { dom } from "../service";
 
 const exportTree = (config, nodeUI) => {
@@ -79,7 +79,7 @@ class MindWired {
 
     this.nodeSelectionModel = selection.createSelectionModel("node", config);
     this.nodeEditor = new NodeEditing(config);
-    this.aligmentUI = new AligmentUI(config);
+    this.alignmentUI = new AlignmentUI(config);
 
     this.config.listen(EVENT.DRAG.VIEWPORT, (baseOffset) => {
       this.config.setOffset(baseOffset);
@@ -93,22 +93,25 @@ class MindWired {
       if (e.before) {
         const nodes = this.nodeSelectionModel.getNodes();
         this.draggingNodes = capatureDragData(nodes);
-        this.aligmentUI.turnOn(this.rootUI, this.draggingNodes[0]?.node);
+        this.alignmentUI.turnOn(this.rootUI, nodes);
       } else if (e.dragging) {
         this.draggingNodes.forEach((dragging) => {
           const { node, dir, pos } = dragging;
           dir.capture();
           node.setPos(e.x + pos.x, e.y + pos.y);
-          layoutManager.layout(node, { dir, layoutManager });
           // repaintTree(this, node);
         });
-        this.aligmentUI.repaint();
+        this.alignmentUI.doAlign();
+        this.draggingNodes.forEach((dragging) => {
+          const { node, dir } = dragging;
+          layoutManager.layout(node, { dir, layoutManager });
+        });
         this.draggingNodes.forEach(({ node }) => {
           repaintTree(this, node);
         });
         this.edgeUI.repaint(false);
       } else if (e.after) {
-        this.aligmentUI.turnOff();
+        this.alignmentUI.turnOff();
         this.edgeUI.repaint(true);
       }
     });

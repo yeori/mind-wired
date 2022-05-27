@@ -1,17 +1,21 @@
-const captureSnapLines = (targetNode, node, hSnaps, vSnaps, scale) => {
-  if (node === targetNode) {
+const captureSnapLines = (nodes, node, hSnaps, vSnaps) => {
+  if (nodes.includes(node)) {
     return;
   }
   const dim = node.dimension();
+  // top, center, bottom
   hSnaps.add(dim.y);
+  hSnaps.add(dim.cy);
   hSnaps.add(dim.b);
+  // left, center, right
   vSnaps.add(dim.x);
+  vSnaps.add(dim.cx);
   vSnaps.add(dim.r);
   if (node.isFolded()) {
     return;
   }
   node.subs.forEach((child) => {
-    captureSnapLines(targetNode, child, hSnaps, vSnaps);
+    captureSnapLines(nodes, child, hSnaps, vSnaps);
   });
 };
 const abs = (a) => Math.abs(a);
@@ -22,6 +26,12 @@ const adj = (points, dim, dir) => {
     return abs(a) <= abs(b) ? adj : p;
   }, points[0]);
 };
+const minGapIndex = (gaps) =>
+  gaps.reduce(
+    (minIdx, gap, idx) => (abs(gap) < abs(gaps[minIdx]) ? idx : minIdx),
+    0
+  );
+
 export default class AligmentUI {
   /**
    *
@@ -30,66 +40,78 @@ export default class AligmentUI {
   constructor(config) {
     this.config = config;
   }
-  turnOn(rootNode, targetNode) {
-    if (!targetNode) {
+  turnOn(rootNode, nodes) {
+    if (!nodes || nodes.length === 0) {
       return;
     }
     const vLines = new Set(); // [x in (x,0), (x,H)]
     const hLines = new Set(); // [y in (0,y), (W,y)]
-    captureSnapLines(targetNode, rootNode, hLines, vLines, this.config.scale);
-    // this.node = node;
+    this.activeNodes = [...nodes];
+    captureSnapLines(nodes, rootNode, hLines, vLines, this.config.scale);
     this.snaps = { hLines, vLines };
-    this.node = targetNode;
   }
   turnOff() {
     this.callback = null;
     this.snaps = null;
     this.node = null;
   }
-  repaint() {
-    if (!this.node) {
+  doAlign() {
+    if (!this.snaps || this.snaps.length === 0) {
       return;
     }
+    const node = this.activeNodes[0];
+    const limit = 3;
+    const snap = 3;
     const canvas = this.config.getCanvas();
-    const { scale } = canvas;
     canvas.clear();
 
-    const dim = this.node.dimension();
+    const dim = node.dimension();
     const vLines = [...this.snaps.vLines.values()].filter(
-      (x) => Math.abs(dim.x - x) <= 10 || Math.abs(dim.r - x) <= 10
+      (x) =>
+        Math.abs(dim.x - x) <= limit ||
+        Math.abs(dim.r - x) <= limit ||
+        abs(dim.cx - x) <= limit
     );
     const hLines = [...this.snaps.hLines.values()].filter(
-      (y) => Math.abs(dim.y - y) <= 10 || Math.abs(dim.b - y) <= 10
+      (y) =>
+        Math.abs(dim.y - y) <= limit ||
+        Math.abs(dim.b - y) <= limit ||
+        Math.abs(dim.cy - y) <= limit
     );
 
-    // relative pos from the direct parent
-    const pos = this.node.offset();
+    const pos = node.offset();
+    const delta = { x: 0, y: 0 };
     if (vLines.length > 0) {
       const adjL = adj(vLines, dim, "x");
+      const adjC = adj(vLines, dim, "cx");
       const adjR = adj(vLines, dim, "r");
-
-      const [gLeft, gRight] = [dim.x - adjL, dim.r - adjR];
-      const gap = abs(gLeft) <= abs(gRight) ? gLeft : gRight;
-      if (abs(gap) <= 5) {
-        // this.node.setPos(pos.x + gap, pos.y);
-        pos.x -= gap / scale;
+      const gaps = [adjC - dim.cx, adjL - dim.x, adjR - dim.r];
+      const idx = minGapIndex(gaps);
+      if (abs(gaps[idx]) <= snap) {
+        delta.x = gaps[idx];
       }
-      canvas.drawVLines(vLines, {});
+      canvas.drawVLines([adjL, adjC, adjR]);
     }
 
     if (hLines.length > 0) {
       const adjT = adj(hLines, dim, "y");
+      const adjC = adj(hLines, dim, "cy");
       const adjB = adj(hLines, dim, "b");
 
-      const [gTop, gBottom] = [dim.y - adjT, dim.b - adjB];
-      const gap = abs(gTop) <= abs(gBottom) ? gTop : gBottom;
-      if (abs(gap) <= 5) {
-        // this.node.setPos(pos.x + gap, pos.y);
-        pos.y -= gap / scale;
+      const gaps = [adjC - dim.cy, adjT - dim.y, adjB - dim.b];
+      const idx = minGapIndex(gaps);
+      if (abs(gaps[idx]) <= snap) {
+        delta.y = gaps[idx];
       }
-      canvas.drawHLines(hLines, {});
+      canvas.drawHLines([adjT, adjC, adjB], {});
     }
-    // this.node.setPos(pos.x, pos.y);
-    this.node.setOffset(pos);
+
+    this.activeNodes.forEach((each) => {
+      const off = each.offset();
+      off.x += delta.x;
+      off.y += delta.y;
+      each.setOffset(off);
+    });
+    // node.setOffset(pos);
   }
 }
