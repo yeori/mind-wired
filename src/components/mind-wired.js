@@ -10,6 +10,32 @@ import nodeRenderer from "./node";
 import AligmentUI from "./alignment/alignment-ui";
 import { dom } from "../service";
 
+const exportTree = (config, nodeUI) => {
+  const v = nodeUI.config.view;
+  const view = {
+    x: v.x,
+    y: v.y,
+  };
+  if (nodeUI.isRoot()) {
+    view.x = config.ui.offset.x;
+    view.y = config.ui.offset.y;
+  }
+  if (v.layout) {
+    view.layout = v.layout;
+  }
+  if (v.edge) {
+    view.edge = v.edge;
+  }
+  const subs = [];
+  nodeUI.subs.forEach((childUI) => {
+    subs.push(exportTree(config, childUI));
+  });
+  return {
+    model: nodeUI.model,
+    view,
+    subs,
+  };
+};
 const repaintTree = (mwd, node) => {
   node.repaint();
   node.subs.forEach((childNode) => {
@@ -104,6 +130,10 @@ class MindWired {
   nodes(elems) {
     this.rootUI = NodeUI.build(elems, this.config);
     this.edgeUI = new EdgeUI(this.config, this.rootUI, this.canvas);
+    this.config.ui.offset.x = this.rootUI.config.view.x;
+    this.config.ui.offset.y = this.rootUI.config.view.y;
+    this.rootUI.config.view.x = 0;
+    this.rootUI.config.view.y = 0;
     this.repaint();
     return this;
   }
@@ -193,6 +223,10 @@ class MindWired {
   listen(event, callback) {
     this.config.ebus.listen(event, callback);
     return this;
+  }
+  export(type) {
+    const node = exportTree(this.config, this.rootUI);
+    return Promise.resolve(JSON.stringify(node));
   }
 }
 
