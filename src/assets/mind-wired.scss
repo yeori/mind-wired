@@ -41,6 +41,12 @@
           outline: 1px solid green;
         }
       }
+      .mwd-subs {
+        position: absolute;
+        width: 0;
+        height: 0;
+        z-index: 0;
+      }
       .mwd-body {
         position: absolute;
         top: 50%;
@@ -76,6 +82,7 @@
         cursor: pointer;
         width: 0;
         height: 0;
+        z-index: 5;
       }
     }
   }

@@ -15,6 +15,7 @@ const template = {
   </div>`,
   node: `<div class="mwd-node">
     <div class="mwd-body" tabIndex="0"></div>
+    <div class="mwd-subs"></div>
     <div class="mwd-node-ctrl"></div>
   </div>`,
   nodeControl: `<div data-cmd="set-para" style="background-image: url(${iconSetPara});"></div>`,
@@ -58,7 +59,12 @@ const registerElement = (canvasUI, nodeUI) => {
   nodeRenderer.install(nodeUI);
 
   const placeHolder = canvasUI.elemOf(".mwd-nodes");
-  placeHolder.append($el);
+  if (nodeUI.isRoot()) {
+    placeHolder.append($el);
+  } else {
+    const $subs = dom.findOne(nodeUI.parent.$el, ".mwd-subs");
+    $subs.append($el);
+  }
   // apply uuid for node instance
   $el.dataset.uid = nodeUI.uid;
   return nodeUI.$el;
@@ -334,6 +340,12 @@ class CanvasUI {
       transform: `scale(${scale})`,
     });
   }
+  moveNode(nodeUI) {
+    // moveNode
+    const { parent } = nodeUI;
+    const $subs = dom.findOne(parent.$el, ".mwd-subs");
+    $subs.append(nodeUI.$el);
+  }
   drawNode(nodeUI) {
     if (!nodeUI.$el) {
       registerElement(this, nodeUI);
@@ -347,7 +359,7 @@ class CanvasUI {
     const nodeRenderer = renderingContext.getRenderer(type);
     nodeRenderer.render(nodeUI);
 
-    const ctrlEl = dom.findOne(nodeEl, ".mwd-node-ctrl");
+    const ctrlEl = dom.findOne(nodeEl, ":scope >.mwd-node-ctrl");
     ctrlEl.innerHTML = "";
     if (!nodeUI.isRoot() && nodeUI.isSelected()) {
       const rect = dom.domRect(nodeUI.$bodyEl);

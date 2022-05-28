@@ -16,7 +16,7 @@ const parseSubs = (nodeUi) => {
 let uid = 100;
 let zIndex = 1;
 class NodeUI {
-  constructor(config, sharedConfig) {
+  constructor(config, sharedConfig, parentNode) {
     this.config = config;
     this.sharedConfig = sharedConfig;
     this.$el = null;
@@ -25,7 +25,7 @@ class NodeUI {
     this.uid = `uuid-${uid++}`;
     this.zIndex = 0;
     this.subs = parseSubs(this);
-    this.parent = null;
+    this.parent = parentNode;
     this.$style = new EdgeStyle(this);
     this.folding = false;
     this.$dim = null;
@@ -143,6 +143,7 @@ class NodeUI {
   setPos(x, y) {
     this.config.view.x = x;
     this.config.view.y = y;
+    this.repaint();
   }
   isEditingState() {
     return this.editing;
@@ -180,11 +181,13 @@ class NodeUI {
    */
   addChild(childUI) {
     const prevParent = childUI.parent;
-    if (prevParent) {
+    if (prevParent && prevParent !== this) {
       prevParent.removeChild(childUI);
     }
     childUI.parent = this;
     this.subs.push(childUI);
+    const canvasUI = this.sharedConfig.getCanvas();
+    canvasUI.moveNode(childUI);
     return prevParent;
   }
   removeChild(childUI) {
@@ -230,8 +233,8 @@ class NodeUI {
     const { $el } = this;
     const body = $el.querySelector(".mwd-body");
 
-    const offset = this.offset();
-    dom.css($el, { top: offset.y, left: offset.x, zIndex: this.zIndex });
+    const pos = this.getPos();
+    dom.css($el, { top: pos.y, left: pos.x, zIndex: this.zIndex });
 
     const methodName = this.isSelected() ? "add" : "remove";
     const className = this.sharedConfig.activeClassName("node");
