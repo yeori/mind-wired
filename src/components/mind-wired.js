@@ -36,11 +36,13 @@ const exportTree = (config, nodeUI) => {
     subs,
   };
 };
-const repaintTree = (mwd, node) => {
+const repaintTree = (mwd, node, propagate = true) => {
   node.repaint();
-  node.subs.forEach((childNode) => {
-    repaintTree(mwd, childNode);
-  });
+  if (propagate) {
+    node.subs.forEach((childNode) => {
+      repaintTree(mwd, childNode);
+    });
+  }
 };
 const updateLevelClass = (nodeUI, method, config) => {
   const className = config.nodeLevelClassName(nodeUI);
@@ -89,28 +91,33 @@ class MindWired {
     });
     this.draggingNodes = null;
     this.config.listen(EVENT.DRAG.NODE, (e) => {
-      const { scale } = this.canvas;
-      if (e.before) {
+      if (e.state === "READY") {
         const nodes = this.nodeSelectionModel.getNodes();
-        this.draggingNodes = capatureDragData(nodes);
-        this.alignmentUI.turnOn(this.rootUI, nodes);
-      } else if (e.dragging) {
+        /*
+         * shift@click on nodes redirects dragging to their children
+         */
+        const dragTargets =
+          e.target === "all" ? nodes : nodes.flatMap((node) => node.subs);
+        this.draggingNodes = capatureDragData(dragTargets);
+        this.alignmentUI.turnOn(this.rootUI, dragTargets);
+      } else if (e.state === "DRAG") {
+        const acceleration = e.target === "all" ? 1 : 2.5;
         this.draggingNodes.forEach((dragging) => {
           const { node, dir, pos } = dragging;
           dir.capture();
-          node.setPos(e.x + pos.x, e.y + pos.y);
-          // repaintTree(this, node);
+          node.setPos(
+            acceleration * e.x + pos.x,
+            acceleration * e.y + pos.y,
+            false
+          );
         });
         this.alignmentUI.doAlign();
         this.draggingNodes.forEach((dragging) => {
           const { node, dir } = dragging;
           layoutManager.layout(node, { dir, layoutManager });
         });
-        this.draggingNodes.forEach(({ node }) => {
-          repaintTree(this, node);
-        });
-        this.edgeUI.repaint(!this.config.snapEnabled);
-      } else if (e.after) {
+        this.edgeUI.repaint(!this.config.snapEnabled, false);
+      } else if (e.state === "DONE") {
         this.alignmentUI.turnOff();
         this.edgeUI.repaint(true);
       }
@@ -154,7 +161,7 @@ class MindWired {
         y: 0,
       };
     }
-    const nodeUI = new NodeUI(data, this.config);
+    const nodeUI = new NodeUI(data, this.config, parentNode);
     this.canvas.regsiterNode(nodeUI);
     parentNode.addChild(nodeUI);
     if (nodeData.siblingNode) {

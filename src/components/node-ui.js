@@ -140,10 +140,12 @@ class NodeUI {
     // this.isRoot() ? -1 : 1;
     return { x: dir * this.x, y: dir * this.y };
   }
-  setPos(x, y) {
+  setPos(x, y, update = true) {
     this.config.view.x = x;
     this.config.view.y = y;
-    this.repaint();
+    if (update) {
+      this.repaint();
+    }
   }
   isEditingState() {
     return this.editing;

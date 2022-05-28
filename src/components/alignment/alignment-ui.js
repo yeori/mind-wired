@@ -80,7 +80,6 @@ export default class AligmentUI {
         Math.abs(dim.cy - y) <= limit
     );
 
-    const pos = node.offset();
     const delta = { x: 0, y: 0 };
     if (vLines.length > 0) {
       const adjL = adj(vLines, dim, "x");

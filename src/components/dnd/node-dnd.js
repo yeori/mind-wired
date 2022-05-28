@@ -4,7 +4,7 @@ import { EVENT } from "../../service/event-bus";
  * handles viewport dragging
  */
 
-const viewportDndHandler = (canvasUI) => ({
+const nodeDndHandler = (canvasUI) => ({
   beforeDrag: (e) => {
     const { target } = e.originalEvent;
     const nodeEl = dom.closest(target, ".mwd-node");
@@ -18,9 +18,8 @@ const viewportDndHandler = (canvasUI) => ({
     });
     canvasUI.config.emit(EVENT.DRAG.NODE, {
       nodeId,
-      before: true,
-      dragging: false,
-      after: false,
+      state: "READY",
+      target: e.originalEvent.shiftKey ? "children" : "all",
       x: 0,
       y: 0,
     });
@@ -32,9 +31,8 @@ const viewportDndHandler = (canvasUI) => ({
     // const scale = 1;
     canvasUI.config.emit(EVENT.DRAG.NODE, {
       nodeId,
-      before: false,
-      dragging: true,
-      after: false,
+      state: "DRAG",
+      target: e.originalEvent.shiftKey ? "children" : "all",
       x: dx / scale,
       y: dy / scale,
     });
@@ -48,17 +46,12 @@ const viewportDndHandler = (canvasUI) => ({
     // const scale = 1;
     canvasUI.config.emit(EVENT.DRAG.NODE, {
       nodeId,
-      before: false,
-      dragging: false,
-      after: true,
+      state: "DONE",
+      target: e.originalEvent.shiftKey ? "children" : "all",
       x: dx / scale,
       y: dy / scale,
     });
-    // const { shiftKey } = e.originalEvent;
-    // const mrd = canvasUI.config.mindWired();
-    // const node = mrd.findNode((node) => node.uid === nodeId);
-    // canvasUI.config.emit(EVENT.SELECTION.NODE, { node, append: shiftKey });
   },
 });
 
-export default viewportDndHandler;
+export default nodeDndHandler;
