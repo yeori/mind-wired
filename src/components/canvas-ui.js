@@ -401,6 +401,9 @@ class CanvasUI {
     $subs.append(nodeUI.$el);
   }
   drawSelection(nodes) {
+    if (!nodes || nodes.length === 0) {
+      return;
+    }
     this.hideSelection();
     const rects = nodes.map((n) => new NodeRect(n, this.scale));
     this.selectionArea = rects.reduce((acc, rect) => acc.merge(rect), rects[0]);

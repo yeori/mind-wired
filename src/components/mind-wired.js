@@ -229,12 +229,20 @@ class MindWired {
     targetNode.config.view.edge = edgeSpec;
     this.repaint(nodeUI);
   }
+  setScale(scale) {
+    this.config.ui.scale = scale;
+    console.log(this.config.ui.scale);
+    this.repaint();
+  }
   repaint(nodeUI) {
     nodeUI = nodeUI || this.rootUI;
+    repaintTree(this, nodeUI);
     this.canvas.repaintNodeHolder();
     layoutManager.layout(nodeUI, { dir: null });
-    repaintTree(this, nodeUI);
     this.edgeUI.repaint();
+
+    this.canvas.hideSelection();
+    this.canvas.drawSelection(this.getSelectedNodes());
   }
   listen(event, callback) {
     this.config.ebus.listen(event, callback);
