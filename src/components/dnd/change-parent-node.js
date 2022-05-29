@@ -3,45 +3,37 @@ import { dom } from "../../service";
 const changeParentDndHandler = (canvasUI) => ({
   beforeDrag: (e) => {
     const { target } = e.originalEvent;
-    const nodeEl = dom.closest(target, ".mwd-node");
     const iconEl = target;
     const mrd = canvasUI.config.mindWired();
-    const node = mrd.findNode((node) => node.uid === nodeEl.dataset.uid);
-    const rect = dom.domRect(node.$bodyEl);
     const { scale } = canvasUI.config;
-    canvasUI.dndContext.capture("node", node);
     canvasUI.dndContext.capture("iconEl", iconEl);
-    canvasUI.dndContext.capture("iconY", rect.height / scale / 2);
   },
   dragging: (e) => {
     const { dx, dy } = e;
     const iconEl = canvasUI.dndContext.getData("iconEl");
-    const iconY = canvasUI.dndContext.getData("iconY");
-    const { scale } = canvasUI.config;
     dom.css(iconEl, {
-      transform: `translate(calc(-50% + ${dx / scale}px), ${
-        iconY + dy / scale
-      }px)`,
+      transform: `translate(calc(-50% + ${dx}px), ${dy}px)`,
     });
   },
   afterDrag: () => {
     const iconEl = canvasUI.dndContext.getData("iconEl");
-    const iconY = canvasUI.dndContext.getData("iconY");
-    const { scale } = canvasUI.config;
     const rect = dom.domRect(iconEl);
     const cx = rect.x + rect.width / 2;
     const cy = rect.y + rect.height / 2;
     dom.css(iconEl, {
-      transform: `translate(-50%, ${iconY}px)`,
+      transform: `translate(-50%, 0)`,
     });
     const newParentNode = canvasUI.findNodeAt(cx, cy);
     if (newParentNode) {
-      const activeNode = canvasUI.dndContext.getData("node");
-      if (newParentNode.isDescendantOf(activeNode)) {
+      const mrd = canvasUI.config.mindWired();
+      const nodes = mrd.getSelectedNodes();
+      if (
+        nodes.filter((child) => newParentNode.isDescendantOf(child)).length > 0
+      ) {
         // dropping parent on child
       } else {
         const mwd = canvasUI.config.mindWired();
-        mwd.moveNodes(newParentNode, [activeNode]);
+        mwd.moveNodes(newParentNode, nodes);
       }
     }
   },

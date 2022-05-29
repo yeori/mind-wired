@@ -100,6 +100,7 @@ class MindWired {
           e.target === "all" ? nodes : nodes.flatMap((node) => node.subs);
         this.draggingNodes = capatureDragData(dragTargets);
         this.alignmentUI.turnOn(this.rootUI, dragTargets);
+        this.canvas.drawSelection(nodes);
       } else if (e.state === "DRAG") {
         const acceleration = e.target === "all" ? 1 : 2.5;
         this.draggingNodes.forEach((dragging) => {
@@ -116,6 +117,7 @@ class MindWired {
           const { node, dir } = dragging;
           layoutManager.layout(node, { dir, layoutManager });
         });
+        this.canvas.drawSelection(this.nodeSelectionModel.getNodes());
         this.edgeUI.repaint(!this.config.snapEnabled, false);
       } else if (e.state === "DONE") {
         this.alignmentUI.turnOff();
@@ -182,7 +184,8 @@ class MindWired {
       this.nodeEditor.edit(nodeUI);
     }
   }
-  moveNodes(parentNode, childNodes) {
+  moveNodes(parentNode, nodes) {
+    const childNodes = nodes.filter((node) => node.parent !== parentNode);
     childNodes.forEach((child) => {
       updateLevelClass(child, "remove", this.config);
       const prevParent = parentNode.addChild(child);
@@ -192,6 +195,7 @@ class MindWired {
     });
     parentNode.setFolding(false);
     repaintTree(this, parentNode);
+    this.canvas.drawSelection(nodes);
   }
   deleteNodes(nodes) {
     nodes.forEach((node) => {

@@ -48,9 +48,6 @@ const renderCurve = (canvas, srcNode, s, dstNode, e, dx) => {
 const renderByMustache = (canvas, srcNode, dstNode) => {
   const { scale } = canvas;
   const [s, e] = [srcNode, dstNode].map((node) => {
-    /*
-     * FIXME scale 적용은 offset() 메소드 안에서 처리되는게 좋아보임
-     */
     const offset = node.offset(); // pure logical value
     offset.x *= scale;
     offset.y *= scale;

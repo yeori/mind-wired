@@ -45,6 +45,8 @@ class NodeSelectionModel {
   constructor(config) {
     this.config = config;
     this.nodeMap = new Map(); // [uid:strng, NodeUI]
+
+    const canvasUI = this.config.getCanvas();
     this.config.listen(EVENT.SELECTION.NODE, ({ node, append }) => {
       const selected = this.nodeMap.has(node.uid);
       if (append) {
@@ -59,9 +61,9 @@ class NodeSelectionModel {
     });
     this.config.listen(EVENT.VIEWPORT.CLICKED, () => {
       clearSelection(this.nodeMap);
+      canvasUI.hideSelection();
     });
 
-    const canvasUI = this.config.getCanvas();
     dom.event.keyup(canvasUI.$viewport, (e) => {
       if (this.isEmpty()) {
         return;

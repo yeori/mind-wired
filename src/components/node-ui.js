@@ -110,8 +110,7 @@ class NodeUI {
       this.sharedConfig.emit(EVENT.NODE.UPDATED, [this]);
     }
   }
-  offset(scale) {
-    scale = 1; // this.sharedConfig.scale;
+  offset() {
     let ref = this;
     const p = { x: 0, y: 0 };
     while (ref) {
@@ -120,8 +119,6 @@ class NodeUI {
       p.y += dir * ref.y;
       ref = ref.parent;
     }
-    p.x *= scale;
-    p.y *= scale;
     return p;
   }
   setOffset({ x, y }) {

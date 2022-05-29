@@ -11,6 +11,7 @@ import geom from "../service/geom";
 const template = {
   viewport: `<div data-mind-wired-viewport>
     <canvas></canvas>
+    <div class="mwd-active-area"><div class="ctrl-icon" data-cmd="set-para" style="display:none; background-image: url(${iconSetPara});"></div></div>
     <div class="mwd-nodes"></div>
   </div>`,
   node: `<div class="mwd-node">
@@ -20,8 +21,61 @@ const template = {
   </div>`,
   nodeControl: `<div data-cmd="set-para" style="background-image: url(${iconSetPara});"></div>`,
   foldingControl: `<div class="ctrl-icon" data-cmd="unfolding" style="background-image: url(${iconfolding});"></div>`,
+  selectionArea: `<div class="mwd-active-area'></div>`,
 };
 
+class NodeRect {
+  constructor(node, scale) {
+    const offset = node.offset();
+    offset.x *= scale;
+    offset.y *= scale;
+    const rect = dom.domRect(node.$bodyEl);
+    const { width, height } = rect;
+    this.top = offset.y - height / 2;
+    this.right = offset.x + width / 2;
+    this.bottom = offset.y + height / 2;
+    this.left = offset.x - width / 2;
+    this.width = width;
+    this.height = height;
+    this.cx = offset.x;
+    this.cy = offset.y;
+    this.icon = null;
+  }
+  merge(other) {
+    this.top = Math.min(this.top, other.top);
+    this.right = Math.max(this.right, other.right);
+    this.bottom = Math.max(this.bottom, other.bottom);
+    this.left = Math.min(this.left, other.left);
+    this.width = this.right - this.left;
+    this.height = this.bottom - this.top;
+    this.cx = this.width / 2;
+    this.cy = this.height / 2;
+    return this;
+  }
+  draw(canvas) {
+    const offset = canvas.getHolderOffset();
+
+    const el = dom.findOne(canvas.$viewport, ".mwd-active-area");
+    dom.css(el, {
+      left: offset.x + this.left - 5,
+      top: offset.y + this.top - 5,
+      width: this.width + 10,
+      height: this.height + 10,
+    });
+    const ctrl = dom.findOne(el, "div");
+    dom.css(ctrl, {
+      display: "",
+      width: 24 / Math.max(canvas.scale, 1),
+      height: 24 / Math.max(canvas.scale, 1),
+    });
+  }
+  clear(canvas) {
+    const el = dom.findOne(canvas.$viewport, ".mwd-active-area");
+    dom.css(el, { top: -1, left: -1, width: 0, height: 0 });
+    const ctrl = dom.findOne(el, "div");
+    dom.css(ctrl, { display: "none" });
+  }
+}
 const installCanvasElem = (canvasUI) => {
   const { el, ui } = canvasUI.config;
   const width = ui.width || 600;
@@ -35,8 +89,12 @@ const installCanvasElem = (canvasUI) => {
   dom.css(viewport, { width, height });
 
   const canvas = viewport.querySelector("canvas");
-  dom.attr(canvas, "width", width);
-  dom.attr(canvas, "height", height);
+  dom.css(canvas, { width, height });
+
+  const scaledWidth = width * window.devicePixelRatio;
+  const scaledHeight = height * window.devicePixelRatio;
+  dom.attr(canvas, "width", scaledWidth);
+  dom.attr(canvas, "height", scaledHeight);
 
   return viewport;
 };
@@ -45,7 +103,7 @@ const captureContext2D = (canvasUI) => {
   const { offsetWidth, offsetHeight } = $viewport;
   dom.attr($canvas, "width", offsetWidth, true);
   dom.attr($canvas, "height", offsetHeight, true);
-  canvasUI.$ctx = $canvas.getContext("2d");
+  canvasUI.$ctx = $canvas.getContext("2d", { alpha: false });
   config.emit(EVENT.VIEWPORT.RESIZED);
 };
 const registerElement = (canvasUI, nodeUI) => {
@@ -166,6 +224,7 @@ class CanvasUI {
     };
     this.resizeObserver = new ResizeObserver(resizer);
     this.resizeObserver.observe(this.$viewport);
+    this.selectionArea = null;
   }
   get $canvas() {
     return this.$viewport.querySelector("canvas");
@@ -253,11 +312,6 @@ class CanvasUI {
       const val = option.props[key];
       ctx[key] = val;
     });
-    // ctx.setLineDash([3]);
-    // ctx.shadowColor = "#0000004d";
-    // ctx.shadowOffsetX = 1;
-    // ctx.shadowOffsetY = 2;
-    // const curve = option.path2D;
     ctx.beginPath();
     ctx.moveTo(offset.x + s.x, offset.y + s.y);
     ctx.bezierCurveTo(
@@ -339,12 +393,27 @@ class CanvasUI {
       left: `calc(50% + ${baseOffset.x}px)`,
       transform: `scale(${scale})`,
     });
+    if (this.selectionArea) {
+      this.selectionArea.draw(this);
+    }
   }
   moveNode(nodeUI) {
     // moveNode
     const { parent } = nodeUI;
     const $subs = dom.findOne(parent.$el, ".mwd-subs");
     $subs.append(nodeUI.$el);
+  }
+  drawSelection(nodes) {
+    this.hideSelection();
+    const rects = nodes.map((n) => new NodeRect(n, this.scale));
+    this.selectionArea = rects.reduce((acc, rect) => acc.merge(rect), rects[0]);
+    this.selectionArea.draw(this);
+  }
+  hideSelection() {
+    if (this.selectionArea) {
+      this.selectionArea.clear(this);
+      this.selectionArea = null;
+    }
   }
   drawNode(nodeUI) {
     if (!nodeUI.$el) {
@@ -358,26 +427,6 @@ class CanvasUI {
     const type = model.type || "text";
     const nodeRenderer = renderingContext.getRenderer(type);
     nodeRenderer.render(nodeUI);
-
-    const ctrlEl = dom.findOne(nodeEl, ":scope >.mwd-node-ctrl");
-    ctrlEl.innerHTML = "";
-    if (!nodeUI.isRoot() && nodeUI.isSelected()) {
-      const rect = dom.domRect(nodeUI.$bodyEl);
-      const { scale } = this.config;
-      // dom.css(ctrlEl, { top: rect.height / 2 });
-      const ctrl = dom.parseTemplate(template.nodeControl, {});
-      dom.css(ctrl, {
-        width: 24 / Math.max(scale, 1),
-        height: 24 / Math.max(scale, 1),
-        backgroundColor: "white",
-        borderRadius: "12px",
-        boxShadow: "1px 1px 4px #0000007d",
-        transform: `translate(-50%, ${rect.height / scale / 2}px)`,
-        backgroundSize: "contain",
-        backgroundPosition: "center",
-      });
-      ctrlEl.append(ctrl);
-    }
   }
   showNodeEditor(nodeUI, $editorEl) {
     const { uid } = nodeUI;

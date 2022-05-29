@@ -107,4 +107,29 @@
     background-repeat: no-repeat;
     cursor: pointer;
   }
+  .mwd-active-area {
+    position: absolute;
+    user-select: none;
+    width: 0px;
+    height: 0px;
+    background-color: #b3ddff6b;
+    top: 0px;
+    left: 0px;
+    // border: 1px dashed #226aa3;
+    border-radius: 4px;
+    > .ctrl-icon {
+      width: 24px;
+      height: 24px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: rgb(0 0 0 / 49%) 1px 1px 4px;
+      transform: translate(-50%, 0%);
+      background-size: contain;
+      background-position: center center;
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      z-index: 50;
+    }
+  }
 }
