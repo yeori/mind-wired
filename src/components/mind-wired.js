@@ -200,16 +200,18 @@ class MindWired {
   deleteNodes(nodes) {
     nodes.forEach((node) => {
       const { parent, childNodes } = node;
-      // 1. move grand-children to parent
-      childNodes.forEach((child) => {
-        // keep position
-        child.setPos(child.x + node.x, child.y + node.y);
-      });
-      this.moveNodes(parent, childNodes);
+      if (childNodes.length > 0) {
+        // 1. move grand-children to parent
+        childNodes.forEach((child) => {
+          // keep position
+          child.setPos(child.x + node.x, child.y + node.y);
+        });
+        this.moveNodes(parent, childNodes);
+      }
       // 2. delete node(which has no children)
       const deletedChild = node.parent.removeChild(node);
       if (deletedChild) {
-        this.canvas.unregisterNode(deletedChild);
+        this.canvas.unregistcerNode(deletedChild);
         this.config.emit(EVENT.NODE.DELETED, deletedChild);
       }
     });

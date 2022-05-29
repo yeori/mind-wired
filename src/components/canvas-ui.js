@@ -8,6 +8,7 @@ import iconSetPara from "../assets/icon-chng-parent.svg";
 import iconfolding from "../assets/icon-folded.svg";
 import geom from "../service/geom";
 
+const pixelRatio = window.devicePixelRatio;
 const template = {
   viewport: `<div data-mind-wired-viewport>
     <canvas></canvas>
@@ -88,22 +89,18 @@ const installCanvasElem = (canvasUI) => {
   dom.attr(viewport, "tabIndex", "0");
   dom.css(viewport, { width, height });
 
-  const canvas = viewport.querySelector("canvas");
-  dom.css(canvas, { width, height });
-
-  const scaledWidth = width * window.devicePixelRatio;
-  const scaledHeight = height * window.devicePixelRatio;
-  dom.attr(canvas, "width", scaledWidth);
-  dom.attr(canvas, "height", scaledHeight);
-
   return viewport;
 };
 const captureContext2D = (canvasUI) => {
   const { config, $viewport, $canvas } = canvasUI;
   const { offsetWidth, offsetHeight } = $viewport;
-  dom.attr($canvas, "width", offsetWidth, true);
-  dom.attr($canvas, "height", offsetHeight, true);
-  canvasUI.$ctx = $canvas.getContext("2d", { alpha: false });
+  dom.css($canvas, { width: offsetWidth, height: offsetHeight });
+  dom.attr($canvas, "width", pixelRatio * offsetWidth, true);
+  dom.attr($canvas, "height", pixelRatio * offsetHeight, true);
+  const ctx = $canvas.getContext("2d", { alpha: false });
+
+  canvasUI.$ctx = ctx;
+  canvasUI.$ctx.scale(pixelRatio, pixelRatio);
   config.emit(EVENT.VIEWPORT.RESIZED);
 };
 const registerElement = (canvasUI, nodeUI) => {
@@ -454,6 +451,7 @@ class CanvasUI {
   }
   unregisterNode(nodeUI) {
     unregisterElement(this, nodeUI);
+    this.hideSelection();
   }
   updateFoldingNodes(nodeUI) {
     const display = nodeUI.isFolded() ? "none" : "";

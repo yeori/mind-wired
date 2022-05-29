@@ -85,7 +85,7 @@ const renderByMustache = (canvas, srcNode, dstNode) => {
   const dx = max.x - min.x;
   const dy = max.y - min.y;
   const w = widthOf(srcNode);
-  if (srcNode.isRoot() && srcNode.firstChild() === dstNode) {
+  if (padding.ver > 0 && srcNode.isRoot() && srcNode.firstChild() === dstNode) {
     renderUnderline(canvas, srcNode, s, padding);
   }
   renderCurve(canvas, srcNode, s, dstNode, e, s === min ? dx : -dx);
