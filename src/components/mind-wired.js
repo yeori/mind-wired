@@ -9,6 +9,7 @@ import { NodeEditing } from "./editing";
 import nodeRenderer from "./node";
 import AlignmentUI from "./alignment/alignment-ui";
 import { dom } from "../service";
+import TreeDataSource from "./datasource/tree-ds";
 
 const exportTree = (config, nodeUI) => {
   const v = nodeUI.config.view;
@@ -140,12 +141,18 @@ class MindWired {
     return this.nodeEditor.isEditing();
   }
   nodes(elems) {
-    this.rootUI = NodeUI.build(elems, this.config);
+    if (elems instanceof TreeDataSource) {
+      const root = elems.build();
+      this.rootUI = NodeUI.build(root, this.config);
+    } else {
+      this.rootUI = NodeUI.build(elems, this.config);
+    }
     this.edgeUI = new EdgeUI(this.config, this.rootUI, this.canvas);
     this.config.ui.offset.x = this.rootUI.config.view.x;
     this.config.ui.offset.y = this.rootUI.config.view.y;
     this.rootUI.config.view.x = 0;
     this.rootUI.config.view.y = 0;
+
     this.repaint();
     return this;
   }
