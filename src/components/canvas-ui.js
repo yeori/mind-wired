@@ -478,7 +478,7 @@ class CanvasUI {
         nodeUI.setFolding(false);
       });
     } else {
-      dom.findOne(nodeEl, '[data-cmd="unfolding"]').remove();
+      dom.findOne(nodeEl, ':scope > [data-cmd="unfolding"]').remove();
     }
   }
   getNodeBody(nodeUI) {
