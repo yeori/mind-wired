@@ -31,7 +31,13 @@ const minGapIndex = (gaps) =>
     (minIdx, gap, idx) => (abs(gap) < abs(gaps[minIdx]) ? idx : minIdx),
     0
   );
-
+const lineStyling = (ctx, ui, dir) => {
+  ctx.strokeStyle = ui.snap?.color?.[dir];
+  ctx.lineWidth = ui.snap?.width || 0.4;
+  if (ui.snap.dash) {
+    ctx.setLineDash(ui.snap.dash);
+  }
+};
 export default class AligmentUI {
   /**
    *
@@ -91,11 +97,9 @@ export default class AligmentUI {
         delta.x = gaps[idx];
       }
       if (this.config.snapEnabled) {
-        canvas.drawVLines([adjL, adjC, adjR], (ctx) => {
-          ctx.strokeStyle = ui.snap?.color?.vertical || "#2bc490";
-          ctx.lineWidth = ui.snap?.width || 0.4;
-          ctx.setLineDash(ui.snap?.dash || [6, 2]);
-        });
+        canvas.drawVLines([adjL, adjC, adjR], (ctx) =>
+          lineStyling(ctx, ui, "vertical")
+        );
       }
     }
 
@@ -110,11 +114,9 @@ export default class AligmentUI {
         delta.y = gaps[idx];
       }
       if (this.config.snapEnabled) {
-        canvas.drawHLines([adjT, adjC, adjB], (ctx) => {
-          ctx.strokeStyle = ui.snap?.color?.horizontal || "orange";
-          ctx.lineWidth = ui.snap?.width || 0.4;
-          ctx.setLineDash(ui.snap?.dash || [6, 2]);
-        });
+        canvas.drawHLines([adjT, adjC, adjB], (ctx) =>
+          lineStyling(ctx, ui, "horizontal")
+        );
       }
     }
 

@@ -109,7 +109,7 @@ class MindWired {
           node.setPos(
             acceleration * e.x + pos.x,
             acceleration * e.y + pos.y,
-            false
+            !this.config.snapEnabled
           );
         });
         this.alignmentUI.doAlign();

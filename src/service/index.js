@@ -1,4 +1,5 @@
 import dom from "./dom";
+import clone from "./clone";
 const uuid = (len) => {
   len = len || 16;
   let id = "";
@@ -7,8 +8,9 @@ const uuid = (len) => {
   }
   return id.substring(0, len);
 };
-export { dom, uuid };
+export { dom, clone, uuid };
 export default {
   dom,
+  clone,
   uuid,
 };

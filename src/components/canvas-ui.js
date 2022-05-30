@@ -12,7 +12,7 @@ const pixelRatio = window.devicePixelRatio;
 const template = {
   viewport: `<div data-mind-wired-viewport>
     <canvas></canvas>
-    <div class="mwd-active-area"><div class="ctrl-icon" data-cmd="set-para" style="display:none; background-image: url(${iconSetPara});"></div></div>
+    <div class="mwd-selection-area"><div class="ctrl-icon" data-cmd="set-para" style="display:none; background-image: url(${iconSetPara});"></div></div>
     <div class="mwd-nodes"></div>
   </div>`,
   node: `<div class="mwd-node">
@@ -20,9 +20,7 @@ const template = {
     <div class="mwd-subs"></div>
     <div class="mwd-node-ctrl"></div>
   </div>`,
-  nodeControl: `<div data-cmd="set-para" style="background-image: url(${iconSetPara});"></div>`,
   foldingControl: `<div class="ctrl-icon" data-cmd="unfolding" style="background-image: url(${iconfolding});"></div>`,
-  selectionArea: `<div class="mwd-active-area'></div>`,
 };
 
 class NodeRect {
@@ -54,14 +52,15 @@ class NodeRect {
     return this;
   }
   draw(canvas) {
+    const { selection } = canvas.config.ui;
     const offset = canvas.getHolderOffset();
 
-    const el = dom.findOne(canvas.$viewport, ".mwd-active-area");
+    const el = dom.findOne(canvas.$viewport, ".mwd-selection-area");
     dom.css(el, {
-      left: offset.x + this.left - 5,
-      top: offset.y + this.top - 5,
-      width: this.width + 10,
-      height: this.height + 10,
+      left: offset.x + this.left - selection.padding,
+      top: offset.y + this.top - selection.padding,
+      width: this.width + 2 * selection.padding,
+      height: this.height + 2 * selection.padding,
     });
     const ctrl = dom.findOne(el, "div");
     dom.css(ctrl, {
@@ -71,7 +70,7 @@ class NodeRect {
     });
   }
   clear(canvas) {
-    const el = dom.findOne(canvas.$viewport, ".mwd-active-area");
+    const el = dom.findOne(canvas.$viewport, ".mwd-selection-area");
     dom.css(el, { top: -1, left: -1, width: 0, height: 0 });
     const ctrl = dom.findOne(el, "div");
     dom.css(ctrl, { display: "none" });
@@ -344,6 +343,7 @@ class CanvasUI {
   drawVLines(xPoints, option) {
     const H = this.$viewport.offsetHeight;
     const ctx = this.getContext();
+    ctx.save();
     if (typeof option === "function") {
       option(ctx);
     }
@@ -355,11 +355,12 @@ class CanvasUI {
     });
     ctx.stroke();
     ctx.closePath();
-    ctx.setLineDash([]);
+    ctx.restore();
   }
   drawHLines(yPoints, option) {
     const W = this.$viewport.offsetWidth;
     const ctx = this.getContext();
+    ctx.save();
     if (typeof option === "function") {
       option(ctx);
     }
@@ -371,7 +372,7 @@ class CanvasUI {
     });
     ctx.stroke();
     ctx.closePath();
-    ctx.setLineDash([]);
+    ctx.restore();
   }
   clear() {
     const dim = this.getDimension();

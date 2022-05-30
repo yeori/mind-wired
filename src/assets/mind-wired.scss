@@ -107,17 +107,17 @@
     background-repeat: no-repeat;
     cursor: pointer;
   }
-  .mwd-active-area {
+  .mwd-selection-area {
     position: absolute;
     user-select: none;
     width: 0px;
     height: 0px;
     background-color: #b3ddff6b;
-    top: 0px;
-    left: 0px;
+    top: -1px;
+    left: -1px;
     // border: 1px dashed #226aa3;
-    border-radius: 4px;
-    > .ctrl-icon {
+    // border-radius: 4px;
+    .ctrl-icon {
       width: 24px;
       height: 24px;
       background-color: white;
