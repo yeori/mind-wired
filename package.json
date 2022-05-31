@@ -1,7 +1,7 @@
 {
-  "name": "mind-wired",
-  "version": "1.0.0",
-  "description": "mindmap tool",
+  "name": "@mind-wired/core",
+  "version": "0.1.2",
+  "description": "javascript based mindmap library. It provides dragging, aligment, styling(node, edge) and editing functionality.",
   "main": "dist/mind-wired.js",
   "scripts": {
     "build": "NODE_ENV=production webpack",
@@ -10,6 +10,17 @@
   },
   "keywords": [
     "mindmap"
+  ],
+  "bugs": {
+    "url": "https://github.com/yeori/mind-wired/issues",
+    "email": "yeori.seo@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yeori/mind-wired"
+  },
+  "files": [
+    "/dist"
   ],
   "author": "yeori.seo@gmail.com",
   "license": "MIT",
