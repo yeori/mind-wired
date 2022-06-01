@@ -15,11 +15,11 @@ MDWD library needs a placeholder for mindmap
 ```html
 <html>
   <head>
-    <link rel="stylesheet" href="mind-wired.css"/>
+    <link rel="stylesheet" href="mind-wired.css" />
     <script src="mind-wired.js"></script>
   </head>
   <body>
-    <div id="mmap-root">
+    <div id="mmap-root"></div>
   </body>
 </html>
 ```
@@ -29,6 +29,8 @@ MDWD library needs a placeholder for mindmap
 - `mind-wired.js` - mind-wired library
 
 creating an instance of **mind-wired**
+
+> Sample 01: https://codepen.io/yeori/pen/abqGZWp
 
 ```html
 <html>
@@ -70,7 +72,8 @@ mindwired.init({
 })
 ```
 
-- 800x800 canvas
+- 800x800 canvas.
+- `{width: "100%", height: 600}` is possible.
 
 Let's prepare tree structure
 
@@ -89,8 +92,9 @@ MindWired
 
 node structrue
 
+> Sample 02: [https://codepen.io/yeori/pen/GRQdqPz](https://codepen.io/yeori/pen/GRQdqPz)
+
 ```html
-# SAMPLE 02
 <html>
   <body>
     ...
@@ -152,7 +156,7 @@ window.mindwired
     ui: {
       ...
       snap: {           # optional
-        limit: 4,       # when a node is within 4 pixels
+        limit: 4,       # within 4 pixels
         width: 0.4,     # snap line width
         dash: [6, 2],   # dashed line style
         color: "red",   # line color
@@ -246,6 +250,8 @@ If you want to define style for level 1(`Left`, `Right`)
 
 #### 2.2.2. Type Style
 
+- document needed
+
 ### 3.2. Edge Style
 
 ```
@@ -264,20 +270,77 @@ node: {
 }
 ```
 
-- path : `node.view.edge`
+- path : `view.edge` for each node
+- 4 edge styles(`line`, `natural_curve`, `mustache_lr` and `mustache_tb`) are available.
+- All nodes inherite edge style from it's parent(and so on)
 
-#### Edge Renderer
+#### Example: mustache_lr edge
 
-1. line
-2. natural curve
-3. mustache
+Let install `mustache_lr` edge on the root node
 
-#### Edge Color
+> SAMPLE 03: [https://codepen.io/yeori/pen/KKQRgdg](https://codepen.io/yeori/pen/KKQRgdg)
 
-- color keyword - https://www.w3.org/wiki/CSS/Properties/color/keywords
-- web color (ex `#acdefg`)
+```javascript
+window.mindwired
+  .init({...})
+  .then((mwd) => {
+    // install nodes here
+    mwd.nodes({
+      model: {
+        type: "text",
+        text: "Mind\nWired",
+      },
+      view: {
+        x: 0,
+        y: 0,
+        edge: {
+          name: 'mustache_lr',
+          color: '#53ab76',
+          width: 2
+        }
+      },
+      subs: [...],
+    });
+  });
+```
 
-## 4. Short Key
+- path : `view.edge` for each nodes
+- color - keyword defined in [css color keywords](https://www.w3.org/wiki/CSS/Properties/color/keywords) or web color (ex `#acdefg`)
+
+## 4. Layout
+
+When you drag node `Right` to the left side of the root node in [Sample 03](https://codepen.io/yeori/pen/KKQRgdg), child nodes `cat` and `Dog` keep their side, which results in annoying troublesome(have to drag all sub nodes and so on).
+
+![should move the child nodes](https://user-images.githubusercontent.com/10085153/171351766-144a789e-51de-4e50-8962-7296221ba3e0.png)
+
+`Layout` can help moving all descendant nodes to the opposite side when a node moves.
+
+Let's install `X-AXIS` on the root node
+
+> Sample 04: [https://codepen.io/yeori/pen/rNJvMwp](https://codepen.io/yeori/pen/rNJvMwp)
+
+```javascript
+window.mindwired
+  .init({...})
+  .then((mwd) => {
+    // install nodes here
+    mwd.nodes({
+      model: {...},
+      view: {
+        x: 0,
+        y: 0,
+        layout: {type: 'X-AXIS'},
+        edge: {...}
+      },
+      subs: [...],
+    });
+  });
+```
+
+- path: `view.layout` for each nodes
+- Dragging node `Right` to the opposite side makes `Cat` and `Dog` change their sides.
+
+## 5. Short Key
 
 ### Node
 

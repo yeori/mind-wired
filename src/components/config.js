@@ -107,7 +107,10 @@ const normalizeSnap = (ui) => {
 };
 Configuration.parse = (config) => {
   const cssSelector = config.el;
-  const ui = clone.mergeLeaf(config.ui, clone.deepCopy(DEFAULT_UI_CONFIG));
+  const ui = clone.mergeLeaf(
+    config.ui || {},
+    clone.deepCopy(DEFAULT_UI_CONFIG)
+  );
 
   normalizeSnap(ui);
 
