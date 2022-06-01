@@ -270,7 +270,7 @@ node: {
 }
 ```
 
-- path : `view.edge` for each node
+- path : `view.edge` of node
 - 4 edge styles(`line`, `natural_curve`, `mustache_lr` and `mustache_tb`) are available.
 - All nodes inherite edge style from it's parent(and so on)
 
@@ -304,7 +304,7 @@ window.mindwired
   });
 ```
 
-- path : `view.edge` for each nodes
+- path : `view.edge` of node
 - color - keyword defined in [css color keywords](https://www.w3.org/wiki/CSS/Properties/color/keywords) or web color (ex `#acdefg`)
 
 ## 4. Layout
@@ -337,7 +337,8 @@ window.mindwired
   });
 ```
 
-- path: `view.layout` for each nodes
+- path: `view.layout` of node
+- All nodes inherits layout configuration from the parent node.
 - Dragging node `Right` to the opposite side makes `Cat` and `Dog` change their sides.
 
 ## 5. Short Key
