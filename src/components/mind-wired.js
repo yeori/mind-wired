@@ -184,10 +184,10 @@ class MindWired {
     // this.canvas.repaint(nodeUI);
 
     this.config.emit(EVENT.NODE.CREATED, [nodeUI]);
-    if (option?.editing || option?.select) {
+    if (option && (option.editing || option.select)) {
       this.config.emit(EVENT.SELECTION.NODE, { node: nodeUI });
     }
-    if (option?.editing) {
+    if (option && option.editing) {
       this.nodeEditor.edit(nodeUI);
     }
   }

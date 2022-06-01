@@ -114,7 +114,10 @@ Configuration.parse = (config) => {
 
   normalizeSnap(ui);
 
-  const el = document.querySelector(cssSelector);
+  const el =
+    typeof config.el === "string"
+      ? document.querySelector(config.el)
+      : config.el;
   return new Configuration({ el, ui });
 };
 export default Configuration;

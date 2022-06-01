@@ -39,3 +39,5 @@ const init = (config) => {
 const createDataSource = () => new TreeDataSource();
 
 export { init, createDataSource };
+
+export default { init, createDataSource };

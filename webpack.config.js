@@ -1,4 +1,5 @@
 const path = require("path");
+const pkj = require("./package.json");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const mode = process.env.NODE_ENV;
@@ -10,19 +11,30 @@ module.exports = {
   },
   output: {
     path: path.join(__dirname, "/dist"),
-    filename: `[name].js`,
+    filename: `[name].${pkj.version}.js`,
     library: {
       name: "mindwired",
       type: "umd",
     },
+    clean: {
+      keep: (fname) => fname.toLowerCase().endsWith(".html"),
+    },
+  },
+  resolve: {
+    symlinks: false,
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: () => "[name].css",
+      filename: () => `[name].${pkj.version}.css`,
     }),
   ],
   module: {
     rules: [
+      {
+        loader: "babel-loader",
+        test: "/.js$/",
+        exclude: /node_modules/,
+      },
       {
         test: /\.svg/,
         type: "asset/resource",

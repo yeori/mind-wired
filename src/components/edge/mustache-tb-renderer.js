@@ -5,7 +5,8 @@ const widthOf = (node) => {
   return typeof width === "function" ? width(node) : width;
 };
 const valignOf = (node) => {
-  const valign = node.$style.option?.valign;
+  const { option } = node.$style;
+  const valign = option && option.valign;
   return valign || "center";
 };
 const renderCurve = (canvas, srcNode, s, dstNode, e, dy) => {

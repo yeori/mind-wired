@@ -47,7 +47,7 @@ class NodeUI {
     let { layout } = this.config.view;
     if (layout) {
       return { ...layout };
-    } else return this.parent?.layout;
+    } else return this.parent && this.parent.layout;
   }
   get active() {
     return !!this.$el;

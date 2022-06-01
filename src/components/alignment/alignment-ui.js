@@ -32,8 +32,8 @@ const minGapIndex = (gaps) =>
     0
   );
 const lineStyling = (ctx, ui, dir) => {
-  ctx.strokeStyle = ui.snap?.color?.[dir];
-  ctx.lineWidth = ui.snap?.width || 0.4;
+  ctx.strokeStyle = ui.snap.color[dir];
+  ctx.lineWidth = ui.snap.width || 0.4;
   if (ui.snap.dash) {
     ctx.setLineDash(ui.snap.dash);
   }
