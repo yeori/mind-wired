@@ -1,12 +1,13 @@
 {
   "name": "@mind-wired/core",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "javascript based mindmap library. It provides dragging, aligment, styling(node, edge) and editing functionality.",
   "main": "src/index.js",
   "scripts": {
     "build": "NODE_ENV=production webpack",
     "dev": "NODE_ENV=development webpack-dev-server ",
-    "test": "mocha --require @babel/register"
+    "test": "mocha --require @babel/register",
+    "prepublishOnly": "NODE_ENV=production webpack"
   },
   "keywords": [
     "mindmap"

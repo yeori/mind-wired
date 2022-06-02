@@ -7,7 +7,7 @@ export default class NodeEditing {
     this.config.listen(EVENT.VIEWPORT.CLICKED, () => {
       this.close();
     });
-    this.config.listen(EVENT.SELECTION.NODE, ({ node }) => {
+    this.config.listen(EVENT.NODE.SELECTED, ({ node }) => {
       if (this.node !== node) {
         this.close(this.node);
       }

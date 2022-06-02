@@ -62,7 +62,7 @@ class EdgeUI {
     this.edges = [];
     createEdges(rootNode, this.edges);
     this.config
-      .listen(EVENT.NODE.CREATED, (nodes) => {
+      .listen(EVENT.NODE.CREATED, ({ nodes }) => {
         nodes.forEach((nodeUI) => {
           const e = new Edge(nodeUI.parent, nodeUI);
           this.edges.push(e);

@@ -199,7 +199,7 @@ const installFocusHandler = (canvasUI) => {
         const uid = e.target.parentNode.dataset.uid;
         const mwd = canvasUI.config.mindWired();
         const node = mwd.findNode((node) => node.uid === uid);
-        canvasUI.config.emit(EVENT.SELECTION.NODE, { node });
+        canvasUI.config.emit(EVENT.NODE.SELECTED, { node });
       }
     },
     true

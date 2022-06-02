@@ -8,6 +8,7 @@ class NodeRenderingContext {
     this.canvas = canvasUI;
     this.uid = `node-rctx-${uuid()}`;
     renderings.set(this.uid, new Map());
+    this.editingNode = null;
   }
   get event() {
     return dom.event;
@@ -44,6 +45,7 @@ class NodeRenderingContext {
     return nodeUI.$bodyEl.querySelector(cssSelector);
   }
   installEditor(nodeUI, $editorEl) {
+    this.editingNode = nodeUI;
     return this.canvas.showNodeEditor(nodeUI, $editorEl);
   }
   css(el, styles) {
@@ -53,7 +55,12 @@ class NodeRenderingContext {
     return dom.findOne(el, cssSelector);
   }
   endEditing() {
-    this.canvas.config.emit(EVENT.VIEWPORT.CLICKED);
+    this.canvas.hideNodeEditor(this.editingNode);
+    this.canvas.config.emit(EVENT.NODE.EDITING, {
+      editing: false,
+      nodeUI: this.editingNode,
+    });
+    this.editingNode = null;
   }
 }
 export default NodeRenderingContext;

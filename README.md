@@ -1,7 +1,5 @@
 # mind-wired
 
-here
-
 ## 1. installing
 
 ### 1.1. installing library
@@ -149,7 +147,7 @@ node structrue
 
 #### 2.1.1. Snap to node
 
-MindWired supports **_snap to node_**, which help node alignment while dragging.
+MindWired supports **_snap to node_**, which helps node alignment while dragging.
 
 ```javascript
 window.mindwired
@@ -343,7 +341,83 @@ window.mindwired
 - All nodes inherits layout configuration from the parent node.
 - Dragging node `Right` to the opposite side makes `Cat` and `Dog` change their sides.
 
-## 5. Short Key
+## 5. Events
+
+### 5.1. Node
+
+| event name     | description                              |
+| -------------- | ---------------------------------------- |
+| `node.created` | node(s) created                          |
+| `node.updated` | node(s) updated(content, position, path) |
+| `node.deleted` | node(s) updated                          |
+
+#### node.created
+
+event triggered when node is created(`Enter`, or `Shift+Enter`)
+
+```javascript
+window.mindwired
+  .init({...})
+  .then((mwd) => {
+    mwd.nodes(...);
+    // install event listener
+    mwd.listen('node.created', (e) => {
+      const { nodes } = e;
+      console.log('[CREATED]', nodes);
+    })
+  });
+```
+
+#### node.updated
+
+triggered when node is updated by
+
+- dragging
+- changing parent
+- parent deleted
+
+```javascript
+window.mindwired
+  .init({...})
+  .then((mwd) => {
+    mwd.nodes(...);
+    // install event listener
+    mwd.listen('node.updated', (e) => {
+      const {nodes, type} = e;
+      console.log('[UPDATED]', nodes, type);
+    })
+  });
+```
+
+- nodes - updated nodes
+- type - one of `path`, `pos`, `model`
+
+`type` have one of three values.
+
+1. `path` - means the nodes have changed parent(by dragging control icon).
+1. `pos` - means the nodes move by dragging
+1. `model` - content has updated(text, icon, etc)
+
+#### node.deleted
+
+triggered when node is deleted(`delete`, `fn+delete` in mac)
+
+```javascript
+window.mindwired
+  .init({...})
+  .then((mwd) => {
+    mwd.nodes(...);
+    // install event listener
+    mwd.listen('node.deleted', (e) => {
+      const {nodes} = e;
+      console.log('[DELETED]', nodes);
+    })
+  });
+```
+
+If deleted node has children, they are moved to **node.parent**, which triggers `node.updated` event
+
+## 6. Short Key
 
 ### Node
 

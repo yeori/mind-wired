@@ -19,14 +19,34 @@ const EVENT = {
     CREATED: {
       name: "node.created",
       desc: "",
+      CLIENT: {
+        name: "node.created.client",
+        desc: "client-side node creation event",
+      },
     },
     DELETED: {
       name: "node.deleted",
       desc: "node has been deleted",
+      CLIENT: {
+        name: "node.deleted.client",
+        desc: "client-side node deletion event",
+      },
     },
     UPDATED: {
       name: "node.updated",
       desc: "content of node updated",
+      CLIENT: {
+        name: "node.updated.client",
+        desc: "client-side node update event",
+      },
+    },
+    SELECTED: {
+      name: "node.selected",
+      desc: "one or more nodes selected",
+      CLIENT: {
+        name: "node.selected.client",
+        desc: "client-side node selection event",
+      },
     },
     EDITING: {
       name: "node.editing",
@@ -93,7 +113,7 @@ class EventBus {
     const event = parseEvent(eventName);
     this.on(event, callback);
   }
-  emit(eventName, payload) {
+  emit(eventName, payload, emitForClient) {
     const callbackList = this.callbacks.get(eventName) || EMPTY_SET;
     callbackList.forEach((cb) => {
       try {
@@ -102,6 +122,11 @@ class EventBus {
         console.log(e);
       }
     });
+    if (emitForClient) {
+      setTimeout(() => {
+        this.emit(eventName["CLIENT"], payload);
+      });
+    }
   }
 }
 

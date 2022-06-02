@@ -12,7 +12,7 @@ const nodeDndHandler = (canvasUI) => ({
     canvasUI.dndContext.capture("nodeId", nodeId);
     const mrd = canvasUI.config.mindWired();
     const node = mrd.findNode((node) => node.uid === nodeId);
-    canvasUI.config.emit(EVENT.SELECTION.NODE, {
+    canvasUI.config.emit(EVENT.NODE.SELECTED, {
       node,
       append: e.originalEvent.shiftKey,
     });

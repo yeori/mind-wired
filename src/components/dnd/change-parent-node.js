@@ -33,7 +33,7 @@ const changeParentDndHandler = (canvasUI) => ({
         // dropping parent on child
       } else {
         const mwd = canvasUI.config.mindWired();
-        mwd.moveNodes(newParentNode, nodes);
+        mwd.moveNodes(newParentNode, nodes, true);
       }
     }
   },

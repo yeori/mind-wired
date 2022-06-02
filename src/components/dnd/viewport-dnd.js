@@ -12,8 +12,11 @@ const viewportDndHandler = (canvasUI) => ({
     canvasUI.dndContext.capture("dragged", true);
     const offset = canvasUI.dndContext.getData("offset");
     canvasUI.config.emit(EVENT.DRAG.VIEWPORT, {
-      x: offset.x + dx,
-      y: offset.y + dy,
+      state: "DRAG",
+      offset: {
+        x: offset.x + dx,
+        y: offset.y + dy,
+      },
     });
   },
   afterDrag: (e) => {
@@ -22,8 +25,11 @@ const viewportDndHandler = (canvasUI) => ({
     // canvasUI.shiftBy(dx, dy);
     const offset = canvasUI.dndContext.getData("offset");
     canvasUI.config.emit(EVENT.DRAG.VIEWPORT, {
-      x: offset.x + dx,
-      y: offset.y + dy,
+      state: "DONE",
+      offset: {
+        x: offset.x + dx,
+        y: offset.y + dy,
+      },
     });
     const dragged = canvasUI.dndContext.getData("dragged");
     if (!dragged) {

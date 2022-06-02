@@ -106,7 +106,7 @@ class NodeUI {
     const { model } = this.config;
     if (callback(model)) {
       this.$dim = null;
-      this.repaint();
+      // this.repaint();
       this.sharedConfig.emit(EVENT.NODE.UPDATED, [this]);
     }
   }
@@ -133,9 +133,7 @@ class NodeUI {
    * @returns (x, y) from the direct parent
    */
   getPos() {
-    const dir = 1;
-    // this.isRoot() ? -1 : 1;
-    return { x: dir * this.x, y: dir * this.y };
+    return { x: this.x, y: this.y };
   }
   setPos(x, y, update = true) {
     this.config.view.x = x;
