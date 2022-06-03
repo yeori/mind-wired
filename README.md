@@ -1,4 +1,10 @@
-# mind-wired
+# MindWired
+
+<img width="610" alt="mind-wired-demo" src="https://user-images.githubusercontent.com/10085153/171831668-f291fd79-ee76-4da7-89cb-a3a00bd67527.png">
+
+[VIEW DEMO](https://codepen.io/yeori/pen/XWZYejP)
+
+`MindWired` is javascript library to build mindmap.
 
 ## 1. installing
 
