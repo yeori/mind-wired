@@ -100,6 +100,9 @@ const captureContext2D = (canvasUI) => {
 
   canvasUI.$ctx = ctx;
   canvasUI.$ctx.scale(pixelRatio, pixelRatio);
+  if (canvasUI.selectionArea) {
+    canvasUI.selectionArea.draw(canvasUI);
+  }
   config.emit(EVENT.VIEWPORT.RESIZED);
 };
 const registerElement = (canvasUI, nodeUI) => {
