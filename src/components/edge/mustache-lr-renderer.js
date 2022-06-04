@@ -17,7 +17,8 @@ const renderUnderline = (canvas, node, rect, padding) => {
       { x: rect.left - padding.hor, y: rect.bottom + padding.ver },
       { x: rect.right + padding.hor, y: rect.bottom + padding.ver },
     ],
-    { lineWidth: width, strokeStyle: node.$style.color }
+    { lineWidth: width, strokeStyle: node.$style.color },
+    node.$style.getEdgeRenderer()
   );
 };
 const renderCurve = (canvas, srcNode, s, dstNode, e, dx) => {
@@ -28,22 +29,33 @@ const renderCurve = (canvas, srcNode, s, dstNode, e, dx) => {
   const offset = Math.abs(srcWidth - dstWidth);
   s.y -= offset / 2;
   const props = { lineWidth: width, strokeStyle: dstNode.$style.color };
-  canvas.drawBeizeCurve(s, e, {
-    cpoints: [
-      { x: s.x + dx / 2, y: s.y },
-      { x: e.x - dx / 2, y: e.y },
-    ],
-    props,
-  });
-  if (offset > 0) {
-    s.y += offset;
-    canvas.drawBeizeCurve(s, e, {
+  const rendererFn = dstNode.$style.getEdgeRenderer();
+  canvas.drawBeizeCurve(
+    s,
+    e,
+    {
       cpoints: [
         { x: s.x + dx / 2, y: s.y },
         { x: e.x - dx / 2, y: e.y },
       ],
       props,
-    });
+    },
+    rendererFn
+  );
+  if (offset > 0) {
+    s.y += offset;
+    canvas.drawBeizeCurve(
+      s,
+      e,
+      {
+        cpoints: [
+          { x: s.x + dx / 2, y: s.y },
+          { x: e.x - dx / 2, y: e.y },
+        ],
+        props,
+      },
+      rendererFn
+    );
   }
 };
 const renderByMustache = (canvas, srcNode, dstNode) => {

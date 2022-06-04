@@ -38,6 +38,23 @@ class EdgeStyle {
   get width() {
     return findProp(this.nodeUI, "width");
   }
+  getEdgeRenderer() {
+    const name = this.nodeUI.getStyle("edge").renderer;
+    if (!name) {
+      return null;
+    }
+    const config = this.nodeUI.sharedConfig;
+    const { renderers } = config.ui;
+    if (!renderers) {
+      throw new Error(
+        `You should define renderer at "ui.renderers:{${name}: (ctx) => {}, }" for edge renderer [${name}]`
+      );
+    }
+    if (!renderers[name]) {
+      throw new Error(`edge renderer [${name}] does not exist in ui.renders`);
+    }
+    return renderers[name];
+  }
 }
 
 export default EdgeStyle;

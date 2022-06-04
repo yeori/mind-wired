@@ -217,6 +217,15 @@ const installFocusHandler = (canvasUI) => {
   );
   */
 };
+const applyDrawingOption = (ctx, options, fn) => {
+  Object.keys(options || {}).forEach((key) => {
+    const val = options[key];
+    ctx[key] = val;
+  });
+  if (fn && typeof fn === "function") {
+    fn(ctx);
+  }
+};
 class CanvasUI {
   constructor(config) {
     this.config = config;
@@ -287,15 +296,12 @@ class CanvasUI {
     const node = mwd.findNode((node) => node.uid === nodeEl.dataset.uid);
     return node;
   }
-  drawPath(points, options) {
+  drawPath(points, options, fn) {
     const ctx = this.getContext();
-    Object.keys(options || {}).forEach((key) => {
-      const val = options[key];
-      ctx[key] = val;
-    });
+    ctx.save();
+    applyDrawingOption(ctx, options, fn);
     let s = points[0];
     points = points.slice(1);
-
     const offset = this.getHolderOffset();
     ctx.beginPath();
     ctx.moveTo(offset.x + s.x, offset.y + s.y);
@@ -303,8 +309,12 @@ class CanvasUI {
       ctx.lineTo(offset.x + e.x, offset.y + e.y);
     });
     ctx.stroke();
+    ctx.restore();
   }
-  drawCurve(s, e, option) {
+  drawCurve(s, e, option, fn) {
+    const ctx = this.getContext();
+    ctx.save();
+    applyDrawingOption(ctx, option.props, fn);
     const lenSE = Math.sqrt(
       (s.x - e.x) * (s.x - e.x) + (s.y - e.y) * (s.y - e.y)
     );
@@ -314,11 +324,7 @@ class CanvasUI {
     const cp1 = geom.rotate(s, e, degree, { scale });
     const cp2 = geom.rotate(e, s, degree, { scale });
     const offset = this.getHolderOffset();
-    const ctx = this.getContext();
-    Object.keys(option.props || {}).forEach((key) => {
-      const val = option.props[key];
-      ctx[key] = val;
-    });
+
     ctx.beginPath();
     ctx.moveTo(offset.x + s.x, offset.y + s.y);
     ctx.bezierCurveTo(
@@ -330,13 +336,12 @@ class CanvasUI {
       offset.y + e.y
     );
     ctx.stroke();
+    ctx.restore();
   }
-  drawBeizeCurve(s, e, option) {
+  drawBeizeCurve(s, e, option, fn) {
     const ctx = this.getContext();
-    Object.keys(option.props || {}).forEach((key) => {
-      const val = option.props[key];
-      ctx[key] = val;
-    });
+    ctx.save();
+    applyDrawingOption(ctx, option.props, fn);
     const [cp1, cp2] = option.cpoints;
     const offset = this.getHolderOffset();
     ctx.beginPath();
@@ -350,6 +355,7 @@ class CanvasUI {
       offset.y + e.y
     );
     ctx.stroke();
+    ctx.restore();
   }
   drawVLines(xPoints, option) {
     const H = this.$viewport.offsetHeight;

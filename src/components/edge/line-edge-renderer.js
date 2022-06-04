@@ -21,10 +21,14 @@ const renderByLine = (canvas, srcNode, dstNode) => {
     return offset;
   });
   const style = dstNode.$style;
-  canvas.drawPath([s, e], {
-    lineWidth: style.width * scale,
-    strokeStyle: style.color,
-  });
+  canvas.drawPath(
+    [s, e],
+    {
+      lineWidth: style.width * scale,
+      strokeStyle: style.color,
+    },
+    style.getEdgeRenderer()
+  );
 };
 
 export default renderByLine;

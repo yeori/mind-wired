@@ -17,22 +17,33 @@ const renderCurve = (canvas, srcNode, s, dstNode, e, dy) => {
   const offset = Math.abs(srcWidth - dstWidth);
   s.x -= offset / 2;
   const props = { lineWidth: width * scale, strokeStyle: dstNode.$style.color };
-  canvas.drawBeizeCurve(s, e, {
-    cpoints: [
-      { x: s.x, y: s.y + dy / 2 },
-      { x: e.x, y: e.y - dy / 2 },
-    ],
-    props,
-  });
-  if (offset > 0) {
-    s.y += offset;
-    canvas.drawBeizeCurve(s, e, {
+  const rendererFn = dstNode.$style.getEdgeRenderer();
+  canvas.drawBeizeCurve(
+    s,
+    e,
+    {
       cpoints: [
         { x: s.x, y: s.y + dy / 2 },
         { x: e.x, y: e.y - dy / 2 },
       ],
       props,
-    });
+    },
+    rendererFn
+  );
+  if (offset > 0) {
+    s.y += offset;
+    canvas.drawBeizeCurve(
+      s,
+      e,
+      {
+        cpoints: [
+          { x: s.x, y: s.y + dy / 2 },
+          { x: e.x, y: e.y - dy / 2 },
+        ],
+        props,
+      },
+      rendererFn
+    );
   }
 };
 const renderByMustache = (canvas, srcNode, dstNode) => {
