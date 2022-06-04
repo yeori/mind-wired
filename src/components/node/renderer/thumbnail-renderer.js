@@ -42,16 +42,13 @@ class ThumbnailRenderer {
   get name() {
     return "thumbnail";
   }
-  install(nodeUI) {
-    const bodyEl = this.ctx.getNodeBody(nodeUI);
+  install(nodeUI, bodyEl) {
+    // const bodyEl = this.ctx.getNodeBody(nodeUI);
     const $thumnailEl = this.ctx.parse(template.viewer);
     bodyEl.append($thumnailEl);
   }
-  render(nodeUI) {
-    const { model } = nodeUI;
-    // const { path, size } = model["thumbnail"];
-    const $div = this.ctx.select(nodeUI, ".mwd-thumbnail-node img");
-    // renderThumnail($div, this.ctx, model.thumbnail);
+  render(model, bodyEl) {
+    const $div = this.ctx.query(bodyEl, ".mwd-thumbnail-node img");
     this.ctx.css($div, { width: model.thumbnail.size, height: "auto" });
     $div.src = model.thumbnail.path;
   }

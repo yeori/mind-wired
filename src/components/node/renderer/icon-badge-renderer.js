@@ -33,17 +33,17 @@ class IconBadgeRenderer {
   get name() {
     return "icon-badge";
   }
-  install(nodeUI) {
-    const bodyEl = this.ctx.getNodeBody(nodeUI);
+  install(nodeUI, bodyEl) {
+    // const bodyEl = this.ctx.getNodeBody(nodeUI);
     const $iconBadgeEl = this.ctx.parse(template.viewer);
     bodyEl.append($iconBadgeEl);
   }
-  render(nodeUI) {
-    const { model } = nodeUI;
+  render(model, bodyEl) {
+    // const { model } = nodeUI;
     const { icon, text } = model["icon-badge"];
-    const $img = this.ctx.select(nodeUI, "img");
+    const $img = this.ctx.query(bodyEl, "img");
     $img.src = icon;
-    const $span = this.ctx.select(nodeUI, ".mwd-node-text");
+    const $span = this.ctx.query(bodyEl, ".mwd-node-text");
     $span.innerText = text;
   }
   startEditing(nodeUI) {

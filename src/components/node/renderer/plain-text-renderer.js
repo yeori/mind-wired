@@ -9,14 +9,14 @@ class PlainTextRenderer {
   constructor(renderingContext) {
     this.ctx = renderingContext;
   }
-  install(nodeUI) {
-    const bodyEl = this.ctx.getNodeBody(nodeUI);
+  install(nodeUI, bodyEl) {
+    // const bodyEl = this.ctx.getNodeBody(nodeUI);
     const $titleEl = this.ctx.parse(template.text);
     bodyEl.append($titleEl);
   }
-  render(nodeUI) {
-    const $titleEl = this.ctx.select(nodeUI, ".mwd-node-text");
-    const { model } = nodeUI;
+  render(model, bodyEl) {
+    const $titleEl = this.ctx.query(bodyEl, ".mwd-node-text");
+    // const { model } = nodeUI;
     const lines = model.text
       .split("\n")
       .map((text) => `<p>${text}</p>`)
