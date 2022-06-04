@@ -35,7 +35,7 @@ const mergeLeaf = (src, target) => {
   Object.keys(src).forEach((prop) => {
     if (target[prop] === null || target[prop] === undefined) {
       target[prop] = deepCopy(src[prop]);
-    } else if (isPrimitive(src[prop])) {
+    } else if (isPrimitive(src[prop]) || isFunction(src[prop])) {
       target[prop] = src[prop];
     } else {
       mergeLeaf(src[prop], target[prop]);

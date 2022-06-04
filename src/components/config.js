@@ -8,6 +8,7 @@ const DEFAULT_UI_CONFIG = {
   clazz: {
     node: "active-node",
     edge: "active-edge",
+    schema: (schemaName) => schemaName,
     level: (level) => `level-${level}`,
   },
   offset: { x: 0, y: 0 },

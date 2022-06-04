@@ -105,6 +105,10 @@ const captureContext2D = (canvasUI) => {
   }
   config.emit(EVENT.VIEWPORT.RESIZED);
 };
+const registerSchema = (schema, $el, config) => {
+  const className = config.ui.clazz.schema(schema);
+  dom.clazz.add($el, className);
+};
 const registerElement = (canvasUI, nodeUI) => {
   if (nodeUI.$el) {
     throw new Error(`[MINDWIRED][ERROR] already installed. (${nodeUI.uid})`);
@@ -112,9 +116,13 @@ const registerElement = (canvasUI, nodeUI) => {
   const $el = (nodeUI.$el = dom.parseTemplate(template.node));
   const renderingContext = canvasUI.config.getNodeRenderer();
   const { model } = nodeUI;
-  const nodeRenderer = renderingContext.getRenderer(model.type);
-  nodeRenderer.install(nodeUI);
 
+  const $bodyEl = canvasUI.getNodeBody(nodeUI);
+  const nodeRenderer = renderingContext.getRenderer(model.type);
+  nodeRenderer.install(nodeUI, $bodyEl);
+  if (model.schema) {
+    registerSchema(model.schema, $bodyEl, canvasUI.config);
+  }
   const placeHolder = canvasUI.elemOf(".mwd-nodes");
   if (nodeUI.isRoot()) {
     placeHolder.append($el);
@@ -430,7 +438,7 @@ class CanvasUI {
     const { model } = nodeUI;
     const type = model.type || "text";
     const nodeRenderer = renderingContext.getRenderer(type);
-    nodeRenderer.render(nodeUI);
+    nodeRenderer.render(nodeUI.model, this.getNodeBody(nodeUI), nodeUI);
   }
   showNodeEditor(nodeUI, $editorEl) {
     const { uid } = nodeUI;
