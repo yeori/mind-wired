@@ -19,6 +19,7 @@ export default class DragContext {
     this.posMap = new Map();
   }
   prepareDnd(nodes) {
+    this.clear();
     nodes
       .filter((node) => !node.isRoot())
       .forEach((node) => {

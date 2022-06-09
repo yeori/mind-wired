@@ -11,7 +11,7 @@ module.exports = {
   },
   output: {
     path: path.join(__dirname, "/dist"),
-    filename: `[name].${pkj.version}.js`,
+    filename: `[name].js`,
     library: {
       name: "mindwired",
       type: "umd",
@@ -25,7 +25,7 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: () => `[name].${pkj.version}.css`,
+      filename: () => `[name].css`,
     }),
   ],
   module: {
