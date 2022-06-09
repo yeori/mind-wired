@@ -231,6 +231,7 @@ Each node is assigned `level` property, 0 for root node, 1 for child of root nod
 - Node `Left` - `class="level-1"`
 - Node `Right` - `class="level-1"`
 - Node `Cat` - `class="level-2"`
+- `level number` changes whenever depth of node changes(except root node)
 
 Here is css to assign rouned border with bigger text to root node,
 
@@ -254,9 +255,84 @@ If you want to define style for level 1(`Left`, `Right`)
 }
 ```
 
-#### 2.2.2. Type Style
+#### 2.2.2. Schema
 
-- document needed
+A group of nodes need to have same style regardless of level (`pizza`, `bread`, `cheese` with same border, background and font style).
+
+Schema is defined in each node
+
+```javascript
+{
+  model: {
+    text: "What to eat for lunch?",
+  },
+  view: {...},
+  subs: [{
+    model:{
+      text:'Pizza',
+      schema: 'food'
+    },
+    view: {...}
+  }, {
+    model:{
+      text:'Bread',
+      schema: 'food'
+    },
+    view: {...}
+  }, {
+    model:{
+      text:'Fried Chicken',
+      schema: 'food'
+    },
+    view: {...}
+  }]
+}
+```
+
+- path - `model.schema` in each node definition
+- type: `string`
+
+It is rendered as class value
+
+```html
+<div id="mmap-root">
+  <!-- geneared automatically by mind-wired -->
+  <div data-mind-wired-viewport>
+    <canvas></canvas>
+    <div class="mwd-nodes">
+      <div class="mwd-node">
+        <div class="node-body">...</div>
+        <div class="mwd-subs">
+          <!-- nodes with schema 'food' are assigned class 'food' -->
+          <div class="mwd-node">
+            <div class="node-body food">[Pizza]</div>
+          </div>
+          <div class="mwd-node">
+            <div class="node-body food">[Bread]</div>
+          </div>
+          <div class="mwd-node">
+            <div class="node-body food">[Fried Chicken]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+- class `food` is assigned, which is the name of `schema`
+
+Nodes of schema `food` can be styled like
+
+```css
+[data-mind-wired-viewport] .mwd-body.food {
+  background-color: #ffec48;
+  border-radius: 60% 30% 60% 30%;
+  padding: 2px 4px;
+  font-weight: 500;
+  color: #6d4800;
+}
+```
 
 ### 3.2. Edge Style
 
@@ -311,7 +387,101 @@ window.mindwired
 ```
 
 - path : `view.edge` of node
-- color - keyword defined in [css color keywords](https://www.w3.org/wiki/CSS/Properties/color/keywords) or web color (ex `#acdefg`)
+- color - keyword defined in [css color keywords](https://www.w3.org/wiki/CSS/Properties/color/keywords) or web color (ex `#acdeff`)
+
+#### Edge preview
+
+**1. line**
+
+<img width="380" alt="edge-line" src="https://user-images.githubusercontent.com/10085153/172753643-b133ae68-930e-4d47-a432-080bdc3951c2.png">
+
+```javascript
+      // for line edge
+      view: {
+        x: ..., y: ...,
+        edge: {
+          name: 'line',
+          color: ...,
+          width: ...
+        }
+      }
+```
+
+**2. mustache_lr (bottom)**
+
+<img width="380" alt="edge-mustache_lr" src="https://user-images.githubusercontent.com/10085153/172753940-cb990a50-275a-4c0e-be55-a57fd19bbc14.png">
+
+```javascript
+      // for mustach_lr bottom edge
+      view: {
+        x: ...,
+        y: ...,
+        edge: {
+          name: 'mustache_lr',
+          option: {
+            valign: "bottom",
+          },
+          color: ...,
+          width: ...
+        }
+      }
+```
+
+**3. mustache_lr(center)**
+
+<img width="380" alt="edge-mustache_lr_center" src="https://user-images.githubusercontent.com/10085153/172754612-8e3ad1f3-145d-47dd-a71b-d3335171eafc.png">
+
+```javascript
+      // for mustach_lr center edge
+      view: {
+        x: ...,
+        y: ...,
+        edge: {
+          name: 'mustache_lr',
+          // option: {
+          //   valign: "center",
+          // },
+          color: ...,
+          width: ...
+        }
+      }
+```
+
+- `center` is default
+
+**4. mustache_tb**
+
+<img width="380" alt="edge-mustache_tb" src="https://user-images.githubusercontent.com/10085153/172754846-e72d3a9b-3790-46b8-ad8a-ed98dfecacd9.png">
+
+```javascript
+      // for mustach_lr center edge
+      view: {
+        x: ...,
+        y: ...,
+        edge: {
+          name: 'mustache_tb',
+          color: ...,
+          width: ...
+        }
+      }
+```
+
+**5. natural_curve**
+
+<img width="380" alt="edge_natural_curve" src="https://user-images.githubusercontent.com/10085153/172755872-e84fb959-e6af-4ea3-8ea3-5f1867d9103a.png">
+
+```javascript
+      // for natural_curve center edge
+      view: {
+        x: ...,
+        y: ...,
+        edge: {
+          name: 'natural_curve',
+          color: ...,
+          width: ...
+        }
+      }
+```
 
 ## 4. Layout
 
@@ -457,3 +627,43 @@ If deleted node has children, they are moved to **node.parent**, which triggers 
 | ---- | --- | ----- | ------- | --------------------------------- |
 |      |     |       | `Enter` | save data and finish editing      |
 |      |     |       | `esc`   | finish editing state without save |
+
+## 7. Store, Load
+
+Current mindmap can be serialized to `json` text.
+
+```javascript
+let mwd;
+window.mindwired.
+  .init({...})
+  .then(instance => {
+    // 1. binding mindmap instance
+    mwd = instance;
+  })
+
+btnSave.addEventListener('click', () => {
+  // 2. export as json
+  mwd.export("json").then((json) => {
+    console.log(json);
+    // saved on localStorage or sent to backend-server
+  });
+}, false)
+```
+
+You can load the map from json text.
+
+```javascript
+let mwd;
+load_from_your_server().then(res => {
+  const json = res.json // from your server
+  window.mindwired.
+    .init({...})
+    .then(instance => {
+      // 3. load the map from json
+      mwd = instance;
+      const nodes = JSON.parse(json);
+      mwd.nodes(nodes);
+    })
+})
+
+```
