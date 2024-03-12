@@ -3,6 +3,21 @@
   overflow: hidden;
   display: flex;
   background-color: white;
+  .ctrl-icon {
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: rgb(0 0 0 / 49%) 1px 1px 4px;
+    position: absolute;
+    z-index: 50;
+    cursor: pointer;
+    & > img {
+      width: 100%;
+      height: 100%;
+      user-select: none;
+    }
+  }
   canvas {
     position: absolute;
     top: 50%;
@@ -84,6 +99,10 @@
         height: 0;
         z-index: 5;
       }
+      .ctrl-icon {
+        width: 20px;
+        height: 20px;
+      }
     }
   }
   .mwd-body {
@@ -102,11 +121,7 @@
     align-items: stretch;
     row-gap: 8px;
   }
-  .ctrl-icon {
-    background-position: center;
-    background-repeat: no-repeat;
-    cursor: pointer;
-  }
+
   .mwd-selection-area {
     position: absolute;
     user-select: none;
@@ -118,18 +133,9 @@
     // border: 1px dashed #226aa3;
     // border-radius: 4px;
     .ctrl-icon {
-      width: 24px;
-      height: 24px;
-      background-color: white;
-      border-radius: 12px;
-      box-shadow: rgb(0 0 0 / 49%) 1px 1px 4px;
       transform: translate(-50%, 0%);
-      background-size: contain;
-      background-position: center center;
-      position: absolute;
-      bottom: -30px;
+      top: 100%;
       left: 50%;
-      z-index: 50;
     }
   }
 }

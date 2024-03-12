@@ -48,7 +48,7 @@ export default class EdgeStyle {
   get width() {
     const width = traceStyle(this.nodeUI, "width");
     if (typeof width === "function") {
-      return width(this.nodeUI.config, this.nodeUI.level());
+      return width(this.nodeUI.spec, this.nodeUI.level());
     } else {
       return width;
     }

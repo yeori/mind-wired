@@ -7,7 +7,7 @@ import EdgeStyle from "../edge/edge-style";
 
 const parseSubs = (nodeUi: NodeUI) => {
   // fix view.subs[{model, view, subs}]
-  const { subs } = nodeUi.config;
+  const { subs } = nodeUi.spec;
   if (!subs || subs.length === 0) {
     return [];
   }
@@ -21,7 +21,7 @@ let uid = 100;
 let zIndex = 1;
 
 export class NodeUI {
-  config: NodeSpec;
+  spec: NodeSpec;
   sharedConfig: Configuration;
   $el: HTMLElement | undefined;
   selected: boolean;
@@ -31,15 +31,15 @@ export class NodeUI {
   subs: NodeUI[];
   parent?: NodeUI;
   $style: EdgeStyle;
-  folding: boolean;
+  // folding: boolean;
   $cachedStyle: EdgeStyle | null;
   $dim: NodeRect;
   constructor(
-    config: NodeSpec,
+    spec: NodeSpec,
     sharedConfig: Configuration,
     parentNode?: NodeUI
   ) {
-    this.config = config;
+    this.spec = spec;
     this.sharedConfig = sharedConfig;
     this.$el = undefined;
     this.selected = false;
@@ -49,26 +49,26 @@ export class NodeUI {
     this.subs = parseSubs(this);
     this.parent = parentNode;
     this.$style = new EdgeStyle(this);
-    this.folding = false;
+    // this.folding = false;
     this.$dim = null;
     this.$cachedStyle = null;
   }
   get model() {
-    return { ...this.config.model };
+    return { ...this.spec.model };
   }
   get $bodyEl() {
     const canvas = this.sharedConfig.getCanvas();
     return canvas.getNodeBody(this);
   }
   get x() {
-    return this.config.view.x;
+    return this.spec.view.x;
   }
   get y() {
-    return this.config.view.y;
+    return this.spec.view.y;
   }
   // fix view.layout 타입 필요 {model:{..}, views: {layout: {type: ...}}}
   get layout(): any {
-    let { layout } = this.config.view;
+    let { layout } = this.spec.view;
     if (layout) {
       return { ...layout };
     } else return this.parent && this.parent.layout;
@@ -78,6 +78,12 @@ export class NodeUI {
   }
   get childNodes() {
     return [...this.subs];
+  }
+  get folding() {
+    return this.spec.view.folding || false;
+  }
+  isReady() {
+    return !!this.$el;
   }
   dimension(): NodeRect {
     const scale = this.sharedConfig.scale;
@@ -92,7 +98,7 @@ export class NodeUI {
   }
   getStyle<K extends keyof ViewSpec>(type: K) {
     // type: 'edge', 'node'
-    return Object.assign({}, this.config.view[type]) as ViewSpec[K];
+    return Object.assign({}, this.spec.view[type]) as ViewSpec[K];
   }
   isSelected(): boolean {
     return this.selected;
@@ -116,7 +122,7 @@ export class NodeUI {
     return false;
   }
   updateModel(callback: (model: ModelSpec) => boolean | undefined) {
-    const { model } = this.config;
+    const { model } = this.spec;
     if (callback(model)) {
       this.$dim = null;
       // this.repaint();
@@ -149,8 +155,8 @@ export class NodeUI {
     return new Point(this.x, this.y); // { x: this.x, y: this.y };
   }
   setPos(x: number, y: number, update = true) {
-    this.config.view.x = x;
-    this.config.view.y = y;
+    this.spec.view.x = x;
+    this.spec.view.y = y;
     if (update) {
       this.repaint();
     }
@@ -163,7 +169,7 @@ export class NodeUI {
     this.repaint();
   }
   isRoot() {
-    return this.config.root;
+    return this.spec.root;
   }
   isLeaf() {
     return this.subs.length === 0;
@@ -228,7 +234,12 @@ export class NodeUI {
     if (this.folding === folding) {
       return;
     }
-    this.folding = folding;
+    // this.folding = folding;
+    if (folding) {
+      this.spec.view.folding = true;
+    } else {
+      delete this.spec.view.folding;
+    }
     this.repaint();
     this.sharedConfig.emit(EVENT.NODE.FOLDED, {
       node: this,
@@ -254,8 +265,8 @@ export class NodeUI {
     const levelClassName: string = this.sharedConfig.nodeLevelClassName(this);
     dom.clazz.add(body!, levelClassName);
   }
-  static build(elem: NodeSpec, config: Configuration) {
-    elem.root = true;
-    return new NodeUI(elem, config);
+  static build(spec: NodeSpec, config: Configuration) {
+    spec.root = true;
+    return new NodeUI(spec, config);
   }
 }

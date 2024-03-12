@@ -72,6 +72,11 @@ export type UISetting = {
   offset?: Point;
   snap?: SnapToEntitySetting | false;
   selection?: SelectionSetting;
+  /**
+   * If true, use embedded icons for control(for testing).
+   * @default true
+   */
+  useDefaultIcon?: boolean;
 };
 
 export type InitParam = {

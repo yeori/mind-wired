@@ -21,11 +21,12 @@ import {
 } from "./datasource";
 
 const exportTree = (config: Configuration, nodeUI: NodeUI): NodeSpec => {
-  const v: ViewSpec = nodeUI.config.view;
+  const v: ViewSpec = nodeUI.spec.view;
   const view: ViewSpec = {
     x: v.x,
     y: v.y,
     layout: undefined,
+    folding: undefined,
   };
   if (nodeUI.isRoot()) {
     view.x = config.ui.offset.x;
@@ -52,6 +53,12 @@ const repaintTree = (mwd: MindWired, node: NodeUI, propagate = true) => {
   if (propagate) {
     node.subs.forEach((childNode: NodeUI) => {
       repaintTree(mwd, childNode);
+    });
+  }
+  if (node.isFolded()) {
+    mwd.config.emit(EVENT.NODE.FOLDED, {
+      node: node,
+      folded: true,
     });
   }
 };
@@ -207,10 +214,10 @@ export class MindWired {
       this.rootUI = NodeUI.build(elems, this.config);
     }
     this.edgeUI = new EdgeUI(this.config, this.rootUI, this.canvas);
-    this.config.ui.offset.x = this.rootUI.config.view.x;
-    this.config.ui.offset.y = this.rootUI.config.view.y;
-    this.rootUI.config.view.x = 0;
-    this.rootUI.config.view.y = 0;
+    this.config.ui.offset.x = this.rootUI.spec.view.x;
+    this.config.ui.offset.y = this.rootUI.spec.view.y;
+    this.rootUI.spec.view.x = 0;
+    this.rootUI.spec.view.y = 0;
 
     this.repaint();
     return this;
@@ -308,7 +315,7 @@ export class MindWired {
   }
   setLayout(layoutSpec: NodeLayout, nodeUI: NodeUI) {
     const targetNode = nodeUI || this.rootUI;
-    targetNode.config.view.layout = layoutSpec;
+    targetNode.spec.view.layout = layoutSpec;
     this.repaint();
   }
   setEdge(edgeSpec, nodeUI) {

@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
+import path from "path";
 
 export default defineConfig({
   build: {
@@ -16,6 +17,11 @@ export default defineConfig({
       rollupTypes: true,
     }),
   ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "/src"),
+    },
+  },
   test: {
     watch: false,
     environment: "happy-dom",

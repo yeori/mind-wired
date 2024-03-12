@@ -5,7 +5,7 @@ import nodeDndHandler from "./dnd/node-dnd";
 import changeParentDndHandler from "./dnd/change-parent-node";
 import { EVENT } from "../service/event-bus";
 import iconSetPara from "../assets/icon-chng-parent.svg";
-import iconfolding from "../assets/icon-folded.svg";
+import iconfolding from "@/assets/icon-folded.svg";
 import { geom, type Point } from "../service/geom";
 import Configuration from "./config";
 import { type NodeUI } from "./node/node-ui";
@@ -16,7 +16,7 @@ const pixelRatio = window.devicePixelRatio;
 const template = {
   viewport: `<div data-mind-wired-viewport>
     <canvas></canvas>
-    <div class="mwd-selection-area"><div class="ctrl-icon" data-cmd="set-para" style="display:none; background-image: url(${iconSetPara});"></div></div>
+    <div class="mwd-selection-area"><div class="ctrl-icon" data-cmd="set-para" style="display:none;"><img src="${iconSetPara}"></div></div>
     <div class="mwd-nodes"></div>
   </div>`,
   node: `<div class="mwd-node">
@@ -24,7 +24,7 @@ const template = {
     <div class="mwd-subs"></div>
     <div class="mwd-node-ctrl"></div>
   </div>`,
-  foldingControl: `<div class="ctrl-icon" data-cmd="unfolding" style="background-image: url(${iconfolding});"></div>`,
+  foldingControl: `<div class="ctrl-icon" data-cmd="unfolding"><img src="${iconfolding}"></div>`,
 };
 
 const installCanvasElem = (canvasUI: CanvasUI) => {
@@ -34,6 +34,9 @@ const installCanvasElem = (canvasUI: CanvasUI) => {
   let viewport = dom.findOne(el, "[data-mind-wired-viewport]");
   if (!viewport) {
     viewport = dom.parseTemplate(template.viewport, {});
+    if (!ui.useDefaultIcon) {
+      viewport.querySelector("img")?.remove();
+    }
     el.append(viewport);
   }
   dom.attr(viewport, "tabIndex", "0");
@@ -101,6 +104,8 @@ const installDnd = (canvasUI: CanvasUI) => {
         return false;
       }
       if (dom.is(el, `[data-cmd="set-para"]`)) {
+        const btn = dom.closest(el, `[data-cmd="set-para"]`);
+        canvasUI.dndContext.capture("iconEl", btn);
         canvasUI.dndContext.capture(
           "handler",
           changeParentDndHandler(canvasUI)
@@ -143,6 +148,9 @@ const installDnd = (canvasUI: CanvasUI) => {
   } as DndHelper);
 };
 const updateFolding = (node: NodeUI, display: string) => {
+  if (!node.isReady()) {
+    return;
+  }
   dom.css(node.$el!, { display });
   if (node.isFolded()) {
     return;
@@ -150,6 +158,26 @@ const updateFolding = (node: NodeUI, display: string) => {
   node.subs.forEach((child) => {
     updateFolding(child, display);
   });
+};
+const installFoldingIcon = (
+  nodeEl: HTMLElement,
+  rect: DOMRect,
+  config: Configuration,
+  callback: (foldingEl: HTMLElement) => void
+) => {
+  let foldingEl = nodeEl.querySelector<HTMLElement>(`[data-cmd="unfolding"]`);
+  if (!foldingEl) {
+    foldingEl = dom.parseTemplate(template.foldingControl, {});
+    dom.css(foldingEl, {
+      transform: `translate(${rect.width / 2 + 4}px, -50%)`,
+      zIndex: 0,
+    });
+    if (!config.ui.useDefaultIcon) {
+      foldingEl.querySelector("img")?.remove();
+    }
+    nodeEl.append(foldingEl);
+    callback(foldingEl);
+  }
 };
 const installFocusHandler = (canvasUI: CanvasUI) => {
   /*
@@ -481,7 +509,6 @@ class CanvasUI {
   }
   regsiterNode(nodeUI: NodeUI) {
     registerElement(this, nodeUI);
-    // nodeUI.repaint();
   }
   unregisterNode(nodeUI: NodeUI) {
     unregisterElement(this, nodeUI);
@@ -495,17 +522,11 @@ class CanvasUI {
     const nodeEl = dom.findOne(this.$holder, `[data-uid="${nodeUI.uid}"]`)!;
     if (nodeUI.isFolded()) {
       const rect = dom.domRect(nodeUI.$bodyEl);
-      const foldingEl = dom.parseTemplate(template.foldingControl, {});
-      dom.css(foldingEl, {
-        width: 20,
-        height: 20,
-        transform: `translate(${rect.width / 2}px, -50%)`,
-        zIndex: 0,
-      });
-      nodeEl.append(foldingEl);
-      dom.event.click(foldingEl, (e) => {
-        e.stopPropagation();
-        nodeUI.setFolding(false);
+      installFoldingIcon(nodeEl, rect, this.config, (foldingEl) => {
+        dom.event.click(foldingEl, (e) => {
+          e.stopPropagation();
+          nodeUI.setFolding(false);
+        });
       });
     } else {
       dom.findOne(nodeEl, ':scope > [data-cmd="unfolding"]')!.remove();
@@ -513,7 +534,6 @@ class CanvasUI {
   }
   getNodeBody(nodeUI: NodeUI) {
     let nodeEl = nodeUI.$el!;
-    // let bodyEl = this.$holder.querySelector(`[data-uid=${nodeUI.uid}] .mwd-body`);
     if (!nodeEl) {
       nodeEl = registerElement(this, nodeUI);
     }

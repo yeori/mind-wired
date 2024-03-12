@@ -29,6 +29,7 @@ const DEFAULT_UI_SETTING: UISetting = {
     "background-color": "#b3ddff6b",
     "border-radius": "4px",
   },
+  useDefaultIcon: true,
 };
 class Configuration {
   el: HTMLElement;
@@ -86,7 +87,7 @@ class Configuration {
       );
     }
     const className: string = method
-      ? method(node.level(), node.config)
+      ? method(node.level(), node.spec)
       : `level-${node.level()}`;
 
     return className;

@@ -69,6 +69,7 @@ export type ViewSpec = {
   y: number;
   layout?: NodeLayout;
   edge?: EdgeSpec;
+  folding?: boolean;
 };
 
 export type NodeSpec = {

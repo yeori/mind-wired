@@ -1,13 +1,8 @@
 import { dom } from "../../service";
+import CanvasUI from "../canvas-ui";
 
-const changeParentDndHandler = (canvasUI) => ({
-  beforeDrag: (e) => {
-    const { target } = e.originalEvent;
-    const iconEl = target;
-    // const mrd = canvasUI.config.mindWired();
-    // const { scale } = canvasUI.config;
-    canvasUI.dndContext.capture("iconEl", iconEl);
-  },
+const changeParentDndHandler = (canvasUI: CanvasUI) => ({
+  beforeDrag: () => {},
   dragging: (e) => {
     const { dx, dy } = e;
     const iconEl = canvasUI.dndContext.getData("iconEl");
