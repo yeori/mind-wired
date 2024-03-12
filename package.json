@@ -6,12 +6,14 @@
   "type": "module",
   "main": "./dist/mind-wired.umd.cjs",
   "module": "./dist/mind-wired.js",
+  "types": "./dist/mind-wired.d.ts",
   "exports": {
     ".": {
       "import": "./dist/mind-wired.js",
       "require": "./dist/mind-wired.umd.cjs"
     },
-    "./mind-wired.css": "./dist/style.css"
+    "./mind-wired.css": "./dist/style.css",
+    "./mind-wired.d.ts": "./dist/mind-wired.d.ts"
   },
   "keywords": [
     "mindmap"

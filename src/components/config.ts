@@ -1,4 +1,4 @@
-import type { ModelSpec, NodeSpec, ViewSpec } from "../entity/node-model";
+import type { ModelSpec, NodeSpec, ViewSpec } from "./node/node-type";
 import { dom, clone } from "../service";
 import { EventBus } from "../service/event-bus";
 import { Point } from "../service/geom";

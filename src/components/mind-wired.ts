@@ -12,7 +12,7 @@ import TreeDataSource from "./datasource/tree-ds";
 import DragContext from "./drag-context";
 import type Configuration from "./config";
 import { type NodeRenderingContext } from "./node/node-rendering-context";
-import { ModelSpec, NodeSpec, ViewSpec } from "../entity/node-model";
+import { ModelSpec, NodeSpec, ViewSpec } from "./node/node-type";
 import { type NodeSelectionModel } from "./selection/node-selection-model";
 import {
   DataSourceFactory,
@@ -125,7 +125,7 @@ export class MindWired {
           // this.draggingNodes = capatureDragData(dragTargets);
           this.dragContext.prepareDnd(dragTargets);
           this.alignmentUI.turnOn(this.rootUI, dragTargets);
-          this.canvas.drawSelection(nodes);
+          this.canvas.updateSelection(nodes);
         } else if (e.state === "DRAG") {
           const acceleration = e.target === "all" ? 1 : 2.5;
           this.dragContext.eachCapture((dragging) => {
@@ -142,7 +142,7 @@ export class MindWired {
             const { node, dir } = dragging;
             layoutManager.layout(node, { dir, layoutManager });
           });
-          this.canvas.drawSelection(this.nodeSelectionModel.getNodes());
+          this.canvas.updateSelection(this.nodeSelectionModel.getNodes());
           this.edgeUI.repaint(!this.config.snapEnabled);
         } else if (e.state === "DONE") {
           this.alignmentUI.turnOff();
@@ -261,7 +261,7 @@ export class MindWired {
     });
     parentNode.setFolding(false);
     repaintTree(this, parentNode);
-    this.canvas.drawSelection(nodes);
+    this.canvas.updateSelection(nodes);
     if (trigger) {
       this.config.emit(EVENT.NODE.UPDATED.CLIENT, {
         nodes: childNodes,
@@ -327,8 +327,8 @@ export class MindWired {
     layoutManager.layout(nodeUI, { dir: null });
     this.edgeUI.repaint();
 
-    this.canvas.hideSelection();
-    this.canvas.drawSelection(this.getSelectedNodes());
+    this.canvas.clearNodeSelection();
+    this.canvas.updateSelection(this.getSelectedNodes());
   }
   listen(event, callback) {
     this.config.ebus.listen(`${event}.client`, callback);

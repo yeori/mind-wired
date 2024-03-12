@@ -1,6 +1,7 @@
 import { SnapToEntitySetting, UISetting } from "../../setting";
 import type Configuration from "../config";
-import type { NodeRect, NodeUI } from "../node/node-ui";
+import { NodeRect } from "../node/node-type";
+import type { NodeUI } from "../node/node-ui";
 
 const captureSnapLines = (
   nodes: NodeUI[],

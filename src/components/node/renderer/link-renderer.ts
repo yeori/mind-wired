@@ -1,7 +1,7 @@
 import { type NodeRenderingContext } from "../node-rendering-context";
 import { type INodeRenderer } from "..";
 import { PlainTextRenderer } from "./plain-text-renderer";
-import { ModelSpec } from "../../../entity/node-model";
+import { ModelSpec } from "../node-type";
 
 const template = {
   anchor: `<a href="#" target="_"></a>`,

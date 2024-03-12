@@ -9,7 +9,7 @@ import {
   ThumbnailSpec,
   type ModelSpec,
   NodeModelType,
-} from "../../entity/node-model";
+} from "./node-type";
 import { type NodeUI } from "./node-ui";
 
 export interface INodeRenderer {

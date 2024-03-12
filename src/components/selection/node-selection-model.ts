@@ -1,7 +1,7 @@
 /**
  *
  */
-import { type ModelSpec } from "../../entity/node-model";
+import { type ModelSpec } from "../node/node-type";
 import { dom } from "../../service";
 import { EVENT } from "../../service/event-bus";
 import Configuration from "../config";
@@ -74,7 +74,7 @@ export class NodeSelectionModel {
     });
     this.config.listen(EVENT.VIEWPORT.CLICKED, () => {
       clearSelection(this.nodeMap);
-      canvasUI.hideSelection();
+      canvasUI.clearNodeSelection();
       notifySelection(this);
     });
 
@@ -87,7 +87,7 @@ export class NodeSelectionModel {
       const editing = nodeUI.isEditingState();
       if ("Space" === code && !editing) {
         e.stopPropagation();
-        canvasUI.hideSelection();
+        canvasUI.clearNodeSelection();
         this.config.emit(EVENT.NODE.EDITING, { editing: true, nodeUI });
       } else if ("Escape" === code) {
         this.config.emit(EVENT.NODE.EDITING, { editing: false, nodeUI });

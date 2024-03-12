@@ -8,7 +8,7 @@
  * - width:number(line width)
  */
 
-import { type EdgeSpec } from "../../entity/node-model";
+import { type EdgeSpec } from "../node/node-type";
 import { type NodeUI } from "../node/node-ui";
 
 // fix edge style 필요

@@ -4,7 +4,7 @@ import CanvasUI from "../canvas-ui";
 import { type NodeUI } from "./node-ui";
 import { INodeRenderer, UserDefinedRenderer } from ".";
 import { RenderingDelegate } from ".";
-import { ModelSpec } from "../../entity/node-model";
+import { ModelSpec } from "./node-type";
 
 const renderings = new Map<string, Map<string, INodeRenderer>>();
 

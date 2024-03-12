@@ -47,7 +47,7 @@ export type ModelSpec = {
   "icon-badge"?: IconBadgeSpec;
   provider?: ProviderSpec;
 };
-import { WebColorString } from "./common-type";
+import { Point, WebColorString } from "../../setting";
 
 export type EdgeSpec = {
   name: string;
@@ -77,3 +77,54 @@ export type NodeSpec = {
   view: ViewSpec;
   subs?: NodeSpec[];
 };
+
+export class NodeRect {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+  width: number;
+  height: number;
+  cx: number;
+  cy: number;
+  // icon?: null;
+  constructor(readonly offset: Point, rect: DOMRect) {
+    // offset.x *= scale;
+    // offset.y *= scale;
+    const { width, height } = rect;
+    const w = width * 1;
+    const h = height * 1;
+    this.top = offset.y - h / 2;
+    this.right = offset.x + w / 2;
+    this.bottom = offset.y + h / 2;
+    this.left = offset.x - w / 2;
+    this.width = width;
+    this.height = height;
+    this.cx = offset.x;
+    this.cy = offset.y;
+    // this.icon = null;
+  }
+  get x() {
+    return this.left;
+  }
+  get y() {
+    return this.top;
+  }
+  get r() {
+    return this.right;
+  }
+  get b() {
+    return this.bottom;
+  }
+  merge(other: NodeRect) {
+    this.top = Math.min(this.top, other.top);
+    this.right = Math.max(this.right, other.right);
+    this.bottom = Math.max(this.bottom, other.bottom);
+    this.left = Math.min(this.left, other.left);
+    this.width = this.right - this.left;
+    this.height = this.bottom - this.top;
+    this.cx = this.width / 2;
+    this.cy = this.height / 2;
+    return this;
+  }
+}

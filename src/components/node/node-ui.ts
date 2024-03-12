@@ -1,8 +1,7 @@
-import { ViewSpec, type NodeSpec, ModelSpec } from "../../entity/node-model";
+import { ViewSpec, type NodeSpec, ModelSpec, NodeRect } from "./node-type";
 import { dom } from "../../service";
 import { EVENT } from "../../service/event-bus";
 import { Point } from "../../service/geom";
-import type CanvasUI from "../canvas-ui";
 import Configuration from "../config";
 import EdgeStyle from "../edge/edge-style";
 
@@ -21,90 +20,6 @@ const parseSubs = (nodeUi: NodeUI) => {
 let uid = 100;
 let zIndex = 1;
 
-export class NodeRect {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-  width: number;
-  height: number;
-  cx: number;
-  cy: number;
-  icon?: null;
-  constructor(node: NodeUI, scale: number) {
-    const offset = node.offset();
-    offset.x *= scale;
-    offset.y *= scale;
-    const rect = dom.domRect(node.$bodyEl);
-    const { width, height } = rect;
-    this.top = offset.y - height / 2;
-    this.right = offset.x + width / 2;
-    this.bottom = offset.y + height / 2;
-    this.left = offset.x - width / 2;
-    this.width = width;
-    this.height = height;
-    this.cx = offset.x;
-    this.cy = offset.y;
-    this.icon = null;
-  }
-  get x() {
-    return this.left;
-  }
-  get y() {
-    return this.top;
-  }
-  get r() {
-    return this.right;
-  }
-  get b() {
-    return this.bottom;
-  }
-  merge(other: NodeRect) {
-    this.top = Math.min(this.top, other.top);
-    this.right = Math.max(this.right, other.right);
-    this.bottom = Math.max(this.bottom, other.bottom);
-    this.left = Math.min(this.left, other.left);
-    this.width = this.right - this.left;
-    this.height = this.bottom - this.top;
-    this.cx = this.width / 2;
-    this.cy = this.height / 2;
-    return this;
-  }
-  static wrap(node: NodeUI, dto: NodeRect): NodeRect {
-    const rect = new NodeRect(node, node.sharedConfig.getCanvas().scale);
-    Object.keys(dto).forEach((key) => {
-      rect[key] = dto[key];
-    });
-    return rect;
-  }
-  // FIXME - CavasUI.drawSelection 으로 옮겨야 함
-  draw(canvas: CanvasUI) {
-    const { selection } = canvas.config.ui;
-    const offset = canvas.getHolderOffset();
-
-    const el = dom.findOne(canvas.$viewport, ".mwd-selection-area");
-    dom.css(el, {
-      left: offset.x + this.left - selection.padding,
-      top: offset.y + this.top - selection.padding,
-      width: this.width + 2 * selection.padding,
-      height: this.height + 2 * selection.padding,
-    });
-    const ctrl = dom.findOne(el, "div");
-    dom.css(ctrl, {
-      display: "",
-      width: 24 / Math.max(canvas.scale, 1),
-      height: 24 / Math.max(canvas.scale, 1),
-    });
-  }
-  // FIXME - CavasUI.clearSelection 으로 옮겨야 함
-  clear(canvas: CanvasUI) {
-    const el = dom.findOne(canvas.$viewport, ".mwd-selection-area");
-    dom.css(el, { top: -1, left: -1, width: 0, height: 0 });
-    const ctrl = dom.findOne(el, "div");
-    dom.css(ctrl, { display: "none" });
-  }
-}
-
 export class NodeUI {
   config: NodeSpec;
   sharedConfig: Configuration;
@@ -118,8 +33,7 @@ export class NodeUI {
   $style: EdgeStyle;
   folding: boolean;
   $cachedStyle: EdgeStyle | null;
-  // fix $dim타입 뭔지 모르겠다.
-  $dim: any;
+  $dim: NodeRect;
   constructor(
     config: NodeSpec,
     sharedConfig: Configuration,
@@ -171,18 +85,7 @@ export class NodeUI {
     const offset = this.offset();
     offset.x *= scale;
     offset.y *= scale;
-    const w = (el.offsetWidth * scale) / 2;
-    const h = (el.offsetHeight * scale) / 2;
-    return (this.$dim = NodeRect.wrap(this, {
-      left: offset.x - w,
-      top: offset.y - h,
-      width: 2 * w,
-      height: 2 * h,
-      cx: offset.x,
-      cy: offset.y,
-      right: offset.x + w,
-      bottom: offset.y + h,
-    } as NodeRect));
+    return (this.$dim = new NodeRect(offset, dom.domRect(el)));
   }
   level(): number {
     return this.isRoot() ? 0 : this.parent!.level() + 1;
@@ -356,8 +259,3 @@ export class NodeUI {
     return new NodeUI(elem, config);
   }
 }
-
-// NodeUI.build = (elem, config) => {
-//   elem.root = true;
-//   return new NodeUI(elem, config);
-// };

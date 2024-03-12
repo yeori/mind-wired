@@ -8,8 +8,9 @@ import iconSetPara from "../assets/icon-chng-parent.svg";
 import iconfolding from "../assets/icon-folded.svg";
 import { geom, type Point } from "../service/geom";
 import Configuration from "./config";
-import { NodeRect, type NodeUI } from "./node/node-ui";
+import { type NodeUI } from "./node/node-ui";
 import { type MindWired } from "./mind-wired";
+import { NodeRect } from "./node/node-type";
 
 const pixelRatio = window.devicePixelRatio;
 const template = {
@@ -50,9 +51,7 @@ const captureContext2D = (canvasUI: CanvasUI) => {
 
   canvasUI.$ctx = ctx;
   canvasUI.$ctx.scale(pixelRatio, pixelRatio);
-  if (canvasUI.selectionArea) {
-    canvasUI.selectionArea.draw(canvasUI);
-  }
+  canvasUI.drawNodeSelection();
   config.emit(EVENT.VIEWPORT.RESIZED);
 };
 const registerSchema = (
@@ -400,9 +399,7 @@ class CanvasUI {
       left: `calc(50% + ${baseOffset.x}px)`,
       transform: `scale(${scale})`,
     });
-    if (this.selectionArea) {
-      this.selectionArea.draw(this);
-    }
+    this.drawNodeSelection();
   }
   moveNode(nodeUI: NodeUI) {
     // moveNode
@@ -410,21 +407,46 @@ class CanvasUI {
     const $subs = dom.findOne(parent!.$el!, ".mwd-subs");
     $subs!.append(nodeUI.$el!);
   }
-  drawSelection(nodes: NodeUI[]) {
+  drawNodeSelection() {
+    const area = this.selectionArea;
+    if (!area) {
+      return;
+    }
+    const { selection } = this.config.ui;
+
+    const offset = this.getHolderOffset();
+    const el = dom.findOne(this.$viewport, ".mwd-selection-area");
+    dom.css(el, {
+      left: offset.x + area.left - selection.padding,
+      top: offset.y + area.top - selection.padding,
+      width: area.width + 2 * selection.padding,
+      height: area.height + 2 * selection.padding,
+    });
+    const ctrl = dom.findOne(el, "div");
+    dom.css(ctrl, {
+      display: "",
+      width: 24 / Math.max(this.scale, 1),
+      height: 24 / Math.max(this.scale, 1),
+    });
+  }
+  updateSelection(nodes: NodeUI[]) {
     if (!nodes || nodes.length === 0) {
       return;
     }
-    this.hideSelection();
-    const rects = nodes.map((n: NodeUI) => new NodeRect(n, this.scale));
+    this.clearNodeSelection();
+    const rects = nodes.map((n: NodeUI) => n.dimension());
     this.selectionArea = rects.reduce(
       (acc: NodeRect, rect: NodeRect) => acc.merge(rect),
       rects[0]
     );
-    this.selectionArea!.draw(this);
+    this.drawNodeSelection();
   }
-  hideSelection() {
+  clearNodeSelection() {
     if (this.selectionArea) {
-      this.selectionArea.clear(this);
+      const el = dom.findOne(this.$viewport, ".mwd-selection-area");
+      dom.css(el, { top: -1, left: -1, width: 0, height: 0 });
+      const ctrl = dom.findOne(el, "div");
+      dom.css(ctrl, { display: "none" });
       this.selectionArea = undefined;
     }
   }
@@ -463,7 +485,7 @@ class CanvasUI {
   }
   unregisterNode(nodeUI: NodeUI) {
     unregisterElement(this, nodeUI);
-    this.hideSelection();
+    this.clearNodeSelection();
   }
   updateFoldingNodes(nodeUI: NodeUI) {
     const display = nodeUI.isFolded() ? "none" : "";

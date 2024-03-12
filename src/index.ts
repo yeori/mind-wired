@@ -5,6 +5,8 @@ import "./assets/mind-wired.scss";
 import "./assets/extra/mind-wired-editor.scss";
 import TreeDataSource from "./components/datasource/tree-ds";
 import { InitParam } from "./setting";
+export * from "./setting";
+export * from "./components/node/node-type";
 
 const injectCanvas = (el) => {
   const canvas = dom.tag.canvas();
@@ -38,6 +40,8 @@ const init = (param: InitParam) => {
   });
 };
 
+const initMindWired = init;
+
 const createDataSource = () => new TreeDataSource();
 
-export { init, createDataSource, MindWired };
+export { init, initMindWired, createDataSource, MindWired };

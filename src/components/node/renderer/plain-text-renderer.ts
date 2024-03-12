@@ -1,4 +1,4 @@
-import { ModelSpec } from "../../../entity/node-model";
+import { ModelSpec } from "../node-type";
 import { NodeRenderingContext } from "../node-rendering-context";
 import { type NodeUI } from "../node-ui";
 import { INodeRenderer } from "..";
