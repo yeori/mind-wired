@@ -50,15 +50,15 @@ export type ModelSpec = {
 import { Point, WebColorString } from "../../setting";
 
 export type EdgeSpec = {
-  name: string;
-  color: WebColorString;
-  width: number | ((node: NodeSpec, level?: number) => number);
+  name?: string;
+  color?: WebColorString;
+  width?: number | ((node: NodeSpec, level: number) => number);
   dash?: number[];
   /**
    * if true, all descendant nodes use this edge(default: true)
    */
   inherit?: boolean;
-  option: any;
+  option?: any;
 };
 export type NodeAlignmentType = "X-AXIS" | "Y-AXIS" | "XY-AXIS";
 export type NodeLayout = {

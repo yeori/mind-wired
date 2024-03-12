@@ -35,6 +35,8 @@ describe("Adding datasource", () => {
       },
       view: {
         layout: { type: "X-AXIS" },
+        x: 0,
+        y: 0,
       },
       subs: [
         {

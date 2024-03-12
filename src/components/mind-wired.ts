@@ -12,7 +12,7 @@ import TreeDataSource from "./datasource/tree-ds";
 import DragContext from "./drag-context";
 import type Configuration from "./config";
 import { type NodeRenderingContext } from "./node/node-rendering-context";
-import { ModelSpec, NodeSpec, ViewSpec } from "./node/node-type";
+import { ModelSpec, NodeLayout, NodeSpec, ViewSpec } from "./node/node-type";
 import { type NodeSelectionModel } from "./selection/node-selection-model";
 import {
   DataSourceFactory,
@@ -101,7 +101,7 @@ export class MindWired {
       this.canvas.repaintNodeHolder();
       this.edgeUI.repaint();
       if (e.state === "DONE") {
-        this.rootUI.setPos(e.offset.x, e.offset.y);
+        this.rootUI.setPos(e.offset.x, e.offset.y, false);
         try {
           this.config.emit(EVENT.NODE.UPDATED.CLIENT, {
             nodes: [this.rootUI],
@@ -168,7 +168,7 @@ export class MindWired {
       .listen(EVENT.NODE.FOLDED, ({ node }) => {
         this.canvas.updateFoldingNodes(node);
       })
-      .listen(EVENT.NODE.UPDATED, (nodes) => {
+      .listen(EVENT.NODE.UPDATED, (nodes: NodeUI[]) => {
         nodes.forEach((node) => node.repaint());
         this.edgeUI.repaint();
         this.config.emit(EVENT.NODE.UPDATED.CLIENT, { nodes, type: "model" });
@@ -199,11 +199,11 @@ export class MindWired {
   isEditing() {
     return this.nodeEditor.isEditing();
   }
-  nodes(elems) {
+  nodes(elems: NodeSpec) {
     if (elems instanceof TreeDataSource) {
       const root = elems.build();
       this.rootUI = NodeUI.build(root, this.config);
-    } else {
+    } else if (elems) {
       this.rootUI = NodeUI.build(elems, this.config);
     }
     this.edgeUI = new EdgeUI(this.config, this.rootUI, this.canvas);
@@ -219,7 +219,8 @@ export class MindWired {
     return this.rootUI.find(predicate);
   }
   addNode(parentNode: NodeUI, nodeData: NodeSpec, option?) {
-    const data = {
+    const data: NodeSpec = {
+      root: false,
       model: nodeData.model,
       view: nodeData.view,
     };
@@ -305,7 +306,7 @@ export class MindWired {
   getSelectedNodes() {
     return this.nodeSelectionModel.getNodes();
   }
-  setLayout(layoutSpec, nodeUI) {
+  setLayout(layoutSpec: NodeLayout, nodeUI: NodeUI) {
     const targetNode = nodeUI || this.rootUI;
     targetNode.config.view.layout = layoutSpec;
     this.repaint();

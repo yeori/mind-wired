@@ -7,13 +7,13 @@ import { EVENT } from "../../service/event-bus";
 import Configuration from "../config";
 import { MindWired } from "../mind-wired";
 import { type NodeUI } from "../node/node-ui";
-const clearSelection = (nodeMap) => {
+const clearSelection = (nodeMap: Map<string, NodeUI>) => {
   for (let nodeUI of nodeMap.values()) {
     nodeUI.setSelected(false);
   }
   nodeMap.clear();
 };
-const skipStateForInsert = (nodes) => {
+const skipStateForInsert = (nodes: NodeUI[]) => {
   if (nodes.length !== 1) {
     return true;
   }
@@ -22,16 +22,20 @@ const skipStateForInsert = (nodes) => {
   }
   return false;
 };
-const skipStateForDelete = (nodes) => {
+const skipStateForDelete = (nodes: NodeUI[]) => {
   if (nodes.length === 0) {
     return true;
   }
   // root node cannot be deleted
-  const rootNode = nodes.find((node) => node.root);
+  const rootNode = nodes.find((node) => node.isRoot());
   return !!rootNode;
 };
-const appendNode = (selectionModel, parent: NodeUI, sibling: NodeUI) => {
-  const mwd: MindWired = selectionModel.config.mindWired();
+const appendNode = (
+  model: NodeSelectionModel,
+  parent: NodeUI,
+  sibling: NodeUI
+) => {
+  const mwd: MindWired = model.config.mindWired();
   mwd.addNode(
     parent,
     {
@@ -45,9 +49,9 @@ const deleteNodes = (selectionModel, nodesToDel) => {
   const mwd = selectionModel.config.mindWired();
   mwd.deleteNodes(nodesToDel);
 };
-const notifySelection = (selectionModel) => {
-  const { config } = selectionModel;
-  const nodes = selectionModel.getNodes();
+const notifySelection = (model: NodeSelectionModel) => {
+  const { config } = model;
+  const nodes = model.getNodes();
   setTimeout(() => config.emit(EVENT.NODE.SELECTED.CLIENT, { nodes }));
 };
 export class NodeSelectionModel {
