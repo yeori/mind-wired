@@ -135,7 +135,7 @@ export class NodeUI {
     }
   }
   getHeading(): Heading {
-    return geom.heading(this.offset());
+    return geom.heading(new Point(this.x, this.y));
   }
   /**
    * absolute offset
