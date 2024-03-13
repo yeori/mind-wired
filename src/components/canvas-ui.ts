@@ -67,7 +67,7 @@ const registerSchema = (
 };
 const registerElement = (canvasUI: CanvasUI, nodeUI: NodeUI) => {
   if (nodeUI.$el) {
-    throw new Error(`[MINDWIRED][ERROR] already installed. (${nodeUI.uid})`);
+    throw new Error(`[MINDWIRED] already installed. (${nodeUI.uid})`);
   }
   const $el = (nodeUI.$el = dom.parseTemplate(template.node));
   const mwd = canvasUI.config.mindWired();

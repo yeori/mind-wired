@@ -1,25 +1,20 @@
+import { type Heading } from "../service/geom";
+import { type NodeUI } from "./node/node-ui";
 /**
- * direction relative to parent node
+ * direction flow relative to parent node
+ * * LR: moved from left to right
+ * * RL: moved from right to left
+ * * TB: moved from top to bottom
+ * * BT: moved from bottom to top
  */
-// fix format을 enum으로 바꿔야 함. LR, RL, TB, BT
-const resolve = (format: string): any => {
-  if ("LR" === format) {
-    return { dir: "horizontal", pos: [-1, 1] };
-  } else if ("RL" === format) {
-    return { dir: "horizontal", pos: [1, -1] };
-  } else if ("TB" === format) {
-    return { dir: "vertical", pos: [-1, 1] };
-  } else if ("BT" === format) {
-    return { dir: "vertical", pos: [1, -1] };
-  }
-};
-class Direction {
-  node: any;
-  prev: Direction | any;
+export type DirectionFlow = "LR" | "RL" | "TB" | "BT";
+export class Direction {
+  node: NodeUI;
+  private prev: Heading;
   // fixme NodeUI 타입
-  constructor(nodeUI: any) {
+  constructor(nodeUI: NodeUI) {
     this.node = nodeUI;
-    this.prev = null;
+    this.prev = undefined;
     this.capture();
   }
   get horizontal() {
@@ -30,20 +25,23 @@ class Direction {
     const { y } = this.node;
     return y <= 0 ? -1 : 1;
   }
-  // fix format을 enum으로 바꿔야 함. LR, RL, TB, BT
-  updated(format: string) {
-    // fix dir 타입 필요함,
-    const { dir, pos }: { dir: string; pos: number[] } = resolve(format);
-    const cur = this[dir as keyof Direction];
-    return this.prev[dir] === pos[0] && cur === pos[1];
+  updated(format: DirectionFlow) {
+    const cur = this.node.getHeading();
+    if (format === "LR") {
+      return this.prev.cwy > 180 && cur.cwy <= 180;
+    } else if (format === "RL") {
+      return this.prev.cwy <= 180 && cur.cwy > 180;
+    } else if (format === "TB") {
+      return this.prev.ccwx <= 180 && cur.ccwx > 180;
+    } else if (format === "BT") {
+      return this.prev.ccwx > 180 && cur.ccwx <= 180;
+    } else {
+      throw new Error(
+        `[${format}] is not allowed. use 'LR' | 'RL' | 'TB' | 'BT'`
+      );
+    }
   }
   capture() {
-    const { x, y } = this.node;
-    this.prev = {
-      horizontal: x <= 0 ? -1 : 1,
-      vertical: y <= 0 ? -1 : 1,
-    };
+    this.prev = this.node.getHeading();
   }
 }
-
-export default Direction;

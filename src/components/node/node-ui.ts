@@ -1,7 +1,13 @@
-import { ViewSpec, type NodeSpec, ModelSpec, NodeRect } from "./node-type";
+import {
+  ViewSpec,
+  type NodeSpec,
+  ModelSpec,
+  NodeRect,
+  NodeLayout,
+} from "./node-type";
 import { dom } from "../../service";
 import { EVENT } from "../../service/event-bus";
-import { Point } from "../../service/geom";
+import { type Heading, Point, geom } from "../../service/geom";
 import Configuration from "../config";
 import EdgeStyle from "../edge/edge-style";
 
@@ -66,8 +72,7 @@ export class NodeUI {
   get y() {
     return this.spec.view.y;
   }
-  // fix view.layout 타입 필요 {model:{..}, views: {layout: {type: ...}}}
-  get layout(): any {
+  get layout(): NodeLayout {
     let { layout } = this.spec.view;
     if (layout) {
       return { ...layout };
@@ -128,6 +133,9 @@ export class NodeUI {
       // this.repaint();
       this.sharedConfig.emit(EVENT.NODE.UPDATED, [this]);
     }
+  }
+  getHeading(): Heading {
+    return geom.heading(this.offset());
   }
   offset(): Point {
     let ref: NodeUI = this;

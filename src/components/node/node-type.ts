@@ -60,9 +60,9 @@ export type EdgeSpec = {
   inherit?: boolean;
   option?: any;
 };
-export type NodeAlignmentType = "X-AXIS" | "Y-AXIS" | "XY-AXIS";
+export type NodeLayoutType = "X-AXIS" | "Y-AXIS" | "XY-AXIS" | "DEFAULT";
 export type NodeLayout = {
-  type: NodeAlignmentType;
+  type: NodeLayoutType;
 };
 export type ViewSpec = {
   x: number;

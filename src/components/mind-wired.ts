@@ -2,14 +2,14 @@ import { EVENT } from "../service/event-bus";
 import CanvasUI from "./canvas-ui";
 import { EdgeUI } from "./edge";
 import { NodeUI } from "./node/node-ui";
-import layoutManager from "./layout";
+import { NodeLayoutContext } from "./layout";
 import selection from "./selection";
 import { NodeEditing } from "./editing";
 import { INodeRenderer, RenderingDelegate, installNodeRenderer } from "./node";
 import AlignmentUI from "./alignment/alignment-ui";
 import { dom } from "../service";
 import TreeDataSource from "./datasource/tree-ds";
-import DragContext from "./drag-context";
+import { DragContext, type Capture } from "./drag-context";
 import type Configuration from "./config";
 import { type NodeRenderingContext } from "./node/node-rendering-context";
 import { ModelSpec, NodeLayout, NodeSpec, ViewSpec } from "./node/node-type";
@@ -76,6 +76,7 @@ export class MindWired {
   canvas: CanvasUI;
   nodeRenderingContext: NodeRenderingContext;
   nodeSelectionModel: NodeSelectionModel;
+  nodeLayoutContext: NodeLayoutContext;
   nodeEditor: NodeEditing;
   alignmentUI: AlignmentUI;
   dragContext: DragContext;
@@ -97,6 +98,7 @@ export class MindWired {
     config.getNodeRenderer = () => this.nodeRenderingContext;
 
     this.nodeSelectionModel = selection.createSelectionModel("node", config);
+    this.nodeLayoutContext = new NodeLayoutContext();
     this.nodeEditor = new NodeEditing(config);
     this.alignmentUI = new AlignmentUI(config);
     this.dragContext = new DragContext();
@@ -135,8 +137,8 @@ export class MindWired {
           this.canvas.updateSelection(nodes);
         } else if (e.state === "DRAG") {
           const acceleration = e.target === "all" ? 1 : 2.5;
-          this.dragContext.eachCapture((dragging) => {
-            const { node, dir, pos } = dragging;
+          this.dragContext.eachCapture((capture: Capture) => {
+            const { node, dir, pos } = capture;
             dir.capture();
             node.setPos(
               acceleration * e.x + pos.x,
@@ -145,9 +147,11 @@ export class MindWired {
             );
           });
           this.alignmentUI.doAlign();
-          this.dragContext.eachCapture((dragging) => {
-            const { node, dir } = dragging;
-            layoutManager.layout(node, { dir, layoutManager });
+          this.dragContext.eachCapture((capture: Capture) => {
+            const { node, dir } = capture;
+            this.nodeLayoutContext.layout(node, {
+              dir,
+            });
           });
           this.canvas.updateSelection(this.nodeSelectionModel.getNodes());
           this.edgeUI.repaint(!this.config.snapEnabled);
@@ -242,7 +246,7 @@ export class MindWired {
     parentNode.addChild(nodeUI);
     if (option?.siblingNode) {
       const rect = dom.domRect(option.siblingNode.$bodyEl);
-      layoutManager.setPosition(nodeUI, {
+      this.nodeLayoutContext.setPosition(nodeUI, {
         baseNode: option.siblingNode,
         rect,
       });
@@ -332,7 +336,7 @@ export class MindWired {
     nodeUI = nodeUI || this.rootUI;
     repaintTree(this, nodeUI);
     this.canvas.repaintNodeHolder();
-    layoutManager.layout(nodeUI, { dir: null });
+    this.nodeLayoutContext.layout(nodeUI, { dir: undefined });
     this.edgeUI.repaint();
 
     this.canvas.clearNodeSelection();
@@ -362,8 +366,8 @@ export class MindWired {
       const nodeRenderer = this.nodeRenderingContext.getRenderer(
         renderName
       ) as RenderingDelegate<any>;
-      const { delegate } = nodeRenderer;
-      const { text, iconBadge, thumbnail } = delegate;
+
+      const { text, iconBadge, thumbnail } = nodeRenderer.delegate;
       let m: ModelSpec;
       if (text) {
         m = { type: "text", text: text(userData) };
