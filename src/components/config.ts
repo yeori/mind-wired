@@ -16,6 +16,7 @@ const DEFAULT_UI_SETTING: UISetting = {
     edge: "active-edge",
     schema: (schemaName: string): string => schemaName,
     level: (level: number): string => `level-${level}`,
+    folded: "folded",
   },
   offset: new Point(0, 0),
   snap: {
@@ -80,17 +81,19 @@ class Configuration {
     return className;
   }
   nodeLevelClassName(node: NodeUI): string {
-    const method = this.ui.clazz.level;
-    if (!dom.types.method(method)) {
-      throw new Error(
-        `clazz.level should be function, but ${typeof method}. (level, node) => {} `
-      );
+    const { level } = this.ui.clazz;
+    let className: string = undefined;
+    if (typeof level === "string") {
+      className = level;
+    } else if (typeof level === "function") {
+      className = level(node.level(), node.spec);
+    } else {
+      className = `level-${node.level()}`;
     }
-    const className: string = method
-      ? method(node.level(), node.spec)
-      : `level-${node.level()}`;
-
     return className;
+  }
+  foldedNodeClassName(): string {
+    return this.ui.clazz.folded || "folded";
   }
   listen(eventName: string, callback: Function) {
     this.ebus.on(eventName, callback);
@@ -125,7 +128,6 @@ const normalizeOffset = (ui: UISetting) => {
     ui.offset = new Point(ui.offset.x, ui.offset.y);
   }
 };
-// fix ui 타입 정의해야함.
 const normalizeSnap = (ui: UISetting) => {
   const { snap } = ui;
   const defaultSnap = DEFAULT_UI_SETTING.snap as SnapToEntitySetting;

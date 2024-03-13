@@ -482,10 +482,31 @@ class CanvasUI {
     if (!nodeUI.$el) {
       registerElement(this, nodeUI);
     }
+    const { $el, zIndex } = nodeUI;
+    const $body = $el!.querySelector<HTMLElement>(".mwd-body");
+    // 1. folding state
+    const foldedClassName = this.config.foldedNodeClassName();
+    if (nodeUI.isFolded()) {
+      dom.clazz.add($el, foldedClassName);
+    } else {
+      dom.clazz.remove($el, foldedClassName);
+    }
+    // 2. positioning
+    const pos = nodeUI.getPos();
+    dom.css($el!, { top: pos.y, left: pos.x, zIndex: zIndex });
+    // 3. selection state
+    const methodName = nodeUI.isSelected() ? "add" : "remove";
+    const className = this.config.activeClassName("node");
+    dom.clazz[methodName]($body, className);
+    // 4. level
+    const levelClassName: string = this.config.nodeLevelClassName(nodeUI);
+    dom.clazz.add($body, levelClassName);
+    $body.dataset.level = `${nodeUI.level()}`;
+
     const mwd = this.config.mindWired();
     const nodeRenderer = mwd.getNodeRender(nodeUI.model);
     const model = mwd.translateModel(nodeUI.model);
-    nodeRenderer.render(model, this.getNodeBody(nodeUI));
+    nodeRenderer.render(model, $body);
   }
   showNodeEditor(nodeUI: NodeUI, $editorEl: HTMLElement) {
     const { uid } = nodeUI;

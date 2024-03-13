@@ -1,3 +1,4 @@
+import { NodeSpec } from "../components/node/node-type";
 import { Point } from "../service/geom";
 
 export { Point };
@@ -20,10 +21,32 @@ export type ZeroOrPositiveNumber = number;
 export type CssSelectorForm = string;
 
 export type EntityClassNaming = {
+  /**
+   * classname for active node
+   *
+   * @default 'active-node'
+   */
   node: CssClassName;
+  /**
+   * classname for edge
+   * @deprecated
+   */
   edge: CssClassName;
   schema?: (schemaName: string) => CssClassName;
-  level?: (level: number, node?: any) => CssClassName;
+  /**
+   * level classname for node.
+   * @default `level-${levenumber}`
+   * @param level level number of the node.(root: 0, child of root: 1, ...)
+   * @param spec NodeSpec
+   * @returns
+   */
+  level?: string | ((level: number, node?: NodeSpec) => CssClassName);
+  /**
+   * classname for folded node.(Children of a folded node are hidden.)
+   *
+   * @default 'folded'
+   */
+  folded?: string;
 };
 
 export type SnapToEntitySetting = {

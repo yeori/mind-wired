@@ -262,6 +262,12 @@ export class MindWired {
       this.nodeEditor.edit(nodeUI);
     }
   }
+  /**
+   *
+   * @param parentNode new parent of the given nodes
+   * @param nodes nodes whoses parent is changed
+   * @param trigger if true, send event 'node.updated'
+   */
   moveNodes(parentNode: NodeUI, nodes: NodeUI[], trigger: boolean = false) {
     const childNodes = nodes.filter((node) => node.parent !== parentNode);
     childNodes.forEach((child) => {

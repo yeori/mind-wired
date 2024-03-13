@@ -137,13 +137,16 @@ export class NodeUI {
   getHeading(): Heading {
     return geom.heading(this.offset());
   }
+  /**
+   * absolute offset
+   * @returns offset from root to this node
+   */
   offset(): Point {
     let ref: NodeUI = this;
     const p = new Point(0, 0);
     while (ref) {
-      const dir = 1; // ref.isRoot() ? -1 : 1;
-      p.x += dir * ref.x;
-      p.y += dir * ref.y;
+      p.x += ref.x;
+      p.y += ref.y;
       ref = ref.parent;
     }
     return p;
@@ -260,18 +263,6 @@ export class NodeUI {
   repaint() {
     const canvasUI = this.sharedConfig.getCanvas();
     canvasUI.drawNode(this);
-    const { $el } = this;
-    const body = $el!.querySelector<HTMLElement>(".mwd-body");
-
-    const pos = this.getPos();
-    dom.css($el!, { top: pos.y, left: pos.x, zIndex: this.zIndex });
-
-    const methodName = this.isSelected() ? "add" : "remove";
-    const className = this.sharedConfig.activeClassName("node");
-    dom.clazz[methodName](body!, className);
-
-    const levelClassName: string = this.sharedConfig.nodeLevelClassName(this);
-    dom.clazz.add(body!, levelClassName);
   }
   static build(spec: NodeSpec, config: Configuration) {
     spec.root = true;
