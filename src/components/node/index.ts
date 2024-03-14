@@ -3,7 +3,8 @@ import { IconBadgeRenderer } from "./renderer/icon-badge-renderer";
 import { ThumbnailRenderer } from "./renderer/thumbnail-renderer";
 import { NodeRenderingContext } from "./node-rendering-context";
 import { LinkRenderer } from "./renderer/link-renderer";
-import type CanvasUI from "../canvas-ui";
+import type { CanvasUI } from "../canvas-ui";
+export * from "./node-ui";
 import {
   IconBadgeSpec,
   ThumbnailSpec,

@@ -1,7 +1,7 @@
 import { DndEvent } from "../../service/dnd";
 import { EVENT } from "../../service/event-bus";
 import { Point } from "../../service/geom";
-import CanvasUI from "../canvas-ui";
+import type { CanvasUI } from "../canvas-ui";
 /**
  * handles viewport dragging
  */

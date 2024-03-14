@@ -1,5 +1,5 @@
 import { dom } from "../../service";
-import CanvasUI from "../canvas-ui";
+import type { CanvasUI } from "../canvas-ui";
 
 const changeParentDndHandler = (canvasUI: CanvasUI) => ({
   beforeDrag: () => {},

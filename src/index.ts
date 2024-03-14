@@ -7,8 +7,12 @@ import TreeDataSource from "./components/datasource/tree-ds";
 import { InitParam } from "./setting";
 export * from "./setting";
 export * from "./components/node/node-type";
+export * from "./components/edge";
+export * from "./components/canvas-ui";
+export * from "./components/node";
+export * from "./components/edge/edge-renderer-type";
 
-const injectCanvas = (el) => {
+const injectCanvas = (el: HTMLElement) => {
   const canvas = dom.tag.canvas();
   el.append(canvas);
   return canvas;

@@ -1,5 +1,5 @@
 import { EVENT } from "../service/event-bus";
-import CanvasUI from "./canvas-ui";
+import { CanvasUI } from "./canvas-ui";
 import { EdgeUI } from "./edge";
 import { NodeUI } from "./node/node-ui";
 import { NodeLayoutContext } from "./layout";
@@ -19,6 +19,7 @@ import {
   DatasourceOptionalParam,
   KeyExtractor,
 } from "./datasource";
+import { IEdgeRenderer } from "./edge/edge-renderer-type";
 
 const exportTree = (config: Configuration, nodeUI: NodeUI): NodeSpec => {
   const v: ViewSpec = nodeUI.spec.view;
@@ -103,6 +104,7 @@ export class MindWired {
     this.alignmentUI = new AlignmentUI(config);
     this.dragContext = new DragContext();
     this._dsFactory = new DataSourceFactory();
+    this.edgeUI = new EdgeUI(config, this.canvas);
 
     this.config.listen(EVENT.DRAG.VIEWPORT, (e) => {
       this.config.setOffset(e.offset);
@@ -164,6 +166,9 @@ export class MindWired {
               nodes,
               type: "pos",
             });
+          } else {
+            const nodes = this.nodeSelectionModel.getNodes();
+            this.config.emit(EVENT.NODE.CLICKED, { nodes }, true);
           }
           this.dragContext.clear();
         }
@@ -217,7 +222,7 @@ export class MindWired {
     } else if (elems) {
       this.rootUI = NodeUI.build(elems, this.config);
     }
-    this.edgeUI = new EdgeUI(this.config, this.rootUI, this.canvas);
+    this.edgeUI.setRootNode(this.rootUI);
     this.config.ui.offset.x = this.rootUI.spec.view.x;
     this.config.ui.offset.y = this.rootUI.spec.view.y;
     this.rootUI.spec.view.x = 0;
@@ -390,5 +395,8 @@ export class MindWired {
   export() {
     const nodeSpec = exportTree(this.config, this.rootUI);
     return Promise.resolve(JSON.stringify(nodeSpec));
+  }
+  registerEdgeRenderer(renderer: IEdgeRenderer) {
+    this.edgeUI.addEdgeRenderer(renderer);
   }
 }

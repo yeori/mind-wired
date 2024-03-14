@@ -1,15 +1,16 @@
-import { IEdgeRenderer } from ".";
-import { dom } from "../../service";
 import { Point } from "../../service/geom";
-import type CanvasUI from "../canvas-ui";
+import type { CanvasUI } from "../canvas-ui";
+import { type NodeRect } from "../node/node-type";
 import { type NodeUI } from "../node/node-ui";
+import { AbstractEdgeRenderer } from "./edge-renderer-type";
 
-const valignOf = (node: NodeUI) => {
-  const { option } = node.$style;
+export type MustachLREdgeOption = {
+  valign: "bottom" | "center" | "top";
+};
+const valignOf = (option: MustachLREdgeOption) => {
   const valign = option && option.valign;
   return valign || "center";
 };
-// fix node의 offset에 dimension정보를 담고 있음. rect도 동일
 // fix padding{ hor: 0, ver: 0 } 타입 필요
 const renderUnderline = (
   canvas: CanvasUI,
@@ -30,9 +31,9 @@ const renderUnderline = (
 const renderCurve = (
   canvas: CanvasUI,
   srcNode: NodeUI,
-  s: Point,
+  s: NodeRect,
   dstNode: NodeUI,
-  e: Point,
+  e: NodeRect,
   dx: number
 ) => {
   // const { scale } = canvas;
@@ -40,30 +41,30 @@ const renderCurve = (
   const dstWidth = dstNode.$style.width;
   const width = Math.min(srcWidth, dstWidth);
   const offset = Math.abs(srcWidth - dstWidth);
-  s.y -= offset / 2;
+  s.offset.y -= offset / 2;
   const props = { lineWidth: width, strokeStyle: dstNode.$style.color };
   const rendererFn = dstNode.$style.getEdgeRenderer();
   canvas.drawBeizeCurve(
-    s,
-    e,
+    s.offset,
+    e.offset,
     {
       cpoints: [
-        { x: s.x + dx / 2, y: s.y } as Point,
-        { x: e.x - dx / 2, y: e.y } as Point,
+        { x: s.cx + dx / 2, y: s.cy } as Point,
+        { x: e.cx - dx / 2, y: e.cy } as Point,
       ],
       props,
     },
     rendererFn
   );
   if (offset > 0) {
-    s.y += offset;
+    s.offset.y += offset;
     canvas.drawBeizeCurve(
-      s,
-      e,
+      s.offset,
+      e.offset,
       {
         cpoints: [
-          { x: s.x + dx / 2, y: s.y } as Point,
-          { x: e.x - dx / 2, y: e.y } as Point,
+          { x: s.cx + dx / 2, y: s.cy } as Point,
+          { x: e.cx - dx / 2, y: e.cy } as Point,
         ],
         props,
       },
@@ -71,35 +72,20 @@ const renderCurve = (
     );
   }
 };
-export class MustacheLREdgeRenderer implements IEdgeRenderer {
+export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOption> {
   get name() {
     return "mustache_lr";
   }
   render(canvas: CanvasUI, srcNode: NodeUI, dstNode: NodeUI) {
-    const { scale } = canvas;
-    const [s, e] = [srcNode, dstNode].map((node) => {
-      // fix node의 offset에 dimension정보를 담고 있음.
-      const offset = node.offset() as any; // pure logical value
-      offset.x *= scale;
-      offset.y *= scale;
-      const rect = dom.domRect(node.$bodyEl);
-      const { width, height } = rect; // with scale applied
-      offset.left = offset.x - width / 2;
-      offset.right = offset.x + width / 2;
-      offset.top = offset.y - height / 2;
-      offset.bottom = offset.y + height / 2;
-      offset.width = width;
-      offset.height = height;
-      return offset;
-    });
+    const [s, e] = [srcNode, dstNode].map((node) => node.dimension());
     const padding = { hor: 0, ver: 0 };
-
-    if (valignOf(srcNode) === "bottom") {
+    const option = this.getRenderingOption(srcNode);
+    if (valignOf(option) === "bottom") {
       padding.ver = 5;
     }
 
-    let min, max;
-    if (s.x <= e.x) {
+    let min: NodeRect, max: NodeRect;
+    if (s.cx <= e.cx) {
       min = s;
       max = e;
     } else {
@@ -107,15 +93,13 @@ export class MustacheLREdgeRenderer implements IEdgeRenderer {
       max = s;
     }
 
-    min.x = min.right + padding.hor;
-    max.x = max.left - padding.hor;
+    min.offset.x = min.right + padding.hor;
+    max.offset.x = max.left - padding.hor;
     if (padding.ver > 0) {
-      min.y = min.bottom + padding.ver;
-      max.y = max.bottom + padding.ver;
+      min.offset.y = min.bottom + padding.ver;
+      max.offset.y = max.bottom + padding.ver;
     }
-    const dx = max.x - min.x;
-    // const dy = max.y - min.y;
-    // const w = widthOf(srcNode);
+    const dx = max.cx - min.cx;
     if (
       padding.ver > 0 &&
       srcNode.isRoot() &&

@@ -91,6 +91,7 @@ export class NodeUI {
     return !!this.$el;
   }
   dimension(): NodeRect {
+    // FIXME - scale 적용은 canvas에서 해야 함
     const scale = this.sharedConfig.scale;
     const el = this.$bodyEl;
     const offset = this.offset();

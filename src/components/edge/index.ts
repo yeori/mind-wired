@@ -4,14 +4,16 @@ import { NaturalCourveEdgeRenderer } from "./natural-curve-renderer";
 import { MustacheLREdgeRenderer } from "./mustache-lr-renderer";
 import { MustacheTBEdgeRenderer } from "./mustache-tb-renderer";
 import { type NodeUI } from "../node/node-ui";
-import Configuration from "../config";
-import CanvasUI from "../canvas-ui";
+import type Configuration from "../config";
+import { type CanvasUI } from "../canvas-ui";
+import { EdgeRendererName, IEdgeRenderer } from "./edge-renderer-type";
 
-export type EdgeRendererName = string;
-export interface IEdgeRenderer {
-  name: EdgeRendererName;
-  render: (canvas: CanvasUI, srcNode: NodeUI, dstNode: NodeUI) => void;
-}
+export {
+  LineEdgeRenderer,
+  NaturalCourveEdgeRenderer,
+  MustacheLREdgeRenderer,
+  MustacheTBEdgeRenderer,
+};
 
 const installDefaultEdgeRenderers = (
   map: Map<EdgeRendererName, IEdgeRenderer>
@@ -75,13 +77,13 @@ class Edge {
 export class EdgeUI {
   config: Configuration;
   canvas: CanvasUI;
-  edges: Edge[];
+  private edges: Edge[];
   renderers = new Map<EdgeRendererName, IEdgeRenderer>();
-  constructor(config: Configuration, rootNode: NodeUI, canvas: any) {
+  constructor(config: Configuration, canvas: CanvasUI) {
     this.config = config;
     this.canvas = canvas;
     this.edges = [] as Edge[];
-    createEdges(rootNode, this.edges);
+    // createEdges(rootNode, this.edges);
     installDefaultEdgeRenderers(this.renderers);
     this.config
       .listen(EVENT.NODE.CREATED, ({ nodes }: { nodes: NodeUI[] }) => {
@@ -129,6 +131,14 @@ export class EdgeUI {
 
         this.repaint();
       });
+  }
+  setRootNode(rootNode: NodeUI) {
+    this.edges = [];
+    createEdges(rootNode, this.edges);
+  }
+  addEdgeRenderer(render: IEdgeRenderer) {
+    const { name } = render;
+    this.renderers.set(name, render);
   }
   filterEdges(predicate: (e: Edge) => boolean) {
     return this.edges.filter(predicate);

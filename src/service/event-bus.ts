@@ -42,6 +42,14 @@ const EVENT: any = {
         desc: "client-side node selection event",
       },
     },
+    CLICKED: {
+      name: "node.clicked",
+      desc: "a node clicked(without dragging)",
+      CLIENT: {
+        name: "node.clicked.client",
+        desc: "client-side node click event",
+      },
+    },
     EDITING: {
       name: "node.editing",
       desc: "node's editing state",
@@ -106,7 +114,7 @@ class EventBus {
     const event = parseEvent(eventName);
     this.on(event, callback);
   }
-  emit(eventName: any, payload: any, emitForClient: boolean | undefined) {
+  emit(eventName: string, payload: any, emitForClient: boolean | undefined) {
     const callbackList = this.callbacks.get(eventName) || [];
     callbackList.forEach((cb) => {
       try {

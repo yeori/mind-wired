@@ -86,8 +86,7 @@ export class NodeRect {
   left: number;
   width: number;
   height: number;
-  cx: number;
-  cy: number;
+
   // icon?: null;
   constructor(readonly offset: Point, rect: DOMRect) {
     // offset.x *= scale;
@@ -101,15 +100,25 @@ export class NodeRect {
     this.left = offset.x - w / 2;
     this.width = width;
     this.height = height;
-    this.cx = offset.x;
-    this.cy = offset.y;
     // this.icon = null;
+  }
+  get cx() {
+    return this.offset.x;
+  }
+  get cy() {
+    return this.offset.y;
   }
   get x() {
     return this.left;
   }
+  set x(value: number) {
+    this.left = value;
+  }
   get y() {
     return this.top;
+  }
+  set y(value: number) {
+    this.top = value;
   }
   get r() {
     return this.right;
@@ -124,8 +133,8 @@ export class NodeRect {
     this.left = Math.min(this.left, other.left);
     this.width = this.right - this.left;
     this.height = this.bottom - this.top;
-    this.cx = this.width / 2;
-    this.cy = this.height / 2;
+    this.offset.x = other.offset.x;
+    this.offset.y = other.offset.y;
     return this;
   }
 }

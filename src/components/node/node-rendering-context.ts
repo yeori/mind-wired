@@ -1,6 +1,6 @@
 import { dom, uuid } from "../../service";
 import { EVENT } from "../../service/event-bus";
-import CanvasUI from "../canvas-ui";
+import { type CanvasUI } from "../canvas-ui";
 import { type NodeUI } from "./node-ui";
 import { INodeRenderer, UserDefinedRenderer } from ".";
 import { RenderingDelegate } from ".";

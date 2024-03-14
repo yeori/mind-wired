@@ -1,9 +1,9 @@
 // import { dom } from "../../service";
-import { IEdgeRenderer } from ".";
-import type CanvasUI from "../canvas-ui";
+import type { CanvasUI } from "../canvas-ui";
 import { type NodeUI } from "../node/node-ui";
+import { AbstractEdgeRenderer } from "./edge-renderer-type";
 
-export class LineEdgeRenderer implements IEdgeRenderer {
+export class LineEdgeRenderer extends AbstractEdgeRenderer<void> {
   get name() {
     return "line";
   }
@@ -17,7 +17,7 @@ export class LineEdgeRenderer implements IEdgeRenderer {
     const { scale } = canvas;
     const [s, e] = [srcNode, dstNode].map((node) => {
       // fix node의 offset에 dimension정보를 담고 있음.
-      const offset = node.offset(); /** FIXME NodeRect타입 */ // pure logical value
+      const offset = node.offset();
       offset.x *= scale;
       offset.y *= scale;
       return offset;

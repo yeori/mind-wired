@@ -3,7 +3,7 @@ import { dom, clone } from "../service";
 import { EventBus } from "../service/event-bus";
 import { Point } from "../service/geom";
 import { InitParam, SnapToEntitySetting, UISetting } from "../setting";
-import type CanvasUI from "./canvas-ui";
+import type { CanvasUI } from "./canvas-ui";
 import { type NodeUI } from "./node/node-ui";
 import { NodeRenderingContext } from "./node/node-rendering-context";
 import { MindWired } from "./mind-wired";

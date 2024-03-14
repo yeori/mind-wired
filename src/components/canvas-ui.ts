@@ -200,20 +200,22 @@ const installFocusHandler = (canvasUI: CanvasUI) => {
 };
 const applyDrawingOption = <K extends keyof CanvasRenderingContext2D>(
   ctx: CanvasRenderingContext2D,
-  options: Record<K, CanvasRenderingContext2D[K]>,
+  options: Partial<CanvasRenderingContext2D>,
   fn?: (ctx: CanvasRenderingContext2D) => void
 ) => {
   if (options) {
     Object.keys(options).forEach((key) => {
       const val = options[key];
-      ctx[key] = val;
+      if (val) {
+        ctx[key] = val;
+      }
     });
   }
   if (fn) {
     fn(ctx);
   }
 };
-class CanvasUI {
+export class CanvasUI {
   config: Configuration;
   $viewport: HTMLElement;
   dndContext: DndContext;
@@ -254,6 +256,48 @@ class CanvasUI {
     // const baseOffset = this.config.getOffset();
     return { x: el!.offsetLeft, y: el!.offsetTop };
   }
+  /**
+   * multiply scale to numeric properties
+   * @param obj object to mutiply scale
+   * @returns
+   */
+  setScale<T>(obj: T): T {
+    const { scale } = this;
+    if (typeof obj === "number") {
+      return (obj * scale) as T;
+    } else if (Array.isArray(obj)) {
+      const cloned = [...obj];
+      cloned.forEach((elem, index) => {
+        cloned[index] = this.setScale(elem);
+      });
+      return cloned as T;
+    } else if (typeof obj === "object") {
+      const cloned = { ...obj };
+      for (let prop in cloned) {
+        cloned[prop] = this.setScale<any>(obj[prop]);
+      }
+      return cloned;
+    }
+    return obj;
+  }
+  /**
+   * multiply scale to numeric properties
+   * @param point point to multiply scale
+   * @returns
+   */
+  getScaledPos(point: Point) {
+    point.x *= this.scale;
+    point.y *= this.scale;
+    return point;
+  }
+  /**
+   * multiply scale to offset(x,y) of the node
+   * @param node
+   * @returns
+   */
+  getScaledOffset(node: NodeUI): any {
+    return this.getScaledPos(node.offset());
+  }
   getDimension() {
     const el = this.$canvas;
     return { width: el!.offsetWidth, height: el!.offsetHeight };
@@ -267,6 +311,18 @@ class CanvasUI {
     offset.y += dy;
     this.config.setOffset(offset);
     this.repaintNodeHolder();
+  }
+  renderWith(callback: (ctx: CanvasRenderingContext2D) => void) {
+    const ctx = this.getContext();
+    const offset = this.getHolderOffset();
+    try {
+      ctx.translate(offset.x, offset.y);
+      ctx.save();
+      callback(ctx);
+    } finally {
+      ctx.restore();
+      ctx.translate(-offset.x, -offset.y);
+    }
   }
   findNodeAt(x: number, y: number) {
     const nodeBodies = this.$holder.querySelectorAll<HTMLElement>(".mwd-body");
@@ -291,24 +347,22 @@ class CanvasUI {
     const node = mwd.findNode((node) => node.uid === nodeEl.dataset.uid);
     return node;
   }
-  drawPath<K extends keyof CanvasRenderingContext2D>(
+  drawPath(
     points: Point[],
-    options: Record<K, CanvasRenderingContext2D[K]>,
+    options: Partial<CanvasRenderingContext2D>,
     fn: (ctx: CanvasRenderingContext2D) => void
   ) {
-    const ctx = this.getContext();
-    ctx.save();
-    applyDrawingOption(ctx, options, fn);
-    let s = points[0];
-    points = points.slice(1);
-    const offset = this.getHolderOffset();
-    ctx.beginPath();
-    ctx.moveTo(offset.x + s.x, offset.y + s.y);
-    points.forEach((e) => {
-      ctx.lineTo(offset.x + e.x, offset.y + e.y);
+    this.renderWith((ctx) => {
+      applyDrawingOption(ctx, options, fn);
+      ctx.beginPath();
+      let s = points[0];
+      // points = points.slice(1);
+      ctx.moveTo(s.x, s.y);
+      points.forEach((e) => {
+        ctx.lineTo(e.x, e.y);
+      });
+      ctx.stroke();
     });
-    ctx.stroke();
-    ctx.restore();
   }
   drawCurve<K extends keyof CanvasRenderingContext2D>(
     s: Point,
@@ -320,31 +374,27 @@ class CanvasUI {
     },
     fn: (ctx: CanvasRenderingContext2D) => void
   ) {
-    const ctx = this.getContext();
-    ctx.save();
-    applyDrawingOption(ctx, option.props, fn);
-    const lenSE = Math.sqrt(
-      (s.x - e.x) * (s.x - e.x) + (s.y - e.y) * (s.y - e.y)
-    );
-    const degree = option.degree;
-    const length = lenSE * option.ratio;
-    const scale = length / lenSE;
-    const cp1 = geom.rotate(s, e, degree, { scale });
-    const cp2 = geom.rotate(e, s, degree, { scale });
-    const offset = this.getHolderOffset();
+    // const ctx = this.getContext();
+    this.renderWith((ctx) => {
+      applyDrawingOption(ctx, option.props, fn);
+      const lenSE = Math.sqrt(
+        (s.x - e.x) * (s.x - e.x) + (s.y - e.y) * (s.y - e.y)
+      );
+      const degree = option.degree;
+      const length = lenSE * option.ratio;
+      const scale = (length / lenSE) * this.scale;
+      const cp1 = geom.rotate(s, e, degree, { scale });
+      const cp2 = geom.rotate(e, s, degree, { scale });
+      // const offset = this.getHolderOffset();
 
-    ctx.beginPath();
-    ctx.moveTo(offset.x + s.x, offset.y + s.y);
-    ctx.bezierCurveTo(
-      offset.x + cp1.x,
-      offset.y + cp1.y,
-      offset.x + cp2.x,
-      offset.y + cp2.y,
-      offset.x + e.x,
-      offset.y + e.y
-    );
-    ctx.stroke();
-    ctx.restore();
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, e.x, e.y);
+      ctx.stroke();
+    });
+    // ctx.save();
+
+    // ctx.restore();
   }
   drawBeizeCurve<K extends keyof CanvasRenderingContext2D>(
     s: Point,
@@ -561,4 +611,3 @@ class CanvasUI {
     return nodeEl.querySelector<HTMLElement>(`.mwd-body`);
   }
 }
-export default CanvasUI;
