@@ -1,5 +1,4 @@
 import { INodeEditor } from "..";
-import { dom } from "../../../service";
 import type { NodeEditingContext } from "../node-editing-context";
 import { type ModelSpec } from "../node-type";
 
@@ -26,6 +25,7 @@ export class ThumbnailEditor implements INodeEditor {
     if (!model.thumbnail) {
       throw new Error("EDITOR_ERROR:not a thumbnail node");
     }
+    const { dom } = this.ctx.config;
     const { path, size } = model.thumbnail;
     const { width } = this.ctx.normalizeImageSize(size);
 

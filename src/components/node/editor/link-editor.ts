@@ -1,5 +1,4 @@
 import { INodeEditor } from "..";
-import { dom } from "../../../service";
 import type { NodeEditingContext } from "../node-editing-context";
 import type { ModelSpec } from "../node-type";
 
@@ -17,6 +16,7 @@ export class LinkEditor implements INodeEditor {
     return "link";
   }
   showEditor(model: ModelSpec, parentEl: HTMLElement): HTMLElement {
+    const { dom } = this.ctx.config;
     const $editor = this.ctx.parse(template.editor);
     const $url = dom.findOne($editor, "[data-url]") as HTMLInputElement;
     const $body = dom.findOne($editor, "[data-body]") as HTMLInputElement;

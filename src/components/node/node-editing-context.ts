@@ -1,5 +1,4 @@
 import { INodeEditor, type UserDefinedEditor } from ".";
-import { dom } from "../../service";
 import { EVENT } from "../../service/event-bus";
 import type { CanvasUI } from "../canvas-ui";
 import type { DataSourceFactory } from "../datasource";
@@ -84,10 +83,10 @@ export class NodeEditingContext {
   }
   parse(htmlTemplate: string) {
     // FIXME rendering context와 코드 중복
-    return dom.parseTemplate(htmlTemplate);
+    return this.config.dom.parseTemplate(htmlTemplate);
   }
   query<T extends HTMLElement>(el: HTMLElement, cssSelector: string): T {
-    return dom.findOne(el, cssSelector) as T;
+    return this.config.dom.findOne(el, cssSelector) as T;
   }
   updateModel(callback: (model: ModelSpec) => boolean) {
     let closing = false;

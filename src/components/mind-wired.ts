@@ -11,7 +11,6 @@ import {
 import { INodeRenderer } from "./node";
 import { RenderingDelegate } from "./node/renderer/renderer-delegate";
 import AlignmentUI from "./alignment/alignment-ui";
-import { dom } from "../service";
 import TreeDataSource from "./datasource/tree-ds";
 import { DragContext, type Capture } from "./drag-context";
 import type Configuration from "./config";
@@ -76,7 +75,7 @@ const updateLevelClass = (
   config: Configuration
 ) => {
   const className = config.nodeLevelClassName(nodeUI);
-  dom.clazz[method](nodeUI.$bodyEl, className);
+  config.dom.clazz[method](nodeUI.$bodyEl, className);
   nodeUI.subs.forEach((childUI) => updateLevelClass(childUI, method, config));
 };
 export class MindWired {
@@ -272,7 +271,7 @@ export class MindWired {
     this.canvas.regsiterNode(nodeUI);
     parentNode.addChild(nodeUI);
     if (option?.siblingNode) {
-      const rect = dom.domRect(option.siblingNode.$bodyEl);
+      const rect = this.config.dom.domRect(option.siblingNode.$bodyEl);
       this.nodeLayoutContext.setPosition(nodeUI, {
         baseNode: option.siblingNode,
         rect,

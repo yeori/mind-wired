@@ -1,4 +1,3 @@
-import dom from "./dom";
 import clone from "./clone";
 const uuid = (len: number = 16) => {
   let id = "";
@@ -7,9 +6,8 @@ const uuid = (len: number = 16) => {
   }
   return id.substring(0, len);
 };
-export { dom, clone, uuid };
+export { clone, uuid };
 export default {
-  dom,
   clone,
   uuid,
 };

@@ -1,8 +1,4 @@
-/**
- *
- */
 import { type ModelSpec } from "../node/node-type";
-import { dom } from "../../service";
 import { EVENT } from "../../service/event-bus";
 import Configuration from "../config";
 import { MindWired } from "../mind-wired";
@@ -82,6 +78,7 @@ export class NodeSelectionModel {
       notifySelection(this);
     });
 
+    const { dom } = this.config;
     dom.event.keyup(canvasUI.$viewport, (e) => {
       if (this.isEmpty()) {
         return;

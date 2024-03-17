@@ -1,5 +1,5 @@
 import type { ModelSpec, NodeSpec, ViewSpec } from "./node/node-type";
-import { dom, clone } from "../service";
+import { clone } from "../service";
 import { EventBus } from "../service/event-bus";
 import { Point } from "../service/geom";
 import { InitParam, SnapToEntitySetting, UISetting } from "../setting";
@@ -7,6 +7,7 @@ import type { CanvasUI } from "./canvas-ui";
 import { type NodeUI } from "./node/node-ui";
 import { NodeRenderingContext } from "./node/node-rendering-context";
 import { MindWired } from "./mind-wired";
+import type { DomUtil } from "../service/dom";
 const DEFAULT_UI_SETTING: UISetting = {
   width: 600,
   height: 600,
@@ -36,15 +37,25 @@ class Configuration {
   el: HTMLElement;
   ui: UISetting;
   ebus: EventBus;
+  dom: DomUtil;
   mindWired?: () => MindWired;
   model: ModelSpec;
   view: ViewSpec;
   subs: NodeSpec[];
   getCanvas: () => CanvasUI;
   getNodeRenderer: () => NodeRenderingContext;
-  constructor({ el, ui }: { el: HTMLElement; ui: UISetting }) {
+  constructor({
+    el,
+    ui,
+    dom,
+  }: {
+    el: HTMLElement;
+    ui: UISetting;
+    dom: DomUtil;
+  }) {
     this.el = el;
     this.ui = ui;
+    this.dom = dom;
     this.ebus = new EventBus();
   }
   get width() {
@@ -106,20 +117,20 @@ class Configuration {
     this.ebus.emit(eventName, args, !!emitForClient);
     return this;
   }
-  static parse(param: InitParam) {
+  static parse(param: InitParam, dom: DomUtil) {
     const ui: UISetting = clone.mergeLeaf(
       param.ui || ({} as UISetting),
       clone.deepCopy(DEFAULT_UI_SETTING)
     ) as UISetting;
 
     normalizeOffset(ui);
-    normalizeSnap(ui);
+    normalizeSnap(ui, dom);
 
     const el =
       typeof param.el === "string"
         ? (document.querySelector(param.el as string) as HTMLElement)
         : param.el;
-    return new Configuration({ el, ui });
+    return new Configuration({ el, ui, dom });
   }
 }
 const normalizeOffset = (ui: UISetting) => {
@@ -128,7 +139,7 @@ const normalizeOffset = (ui: UISetting) => {
     ui.offset = new Point(ui.offset.x, ui.offset.y);
   }
 };
-const normalizeSnap = (ui: UISetting) => {
+const normalizeSnap = (ui: UISetting, dom: DomUtil) => {
   const { snap } = ui;
   const defaultSnap = DEFAULT_UI_SETTING.snap as SnapToEntitySetting;
   if (snap === false) {

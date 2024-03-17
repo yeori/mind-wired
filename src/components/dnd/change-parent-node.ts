@@ -1,4 +1,3 @@
-import { dom } from "../../service";
 import type { CanvasUI } from "../canvas-ui";
 
 const changeParentDndHandler = (canvasUI: CanvasUI) => ({
@@ -6,11 +5,12 @@ const changeParentDndHandler = (canvasUI: CanvasUI) => ({
   dragging: (e) => {
     const { dx, dy } = e;
     const iconEl = canvasUI.dndContext.getData("iconEl");
-    dom.css(iconEl, {
+    canvasUI.dom.css(iconEl, {
       transform: `translate(calc(-50% + ${dx}px), ${dy}px)`,
     });
   },
   afterDrag: () => {
+    const { dom } = canvasUI;
     const iconEl = canvasUI.dndContext.getData("iconEl");
     const rect = dom.domRect(iconEl);
     const cx = rect.x + rect.width / 2;

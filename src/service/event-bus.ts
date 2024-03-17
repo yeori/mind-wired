@@ -124,7 +124,7 @@ class EventBus {
       }
     });
     if (emitForClient) {
-      window.setTimeout(() => {
+      self.setTimeout(() => {
         this.emit(eventName["CLIENT"], payload, false);
       });
     }

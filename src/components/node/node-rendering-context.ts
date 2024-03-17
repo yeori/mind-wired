@@ -1,4 +1,4 @@
-import { dom, uuid } from "../../service";
+import { uuid } from "../../service";
 import { type CanvasUI } from "../canvas-ui";
 import { type NodeUI } from "./node-ui";
 import { INodeRenderer, UserDefinedRenderer } from ".";
@@ -33,12 +33,13 @@ export class NodeRenderingContext {
     this.editingNode = null;
   }
   get event() {
-    return dom.event;
+    return this.canvas.dom.event;
   }
   get valid() {
-    return dom.valid;
+    return this.canvas.dom.valid;
   }
   parse(htmlTemplate: string, fitToCenter: boolean = false) {
+    const { dom } = this.canvas;
     const $el = dom.parseTemplate(htmlTemplate);
     if (fitToCenter) {
       dom.css($el, {
@@ -93,10 +94,10 @@ export class NodeRenderingContext {
     return nodeUI.$bodyEl.querySelector(cssSelector) as HTMLElement;
   }
   css(el, styles) {
-    dom.css(el, styles);
+    this.canvas.dom.css(el, styles);
   }
   query<T extends HTMLElement>(el: HTMLElement, cssSelector: string): T {
-    return dom.findOne(el, cssSelector) as T;
+    return this.canvas.dom.findOne(el, cssSelector) as T;
   }
   normalizeImageSize(size: ImageSizeSpec): { width: string; height: string } {
     let width: string;

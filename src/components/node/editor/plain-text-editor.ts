@@ -1,5 +1,4 @@
 import { INodeEditor } from "..";
-import { dom } from "../../../service";
 import { type NodeEditingContext } from "../node-editing-context";
 import { type ModelSpec } from "../node-type";
 
@@ -15,6 +14,7 @@ export class PlainTextEditor implements INodeEditor {
   }
   constructor(readonly ctx: NodeEditingContext) {}
   showEditor(model: ModelSpec, parentEl: HTMLElement): HTMLElement {
+    const { dom } = this.ctx.config;
     const $editorEl = this.ctx.parse(template.editor);
     const textArea = this.ctx.query(
       $editorEl,

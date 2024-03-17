@@ -5,7 +5,6 @@ import {
   NodeRect,
   NodeLayout,
 } from "./node-type";
-import { dom } from "../../service";
 import { EVENT } from "../../service/event-bus";
 import { type Heading, Point, geom } from "../../service/geom";
 import Configuration from "../config";
@@ -97,7 +96,10 @@ export class NodeUI {
     const offset = this.offset();
     offset.x *= scale;
     offset.y *= scale;
-    return (this.$dim = new NodeRect(offset, dom.domRect(el)));
+    return (this.$dim = new NodeRect(
+      offset,
+      this.sharedConfig.dom.domRect(el)
+    ));
   }
   level(): number {
     return this.isRoot() ? 0 : this.parent!.level() + 1;

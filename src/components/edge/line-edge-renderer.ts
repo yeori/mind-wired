@@ -1,4 +1,3 @@
-// import { dom } from "../../service";
 import type { CanvasUI } from "../canvas-ui";
 import { type NodeUI } from "../node/node-ui";
 import { AbstractEdgeRenderer } from "./edge-renderer-type";

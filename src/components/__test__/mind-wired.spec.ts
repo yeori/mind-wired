@@ -3,10 +3,17 @@ import Configuration from "../config";
 import { MindWired } from "../mind-wired";
 import { UserDefinedRenderer } from "../node";
 import mockApi, { Country } from "../../../test/mock-api";
+import { DomUtil } from "../../service/dom";
 
 let mwd: MindWired;
 beforeEach(() => {
-  const config = Configuration.parse({ el: "#app", ui: { width: "400px" } });
+  const config = Configuration.parse(
+    {
+      el: "#app",
+      ui: { width: "400px" },
+    },
+    new DomUtil()
+  );
   mwd = new MindWired(config);
 });
 describe("init", () => {

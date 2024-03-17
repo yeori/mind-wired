@@ -37,22 +37,33 @@ const closest = (elem: HTMLElement, selector: string) => {
   throw new Error(`node type ${elem.nodeType}, tag(${elem.nodeName})`);
 };
 
-const parseAttr = (expression: string) => {
+const parseAttr = (expression?: string) => {
   const attr = expression || "";
   return attr
     .split(" ")
     .map((val) => val.trim())
     .filter((val) => val.length > 0);
 };
-const createEl = (tagName: string, attributes: string[]) => {
+const createEl = <T = HTMLElement>(tagName: string, attributes?: string[]) => {
   const tag = document.createElement(tagName);
-  attributes.forEach((value) => {
-    const attr = new Attr(value);
-    attr.setAttribute(tag);
-  });
-  return tag;
+  if (attributes) {
+    attributes.forEach((value) => {
+      const attr = new Attr(value);
+      attr.setAttribute(tag);
+    });
+  }
+  return tag as T;
 };
-const tag = {
+type TagUtil = {
+  span: (attr: string, content: string) => HTMLSpanElement;
+  iconButton: (attrs: string, content: string) => HTMLButtonElement;
+  img: (
+    imgUrl: string
+  ) => Promise<{ img: HTMLImageElement; width: number; height: number }>;
+  div: (attr?: string) => HTMLDivElement;
+  canvas: (attr?: string) => HTMLCanvasElement;
+};
+const tag: TagUtil = {
   span: (attr: string, content: string) => {
     const span = createEl("span", parseAttr(attr));
     if (content) {
@@ -61,12 +72,14 @@ const tag = {
     return span;
   },
   iconButton: (attrs: string, content: string) => {
-    const button = createEl("BUTTON", parseAttr(attrs));
+    const button = createEl<HTMLButtonElement>("BUTTON", parseAttr(attrs));
     button.innerHTML = content;
     return button;
   },
-  img: (imgUrl: string) => {
-    const img = document.createElement("img");
+  img: (
+    imgUrl: string
+  ): Promise<{ img: HTMLImageElement; width: number; height: number }> => {
+    const img = createEl<HTMLImageElement>("img");
     return new Promise((resolve, reject) => {
       img.onload = () => {
         resolve({ img, width: img.naturalWidth, height: img.naturalHeight });
@@ -79,10 +92,11 @@ const tag = {
       img.src = imgUrl;
     });
   },
-  div: (attr: string) => createEl("DIV", parseAttr(attr)),
+  div: (attr?: string) => createEl<HTMLDivElement>("DIV", parseAttr(attr)),
   canvas: (attr?: string) =>
     createEl("CANVAS", parseAttr(attr)) as HTMLCanvasElement,
 };
+
 const attr = (
   el: HTMLElement,
   attrName: string,
@@ -94,33 +108,37 @@ const attr = (
     el.setAttribute(attrName, attrValue);
   }
 };
-const clazz = {
+type ClassUtil = {
+  add: (el: HTMLElement, className: string) => void;
+  remove: (el: HTMLElement, className: string) => void;
+};
+const clazz: ClassUtil = {
   add: (el: HTMLElement, className: string) => el.classList.add(className),
   remove: (el: HTMLElement, className: string) =>
     el.classList.remove(className),
 };
-const imageSize = (imgUrl: string) => {
-  const xhr = new XMLHttpRequest();
-  xhr.open("HEAD", imgUrl, true);
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === xhr.DONE) {
-      console.log(xhr.getResponseHeader("Content-Length"));
-    }
-  };
-  xhr.send();
-};
+// const imageSize = (imgUrl: string) => {
+//   const xhr = new XMLHttpRequest();
+//   xhr.open("HEAD", imgUrl, true);
+//   xhr.onreadystatechange = () => {
+//     if (xhr.readyState === xhr.DONE) {
+//       console.log(xhr.getResponseHeader("Content-Length"));
+//     }
+//   };
+//   xhr.send();
+// };
 
-const fileToImage = (file: Blob) => {
-  const reader = new FileReader();
-  return new Promise((resolve) => {
-    reader.addEventListener("load", () => {
-      const img = document.createElement("img");
-      img.src = "" + reader.result;
-      resolve({ file, img });
-    });
-    reader.readAsDataURL(file);
-  });
-};
+// const fileToImage = (file: Blob) => {
+//   const reader = new FileReader();
+//   return new Promise((resolve) => {
+//     reader.addEventListener("load", () => {
+//       const img = document.createElement("img");
+//       img.src = "" + reader.result;
+//       resolve({ file, img });
+//     });
+//     reader.readAsDataURL(file);
+//   });
+// };
 
 const registerEvent = (
   target: HTMLElement,
@@ -128,7 +146,7 @@ const registerEvent = (
   callback: EventListenerOrEventListenerObject,
   options?: boolean | AddEventListenerOptions | undefined
 ) => {
-  const el = target || window;
+  const el = target || globalThis;
   el.addEventListener(eventName, callback, options || false);
 };
 
@@ -196,7 +214,26 @@ const data = {
   },
 };
 const stopPropagation = (e: Event) => e.stopPropagation();
-const event = {
+
+type EventUtil = {
+  consume: (target: HTMLElement, eventName: string) => void;
+  click: (
+    target: HTMLElement,
+    callback: (e: Event) => void,
+    options?: string
+  ) => void;
+  keydown: (
+    target: HTMLElement,
+    callback: (e: Event) => void,
+    options: string
+  ) => void;
+  keyup: (
+    target: HTMLElement,
+    callback: (e: Event) => void,
+    options?: string
+  ) => void;
+};
+const event: EventUtil = {
   consume: (target: HTMLElement, eventName: string) => {
     target.addEventListener(eventName, stopPropagation);
   },
@@ -258,7 +295,7 @@ const event = {
   },
 };
 
-const converters: any = {
+const converters = {
   width: (val: number | string): string => {
     const type = typeof val;
     return type === "number" ? `${val}px` : "" + val;
@@ -275,7 +312,7 @@ const css = (el: HTMLElement, styles: any) => {
     el.style[key] = value;
   });
 };
-const parseTemplate = (
+const parseTemplate = <T = HTMLElement>(
   template: string,
   /** FIXME  param type*/ params?: any
 ) => {
@@ -287,7 +324,7 @@ const parseTemplate = (
   });
   const virtualElem = document.createElement("template");
   virtualElem.innerHTML = t;
-  return virtualElem.content.firstElementChild as HTMLElement;
+  return virtualElem.content.firstElementChild as T;
   // return virtualDiv.firstElementChild;
 };
 const findOne = <T = HTMLElement>(el: HTMLElement, cssSelector: string) =>
@@ -315,7 +352,12 @@ const domRect = (el: HTMLElement) => el.getBoundingClientRect();
 const types = {
   method: (obj: any) => typeof obj === "function",
 };
-const valid = {
+type ValidUtil = {
+  path: (value: string) => Promise<string>;
+  number: (value: string) => Promise<number>;
+  string: (value: any) => boolean;
+};
+const valid: ValidUtil = {
   path: (value: string) =>
     new Promise<string>((yes, no) => {
       const v = value && value.trim();
@@ -336,21 +378,50 @@ const valid = {
     }),
   string: (value: any) => typeof value === "string" && value.trim().length > 0,
 };
-export default {
-  tag,
-  attr,
-  clazz,
-  closest,
-  imageSize,
-  fileToImage,
-  event,
-  css,
-  parseTemplate,
-  findOne,
-  findAll,
-  is,
-  data,
-  domRect,
-  types,
-  valid,
+export class DomUtil {
+  tag: TagUtil;
+  attr: (
+    el: HTMLElement,
+    attrName: string,
+    attrValue: string,
+    always?: boolean
+  ) => void;
+  clazz: ClassUtil;
+  closest: (elem: HTMLElement, selector: string) => HTMLElement;
+  event: EventUtil;
+  css: (el: HTMLElement, styles: any) => void;
+  parseTemplate: <T = HTMLElement>(template: string, params?: any) => T;
+  findOne: <T = HTMLElement>(el: HTMLElement, cssSelector: string) => T;
+  findAll: (el: HTMLElement, selectors: string[]) => HTMLElement[];
+  is: (el: HTMLElement, cssSelector: string, searchParent?: boolean) => boolean;
+  data: {
+    int: (el: HTMLElement, attrList: string[]) => any;
+  };
+  domRect: (el: HTMLElement) => DOMRect;
+  types: {
+    method: (obj: any) => boolean;
+  };
+  valid: ValidUtil;
+  constructor() {
+    this.tag = tag;
+    this.attr = attr;
+    this.clazz = clazz;
+    this.closest = closest;
+    this.event = event;
+    this.css = css;
+    this.parseTemplate = parseTemplate;
+    this.findOne = findOne;
+    this.findAll = findAll;
+    this.is = is;
+    this.data = data;
+    this.domRect = domRect;
+    this.types = types;
+    this.valid = valid;
+  }
+}
+
+let dom: DomUtil;
+
+export const domUtil = () => {
+  return dom;
 };

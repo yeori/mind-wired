@@ -1,10 +1,9 @@
-import { dom } from "../../service";
 import { EVENT } from "../../service/event-bus";
 
 const nodeDndHandler = (canvasUI) => ({
   beforeDrag: (e) => {
     const { target } = e.originalEvent;
-    const nodeEl = dom.closest(target, ".mwd-node") as HTMLElement;
+    const nodeEl = canvasUI.dom.closest(target, ".mwd-node") as HTMLElement;
     const nodeId = nodeEl.dataset.uid;
     canvasUI.dndContext.capture("nodeId", nodeId);
     const mrd = canvasUI.config.mindWired();

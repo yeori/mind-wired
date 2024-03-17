@@ -1,5 +1,4 @@
 import { INodeEditor } from "..";
-import { dom } from "../../../service";
 import type { NodeEditingContext } from "../node-editing-context";
 import type { ModelSpec } from "../node-type";
 
@@ -16,6 +15,7 @@ export class IconBadgeEditor implements INodeEditor {
     return "icon-badge";
   }
   showEditor(model: ModelSpec, parentEl: HTMLElement): HTMLElement {
+    const { dom } = this.ctx.config;
     const $editor = this.ctx.parse(template.editor);
     const $icon = dom.findOne($editor, "[data-icon]") as HTMLInputElement;
     const $textarea = dom.findOne(
