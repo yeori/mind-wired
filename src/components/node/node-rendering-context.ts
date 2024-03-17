@@ -1,18 +1,32 @@
 import { dom, uuid } from "../../service";
-import { EVENT } from "../../service/event-bus";
 import { type CanvasUI } from "../canvas-ui";
 import { type NodeUI } from "./node-ui";
 import { INodeRenderer, UserDefinedRenderer } from ".";
-import { RenderingDelegate } from ".";
-import { ModelSpec } from "./node-type";
+import { RenderingDelegate } from "./renderer/renderer-delegate";
+import { ImageSizeSpec, ModelSpec } from "./node-type";
+import { type DataSourceFactory } from "../datasource";
+import { PlainTextRenderer } from "./renderer/plain-text-renderer";
+import { IconBadgeRenderer } from "./renderer/icon-badge-renderer";
+import { ThumbnailRenderer } from "./renderer/thumbnail-renderer";
+import { LinkRenderer } from "./renderer/link-renderer";
 
 const renderings = new Map<string, Map<string, INodeRenderer>>();
 
+export const installDefaultRenderers = (ctx: NodeRenderingContext) => {
+  ctx.register(new PlainTextRenderer(ctx));
+  ctx.register(new IconBadgeRenderer(ctx));
+  ctx.register(new ThumbnailRenderer(ctx));
+  ctx.register(new LinkRenderer(ctx));
+  return ctx;
+};
 export class NodeRenderingContext {
   editingNode?: NodeUI;
   canvas: CanvasUI;
   uid: string;
-  constructor(canvasUI: CanvasUI) {
+  constructor(
+    canvasUI: CanvasUI,
+    readonly datasourceFactory: DataSourceFactory
+  ) {
     this.canvas = canvasUI;
     this.uid = `node-rctx-${uuid()}`;
     renderings.set(this.uid, new Map());
@@ -45,15 +59,28 @@ export class NodeRenderingContext {
   }
   getRendererByModel(model: ModelSpec) {
     let name: string = undefined;
+
     if (model.text) {
       name = "text";
     } else if (model.thumbnail) {
       name = "thumbnail";
     } else if (model["icon-badge"]) {
       name = "icon-badge";
+    } else if (model.link) {
+      name = "link";
     } else if (model.provider) {
+      const ds = this.datasourceFactory.findDataSourceByKey(model.provider.key);
+      if (ds) {
+        name = this.datasourceFactory.getRendererName(ds.id);
+      }
     }
-    return renderings.get(this.uid).get(name);
+    const renderer = renderings.get(this.uid).get(name);
+    if (!renderer) {
+      throw new Error(
+        `no match node renderer found for ModelSpec: ${JSON.stringify(model)}`
+      );
+    }
+    return renderer;
   }
   getRenderer(redererName: string) {
     const renderer = renderings.get(this.uid).get(redererName || "text");
@@ -65,22 +92,24 @@ export class NodeRenderingContext {
   select(nodeUI: NodeUI, cssSelector: string) {
     return nodeUI.$bodyEl.querySelector(cssSelector) as HTMLElement;
   }
-  installEditor(nodeUI: NodeUI, $editorEl: HTMLElement) {
-    this.editingNode = nodeUI;
-    return this.canvas.showNodeEditor(nodeUI, $editorEl);
-  }
   css(el, styles) {
     dom.css(el, styles);
   }
   query<T extends HTMLElement>(el: HTMLElement, cssSelector: string): T {
     return dom.findOne(el, cssSelector) as T;
   }
-  endEditing() {
-    this.canvas.hideNodeEditor(this.editingNode);
-    this.canvas.config.emit(EVENT.NODE.EDITING, {
-      editing: false,
-      nodeUI: this.editingNode,
-    });
-    this.editingNode = null;
+  normalizeImageSize(size: ImageSizeSpec): { width: string; height: string } {
+    let width: string;
+    let height: string;
+    if (Array.isArray(size)) {
+      const [w, h] = size;
+      width = `${w}px`;
+      height = h === undefined ? "auto" : `${h}px`;
+    } else if (typeof size === "number") {
+      width = height = `${size}px`;
+    } else {
+      width = height = "auto";
+    }
+    return { width, height };
   }
 }

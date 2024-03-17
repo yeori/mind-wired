@@ -38,6 +38,7 @@ export type IconBadgeSpec = {
   size?: ImageSizeSpec;
 };
 export type ThumbnailSpec = { path: string; size: ImageSizeSpec };
+export type LinkSpec = { url: string; body: ModelSpec };
 export type ProviderSpec = { key: any };
 export type ModelSpec = {
   type?: NodeModelType;
@@ -45,6 +46,7 @@ export type ModelSpec = {
   text?: string;
   thumbnail?: ThumbnailSpec;
   "icon-badge"?: IconBadgeSpec;
+  link?: LinkSpec;
   provider?: ProviderSpec;
 };
 import { Point, WebColorString } from "../../setting";

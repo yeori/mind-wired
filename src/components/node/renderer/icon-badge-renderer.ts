@@ -38,16 +38,16 @@ export class IconBadgeRenderer implements INodeRenderer {
   get name() {
     return "icon-badge";
   }
-  install(model: ModelSpec, bodyEl: HTMLElement) {
+  install(model: ModelSpec, parentEl: HTMLElement) {
     const $iconBadgeEl = this.ctx.parse(template.viewer);
-    bodyEl.append($iconBadgeEl);
+    parentEl.append($iconBadgeEl);
   }
-  render(model: ModelSpec, bodyEl: HTMLElement) {
+  render(model: ModelSpec, parentEl: HTMLElement) {
     // const { model } = nodeUI;
     const { icon, text } = model["icon-badge"];
-    const $img = this.ctx.query<HTMLImageElement>(bodyEl, "img");
+    const $img = this.ctx.query<HTMLImageElement>(parentEl, "img");
     $img.src = icon;
-    const $span = this.ctx.query(bodyEl, ".mwd-node-text");
+    const $span = this.ctx.query(parentEl, ".mwd-node-text");
     $span.innerText = text;
   }
 }

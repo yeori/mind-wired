@@ -10,7 +10,8 @@ import { geom, type Point } from "../service/geom";
 import Configuration from "./config";
 import { type NodeUI } from "./node/node-ui";
 import { type MindWired } from "./mind-wired";
-import { NodeRect } from "./node/node-type";
+import type { NodeRect } from "./node/node-type";
+import { INodeEditor } from "./node";
 
 const pixelRatio = window.devicePixelRatio;
 const template = {
@@ -558,13 +559,16 @@ export class CanvasUI {
     const model = mwd.translateModel(nodeUI.model);
     nodeRenderer.render(model, $body);
   }
-  showNodeEditor(nodeUI: NodeUI, $editorEl: HTMLElement) {
+  showNodeEditor(nodeUI: NodeUI, nodeEditor: INodeEditor) {
     const { uid } = nodeUI;
+    const mwd = this.config.mindWired();
+    const model = mwd.translateModel(nodeUI.model);
     const nodeEl = this.$holder.querySelector<HTMLElement>(`[data-uid=${uid}]`);
-    nodeEl!.append($editorEl);
+    const $editorEl = nodeEditor.showEditor(model, nodeEl);
     // mark editor element for focus management
     // see installFocusHandler();
     $editorEl.dataset.editorElement = "";
+
     return new Promise((ok) => {
       setTimeout(ok);
     });

@@ -4,8 +4,8 @@
   display: flex;
   background-color: white;
   .ctrl-icon {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     background-color: white;
     border-radius: 12px;
     box-shadow: rgb(0 0 0 / 49%) 1px 1px 4px;
@@ -35,93 +35,38 @@
     top: 50%;
     left: calc(50%);
     transform: translate(-50%, -50%);
-    .mwd-node {
-      position: absolute;
-      width: 0px;
-      height: 0px;
-      .mwd-node-editbox {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        textarea {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 100%;
-          height: 100%;
-          padding: 0;
-          border: none;
-          outline: 1px solid green;
-        }
-      }
-      .mwd-subs {
-        position: absolute;
-        width: 0;
-        height: 0;
-        z-index: 0;
-      }
-      .mwd-body {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        // z-index: 5;
-        cursor: pointer;
-
-        .mwd-node-text {
-          white-space: nowrap;
-          padding: 4px 6px;
-          /*border: 1px solid gray;*/
-          user-select: none;
-          display: block;
-          p {
-            margin: 0;
-            pointer-events: none;
-          }
-        }
-        .icon-badge-node {
-          display: flex;
-          border-radius: 6px;
-          overflow: hidden;
-          > img {
-            width: 28px;
-            height: auto;
-          }
-        }
-      }
-      .mwd-node-ctrl {
-        position: absolute;
-        transform: translate(-50%, -50%);
-        cursor: pointer;
-        width: 0;
-        height: 0;
-        z-index: 5;
-      }
-      .ctrl-icon {
-        width: 20px;
-        height: 20px;
-      }
-    }
+  }
+  .mwd-node {
+    position: absolute;
+    width: 0px;
+    height: 0px;
+  }
+  .mwd-subs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    z-index: 0;
   }
   .mwd-body {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    // z-index: 5;
+    cursor: pointer;
     background-color: white;
     &.active-node {
       background-color: rgb(210, 255, 120);
     }
   }
-  .mwd-node-editor {
-    background-color: white;
-    padding: 8px;
-    box-shadow: 2px 2px 6px #0000004d, 0px 0px 2px #0000004d;
-    border-radius: 4px;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    row-gap: 8px;
+  .mwd-node-ctrl {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    width: 0;
+    height: 0;
+    z-index: 5;
   }
-
   .mwd-selection-area {
     position: absolute;
     user-select: none;
@@ -137,5 +82,39 @@
       top: 100%;
       left: 50%;
     }
+  }
+  .mwd-node-text {
+    white-space: nowrap;
+    padding: 4px 6px;
+    /*border: 1px solid gray;*/
+    user-select: none;
+    display: block;
+    p {
+      margin: 0;
+      pointer-events: none;
+    }
+  }
+  .icon-badge-node {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    > img {
+      width: 28px;
+      height: auto;
+    }
+  }
+  .mwd-thumbnail-node {
+    background-position: center;
+    background-repeat: no-repeat;
+    &.cover {
+      background-size: cover;
+    }
+    &.contain {
+      background-size: contain;
+    }
+  }
+  a[data-mwd-link] {
+    color: #0001ee;
+    text-decoration: underline;
   }
 }

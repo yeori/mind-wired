@@ -13,7 +13,7 @@
       "require": "./dist/mind-wired.umd.cjs"
     },
     "./mind-wired.css": "./dist/style.css",
-    "./mind-wired.d.ts": "./dist/mind-wired.d.ts"
+    "./mind-wired-form.scss": "./src/assets/extra/mind-wired-form.scss"
   },
   "keywords": [
     "mindmap"

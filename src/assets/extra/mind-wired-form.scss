@@ -1,0 +1,14 @@
+button {
+  border: none;
+  font-size: 1rem;
+  padding: 4px 8px;
+  cursor: pointer;
+
+  &[data-submit] {
+    background-color: #1a5ceb;
+    color: white;
+    &:hover {
+      outline: 2px solid #76b5cdc7;
+    }
+  }
+}

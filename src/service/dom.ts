@@ -290,8 +290,10 @@ const parseTemplate = (
   return virtualElem.content.firstElementChild as HTMLElement;
   // return virtualDiv.firstElementChild;
 };
-const findOne = (el: HTMLElement, cssSelector: string) =>
-  el.querySelector<HTMLElement>(cssSelector);
+const findOne = <T = HTMLElement>(el: HTMLElement, cssSelector: string) =>
+  el.querySelector<HTMLElement>(cssSelector) as T;
+const findAll = (el: HTMLElement, selectors: string[]) =>
+  selectors.map((cssSelector) => findOne(el, cssSelector));
 const is = (
   el: HTMLElement,
   cssSelector: string,
@@ -345,6 +347,7 @@ export default {
   css,
   parseTemplate,
   findOne,
+  findAll,
   is,
   data,
   domRect,

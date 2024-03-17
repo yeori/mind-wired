@@ -1,15 +1,9 @@
-import { PlainTextRenderer } from "./renderer/plain-text-renderer";
-import { IconBadgeRenderer } from "./renderer/icon-badge-renderer";
-import { ThumbnailRenderer } from "./renderer/thumbnail-renderer";
-import { NodeRenderingContext } from "./node-rendering-context";
-import { LinkRenderer } from "./renderer/link-renderer";
-import type { CanvasUI } from "../canvas-ui";
 export * from "./node-ui";
-import {
+import type {
   IconBadgeSpec,
   ThumbnailSpec,
-  type ModelSpec,
-  NodeModelType,
+  ModelSpec,
+  LinkSpec,
 } from "./node-type";
 import { type NodeUI } from "./node-ui";
 
@@ -29,54 +23,18 @@ export type UserDefinedRenderer<T> = {
   text?(item: T): string;
   thumbnail?(item: T): ThumbnailSpec;
   iconBadge?(item: T): IconBadgeSpec;
+  link?(item: T): LinkSpec;
 };
-
-export class RenderingDelegate<T> implements INodeRenderer {
-  // private _model: ModelSpec;
-  constructor(
-    readonly name: string,
-    readonly renderingContext: NodeRenderingContext,
-    readonly delegate: UserDefinedRenderer<T>
-  ) {}
-  private _pickRenderer(): INodeRenderer {
-    const ctx = this.renderingContext;
-    const { text, iconBadge, thumbnail } = this.delegate;
-    let name: NodeModelType = "text";
-    if (text) {
-      name = "text";
-    } else if (iconBadge) {
-      name = "icon-badge";
-    } else if (thumbnail) {
-      name = "thumbnail";
-    }
-    return ctx.getRenderer(name);
-  }
-  install(model: ModelSpec, parentEl: HTMLElement): void {
-    const renderer = this._pickRenderer();
-    // const model = this._parseModel(providerModel);
-    renderer.install(model, parentEl);
-  }
-  render(model: ModelSpec, parentEl: HTMLElement): void {
-    const renderer = this._pickRenderer();
-    renderer.render(model, parentEl);
-  }
-  editor?(node: NodeUI): void {
-    throw new Error("Method not implemented.");
-  }
+export interface INodeEditor {
+  /**
+   * the type of model(text, thumbnail, or name of datasource)
+   */
+  name: string;
+  showEditor(model: ModelSpec, parentEl: HTMLElement): HTMLElement;
 }
-
-const createRenderingContext = (canvasUI: CanvasUI) =>
-  new NodeRenderingContext(canvasUI);
-
-export const installNodeRenderer = (canvasUI: CanvasUI) => {
-  const ctx: NodeRenderingContext = createRenderingContext(canvasUI);
-  const plainTextRenderer = new PlainTextRenderer(ctx);
-  ctx.register(plainTextRenderer);
-  const iconBadgeRenderer = new IconBadgeRenderer(ctx);
-  ctx.register(iconBadgeRenderer);
-  const thumnailRenderer = new ThumbnailRenderer(ctx);
-  ctx.register(thumnailRenderer);
-  const linkRenderer = new LinkRenderer(ctx);
-  ctx.register(linkRenderer);
-  return ctx;
+export type UserDefinedEditor<T> = {
+  name: string;
+  text?(item: T): string;
+  thumbnail?(item: T): ThumbnailSpec;
+  iconBadge?(item: T): IconBadgeSpec;
 };

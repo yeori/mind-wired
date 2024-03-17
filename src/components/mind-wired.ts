@@ -4,14 +4,21 @@ import { EdgeUI } from "./edge";
 import { NodeUI } from "./node/node-ui";
 import { NodeLayoutContext } from "./layout";
 import selection from "./selection";
-import { NodeEditing } from "./editing";
-import { INodeRenderer, RenderingDelegate, installNodeRenderer } from "./node";
+import {
+  NodeEditingContext,
+  installDefaultEditors,
+} from "./node/node-editing-context";
+import { INodeRenderer } from "./node";
+import { RenderingDelegate } from "./node/renderer/renderer-delegate";
 import AlignmentUI from "./alignment/alignment-ui";
 import { dom } from "../service";
 import TreeDataSource from "./datasource/tree-ds";
 import { DragContext, type Capture } from "./drag-context";
 import type Configuration from "./config";
-import { type NodeRenderingContext } from "./node/node-rendering-context";
+import {
+  installDefaultRenderers,
+  NodeRenderingContext,
+} from "./node/node-rendering-context";
 import { ModelSpec, NodeLayout, NodeSpec, ViewSpec } from "./node/node-type";
 import { type NodeSelectionModel } from "./selection/node-selection-model";
 import {
@@ -78,7 +85,7 @@ export class MindWired {
   nodeRenderingContext: NodeRenderingContext;
   nodeSelectionModel: NodeSelectionModel;
   nodeLayoutContext: NodeLayoutContext;
-  nodeEditor: NodeEditing;
+  nodeEditingContext: NodeEditingContext;
   alignmentUI: AlignmentUI;
   dragContext: DragContext;
   edgeUI: EdgeUI;
@@ -95,15 +102,26 @@ export class MindWired {
     this.canvas = new CanvasUI(config);
     config.getCanvas = () => this.canvas;
 
-    this.nodeRenderingContext = installNodeRenderer(this.canvas);
+    this._dsFactory = new DataSourceFactory();
     config.getNodeRenderer = () => this.nodeRenderingContext;
 
     this.nodeSelectionModel = selection.createSelectionModel("node", config);
     this.nodeLayoutContext = new NodeLayoutContext();
-    this.nodeEditor = new NodeEditing(config);
+
+    this.nodeRenderingContext = new NodeRenderingContext(
+      this.canvas,
+      this._dsFactory
+    );
+    installDefaultRenderers(this.nodeRenderingContext);
+
+    this.nodeEditingContext = new NodeEditingContext(
+      this.canvas,
+      this._dsFactory
+    );
+    installDefaultEditors(this.nodeEditingContext);
+
     this.alignmentUI = new AlignmentUI(config);
     this.dragContext = new DragContext();
-    this._dsFactory = new DataSourceFactory();
     this.edgeUI = new EdgeUI(config, this.canvas);
 
     this.config.listen(EVENT.DRAG.VIEWPORT, (e) => {
@@ -176,9 +194,9 @@ export class MindWired {
       .listen(EVENT.NODE.EDITING, ({ editing, nodeUI }) => {
         // console.log("[edit]", nodeUI);
         if (editing) {
-          this.nodeEditor.edit(nodeUI);
+          this.nodeEditingContext.edit(nodeUI);
         } else {
-          this.nodeEditor.close();
+          this.nodeEditingContext.close();
         }
       })
       .listen(EVENT.NODE.FOLDED, ({ node }) => {
@@ -204,16 +222,20 @@ export class MindWired {
   ) {
     const ds = this._dsFactory.createDataSource(dataSourceId, keyExtractor);
     if (param) {
-      const { renderer } = param;
+      const { renderer, editor } = param;
       if (renderer) {
         this.nodeRenderingContext.registerCustomRender(renderer);
-        this._dsFactory.bindMapping(ds, renderer.name);
+        this._dsFactory.bindRendererMapping(ds, renderer.name);
+      }
+      if (editor) {
+        this.nodeEditingContext.registerCustomEditor(editor);
+        this._dsFactory.bindEditorMapping(ds, editor.name);
       }
     }
     return ds;
   }
   isEditing() {
-    return this.nodeEditor.isEditing();
+    return this.nodeEditingContext.isEditing();
   }
   nodes(elems: NodeSpec) {
     if (elems instanceof TreeDataSource) {
@@ -264,7 +286,7 @@ export class MindWired {
       this.config.emit(EVENT.NODE.SELECTED, { node: nodeUI });
     }
     if (option && option.editing) {
-      this.nodeEditor.edit(nodeUI);
+      this.nodeEditingContext.edit(nodeUI);
     }
   }
   /**
@@ -358,15 +380,7 @@ export class MindWired {
     return this;
   }
   getNodeRender(model: ModelSpec): INodeRenderer {
-    let nodeRenderer = this.nodeRenderingContext.getRendererByModel(model);
-    if (!nodeRenderer && model.provider) {
-      const ds = this._dsFactory.findDataSourceByKey(model.provider.key);
-      if (ds) {
-        const renderName = this._dsFactory.getRendererName(ds.id);
-        nodeRenderer = this.nodeRenderingContext.getRenderer(renderName);
-      }
-    }
-    return nodeRenderer;
+    return this.nodeRenderingContext.getRendererByModel(model);
   }
   translateModel(model: ModelSpec) {
     if (model.provider) {

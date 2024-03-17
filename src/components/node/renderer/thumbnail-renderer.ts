@@ -4,7 +4,7 @@ import { type NodeRenderingContext } from "../node-rendering-context";
 import { type INodeRenderer } from "..";
 
 const template = {
-  viewer: `<div class="mwd-thumbnail-node"><img draggable="false"></div>`,
+  viewer: `<div class="mwd-thumbnail-node"></div>`,
   editor: `
   <div class="mwd-node-editor thumnail-editor">
     <div class="inline-mwd-form">
@@ -46,12 +46,17 @@ export class ThumbnailRenderer implements INodeRenderer {
     bodyEl.append($thumnailEl);
   }
   render(model: ModelSpec, bodyEl: HTMLElement) {
-    const $div = this.ctx.query<HTMLImageElement>(
-      bodyEl,
-      ".mwd-thumbnail-node img"
-    );
-    this.ctx.css($div, { width: model.thumbnail.size, height: "auto" });
-    $div.src = model.thumbnail.path;
+    const $el = this.ctx.query(bodyEl, ".mwd-thumbnail-node");
+    // const $img = this.ctx.query<HTMLImageElement>($el, "img");
+    const { size } = model.thumbnail;
+    const { width, height } = this.ctx.normalizeImageSize(size);
+
+    this.ctx.css($el, {
+      "background-image": `url("${model.thumbnail.path}")`,
+      width,
+      height,
+    });
+    $el.classList.add("cover");
   }
   editor(nodeUI: NodeUI) {
     const { model } = nodeUI;
@@ -112,8 +117,8 @@ export class ThumbnailRenderer implements INodeRenderer {
       }
     });
     // renderThumnail($imgEl, this.ctx, model.thumbnail);
-    this.ctx.installEditor(nodeUI, $editorEl).then(() => {
-      console.log("done");
-    });
+    // this.ctx.installEditor(nodeUI, $editorEl).then(() => {
+    //   console.log("done");
+    // });
   }
 }

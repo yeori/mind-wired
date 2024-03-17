@@ -1,9 +1,10 @@
-import { UserDefinedRenderer } from "../node";
+import { UserDefinedEditor, UserDefinedRenderer } from "../node";
 
 export type KeyExtractor<T, K> = (item: T) => K;
 
 export type DatasourceOptionalParam<T> = {
   renderer?: UserDefinedRenderer<T>;
+  editor?: UserDefinedEditor<T>;
 };
 /**
  * @template T - type of user data, which is rendered as node
@@ -57,6 +58,12 @@ export class DataSourceFactory {
    * @value name of custom node renderer
    */
   private _dsToRendererMap = new Map<string, string>();
+  /**
+   * mapping datasource(key) to node editor(value)
+   * @key datasource id
+   * @value name of custom node editor
+   */
+  private _dsToEditorMap = new Map<string, string>();
   constructor() {}
   /**
    * creates new datasource
@@ -81,17 +88,23 @@ export class DataSourceFactory {
    *
    * @template T type of items in the datasource
    * @template K type of key for each items(default: 'string')
-   * @param datasourceId unique identifier for datasource
+   * @param dataSourceId unique identifier for datasource
    * @returns datasource
    */
-  getDataSource<T = any, K = string>(datasourceId: string) {
-    return this._dsMap.get(datasourceId) as BaseDataSource<T, K>;
+  getDataSource<T = any, K = string>(dataSourceId: string) {
+    return this._dsMap.get(dataSourceId) as BaseDataSource<T, K>;
   }
-  bindMapping(ds: BaseDataSource<any, any>, rendererName: string) {
+  bindRendererMapping(ds: BaseDataSource<any, any>, rendererName: string) {
     this._dsToRendererMap.set(ds.id, rendererName);
   }
   getRendererName(dataSourceId: string) {
     return this._dsToRendererMap.get(dataSourceId);
+  }
+  bindEditorMapping(ds: BaseDataSource<any, any>, editorName: string) {
+    this._dsToEditorMap.set(ds.id, editorName);
+  }
+  getEditorName(dataSourceId: string) {
+    return this._dsToEditorMap.get(dataSourceId);
   }
   findDataSourceByData<T, K>(data: T) {
     return this._findBy((ds) => ds.containsData(data));
