@@ -5,8 +5,13 @@ import { MustacheLREdgeRenderer } from "./mustache-lr-renderer";
 import { MustacheTBEdgeRenderer } from "./mustache-tb-renderer";
 import { type NodeUI } from "../node/node-ui";
 import type Configuration from "../config";
-import { type CanvasUI } from "../canvas-ui";
-import { EdgeRendererName, IEdgeRenderer } from "./edge-renderer-type";
+import type { CanvasUI } from "../canvas-ui";
+import type { EdgeRendererName, IEdgeRenderer } from "./edge-renderer-type";
+import type {
+  NodeFoldingArg,
+  NodeMoveArg,
+  ViewportEventArg,
+} from "../../mindwired-event";
 
 export {
   LineEdgeRenderer,
@@ -35,7 +40,7 @@ const createEdges = (srcNode: NodeUI, edges: Edge[]) => {
   });
 };
 const filterIndex = (edges: Edge[], callback: Function) => {
-  const pos = [] as number[];
+  const pos: number[] = [];
   edges.forEach((e, index) => {
     if (callback(e)) {
       pos.push(index);
@@ -86,42 +91,22 @@ export class EdgeUI {
     // createEdges(rootNode, this.edges);
     installDefaultEdgeRenderers(this.renderers);
     this.config
-      .listen(EVENT.NODE.CREATED, ({ nodes }: { nodes: NodeUI[] }) => {
-        nodes.forEach((nodeUI) => {
-          const e = new Edge(nodeUI.parent!, nodeUI);
-          this.edges.push(e);
-        });
+      .listen(EVENT.VIEWPORT.RESIZED, (_: ViewportEventArg) => {
         this.repaint();
       })
-      .listen(EVENT.VIEWPORT.RESIZED, () => {
-        this.repaint();
-      })
-      .listen(EVENT.NODE.DELETED, (node: NodeUI) => {
-        const pos = filterIndex(this.edges, (e: Edge) => e.matched(node));
-        if (pos.length === 0) {
-          // MEMO invalid state: the deleted node does not exist.
-        } else {
+      .listen(EVENT.NODE.MOVED, ({ node, prevParent }: NodeMoveArg) => {
+        const pos = filterIndex(
+          this.edges,
+          (e: Edge) => e.src === prevParent && e.dst === node
+        );
+        if (pos.length > 0) {
           pos.reverse().forEach((index) => this.edges.splice(index, 1));
-          // this.edges.splice(pos, 1);
-          this.repaint();
         }
+        const e = new Edge(node.parent!, node);
+        this.edges.push(e);
+        this.repaint();
       })
-      .listen(
-        EVENT.NODE.MOVED,
-        ({ node, prevParent }: { node: NodeUI; prevParent: NodeUI }) => {
-          const pos = filterIndex(
-            this.edges,
-            (e: Edge) => e.src === prevParent && e.dst === node
-          );
-          if (pos.length > 0) {
-            pos.reverse().forEach((index) => this.edges.splice(index, 1));
-          }
-          const e = new Edge(node.parent!, node);
-          this.edges.push(e);
-          this.repaint();
-        }
-      )
-      .listen(EVENT.NODE.FOLDED, ({ node }: { node: NodeUI }) => {
+      .listen(EVENT.NODE.FOLDED, ({ node }: NodeFoldingArg) => {
         const edges = this.edges.filter((edge) => edge.src === node);
         const folded = node.isFolded();
         edges.forEach((edge) => {
@@ -131,6 +116,28 @@ export class EdgeUI {
 
         this.repaint();
       });
+  }
+  addEdge(src: NodeUI, dst: NodeUI) {
+    const e = new Edge(src, dst);
+    this.edges.push(e);
+    this.repaint();
+  }
+  /**
+   * deletes edges matching the nodes
+   * @param nodes
+   */
+  deleteEdges(nodes: NodeUI[]) {
+    let deleted = 0;
+    nodes.forEach((node) => {
+      const pos = filterIndex(this.edges, (e: Edge) => e.matched(nodes[0]));
+      if (pos.length > 0) {
+        pos.reverse().forEach((index) => this.edges.splice(index, 1));
+      }
+      deleted += pos.length;
+    });
+    if (deleted > 0) {
+      this.repaint();
+    }
   }
   setRootNode(rootNode: NodeUI) {
     this.edges = [];

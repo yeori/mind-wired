@@ -1,4 +1,5 @@
 import { INodeEditor, type UserDefinedEditor } from ".";
+import { NodeEventArg, ViewportEventArg } from "../../mindwired-event";
 import { EVENT } from "../../service/event-bus";
 import type { CanvasUI } from "../canvas-ui";
 import type { DataSourceFactory } from "../datasource";
@@ -27,11 +28,11 @@ export class NodeEditingContext {
     readonly datasourceFactory: DataSourceFactory
   ) {
     this.node = undefined;
-    this.config.listen(EVENT.VIEWPORT.CLICKED, () => {
+    this.config.listen(EVENT.VIEWPORT.CLICKED, (_: ViewportEventArg) => {
       this.close();
     });
-    this.config.listen(EVENT.NODE.SELECTED, ({ node }) => {
-      if (this.node !== node) {
+    this.config.listen(EVENT.NODE.SELECTED, ({ nodes }: NodeEventArg) => {
+      if (this.node !== nodes[0]) {
         this.close();
       }
     });

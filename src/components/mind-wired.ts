@@ -1,9 +1,8 @@
-import { EVENT } from "../service/event-bus";
+import { EVENT, parseEvent } from "../service/event-bus";
 import { CanvasUI } from "./canvas-ui";
 import { EdgeUI } from "./edge";
 import { NodeUI } from "./node/node-ui";
 import { NodeLayoutContext } from "./layout";
-import selection from "./selection";
 import {
   NodeEditingContext,
   installDefaultEditors,
@@ -19,13 +18,24 @@ import {
   NodeRenderingContext,
 } from "./node/node-rendering-context";
 import { ModelSpec, NodeLayout, NodeSpec, ViewSpec } from "./node/node-type";
-import { type NodeSelectionModel } from "./selection/node-selection-model";
+import { NodeSelectionModel } from "./selection";
 import {
   DataSourceFactory,
   DatasourceOptionalParam,
   KeyExtractor,
 } from "./datasource";
 import { IEdgeRenderer } from "./edge/edge-renderer-type";
+import type {
+  NodeDragEvent,
+  NodeDragEventArg,
+  NodeEditingArg,
+  NodeEvent,
+  NodeEventArg,
+  NodeFoldingArg,
+  ViewportDragEvent,
+  ViewportDragEventArg,
+  ViewportEvent,
+} from "../mindwired-event";
 
 const exportTree = (config: Configuration, nodeUI: NodeUI): NodeSpec => {
   const v: ViewSpec = nodeUI.spec.view;
@@ -104,7 +114,7 @@ export class MindWired {
     this._dsFactory = new DataSourceFactory();
     config.getNodeRenderer = () => this.nodeRenderingContext;
 
-    this.nodeSelectionModel = selection.createSelectionModel("node", config);
+    this.nodeSelectionModel = new NodeSelectionModel(config);
     this.nodeLayoutContext = new NodeLayoutContext();
 
     this.nodeRenderingContext = new NodeRenderingContext(
@@ -123,27 +133,25 @@ export class MindWired {
     this.dragContext = new DragContext();
     this.edgeUI = new EdgeUI(config, this.canvas);
 
-    this.config.listen(EVENT.DRAG.VIEWPORT, (e) => {
-      this.config.setOffset(e.offset);
-      // this.repaint();
-      this.canvas.repaintNodeHolder();
-      this.edgeUI.repaint();
-      if (e.state === "DONE") {
-        this.rootUI.setPos(e.offset.x, e.offset.y, false);
-        try {
-          this.config.emit(EVENT.NODE.UPDATED.CLIENT, {
-            nodes: [this.rootUI],
-            type: "pos",
-          });
-        } finally {
-          this.rootUI.setPos(0, 0);
-        }
-      }
-    });
-
     this.config
-      .listen(EVENT.DRAG.NODE, (e) => {
-        if (e.state === "READY") {
+      .listen(EVENT.DRAG.VIEWPORT, (e: ViewportDragEventArg) => {
+        this.config.setOffset(e.offset);
+        this.canvas.repaintNodeHolder();
+        this.edgeUI.repaint();
+        if (e.state === "done") {
+          this.rootUI.setPos(e.offset.x, e.offset.y, false);
+          try {
+            this.config.emit(EVENT.NODE.UPDATED.CLIENT, {
+              nodes: [this.rootUI],
+              type: "pos",
+            });
+          } finally {
+            this.rootUI.setPos(0, 0);
+          }
+        }
+      })
+      .listen(EVENT.DRAG.NODE, (e: NodeDragEventArg) => {
+        if (e.state === "ready") {
           const nodes = this.nodeSelectionModel.getNodes();
           /*
            * shift@click on nodes redirects dragging to their children
@@ -151,10 +159,10 @@ export class MindWired {
           const dragTargets =
             e.target === "all" ? nodes : nodes.flatMap((node) => node.subs);
           // this.draggingNodes = capatureDragData(dragTargets);
-          this.dragContext.prepareDnd(dragTargets);
+          this.dragContext.prepareCaptures(dragTargets);
           this.alignmentUI.turnOn(this.rootUI, dragTargets);
           this.canvas.updateSelection(nodes);
-        } else if (e.state === "DRAG") {
+        } else if (e.state === "drag") {
           const acceleration = e.target === "all" ? 1 : 2.5;
           this.dragContext.eachCapture((capture: Capture) => {
             const { node, dir, pos } = capture;
@@ -174,7 +182,7 @@ export class MindWired {
           });
           this.canvas.updateSelection(this.nodeSelectionModel.getNodes());
           this.edgeUI.repaint(!this.config.snapEnabled);
-        } else if (e.state === "DONE") {
+        } else if (e.state === "done") {
           this.alignmentUI.turnOff();
           this.edgeUI.repaint(true);
           const nodes = this.dragContext.getUpdatedNodes();
@@ -185,23 +193,26 @@ export class MindWired {
             });
           } else {
             const nodes = this.nodeSelectionModel.getNodes();
-            this.config.emit(EVENT.NODE.CLICKED, { nodes }, true);
+            this.config.emit(EVENT.NODE.CLICKED.CLIENT, {
+              nodes,
+              type: "click",
+            });
           }
           this.dragContext.clear();
         }
       })
-      .listen(EVENT.NODE.EDITING, ({ editing, nodeUI }) => {
+      .listen(EVENT.NODE.EDITING, ({ editing, node }: NodeEditingArg) => {
         // console.log("[edit]", nodeUI);
         if (editing) {
-          this.nodeEditingContext.edit(nodeUI);
+          this.nodeEditingContext.edit(node);
         } else {
           this.nodeEditingContext.close();
         }
       })
-      .listen(EVENT.NODE.FOLDED, ({ node }) => {
+      .listen(EVENT.NODE.FOLDED, ({ node }: NodeFoldingArg) => {
         this.canvas.updateFoldingNodes(node);
       })
-      .listen(EVENT.NODE.UPDATED, (nodes: NodeUI[]) => {
+      .listen(EVENT.NODE.UPDATED, ({ nodes }: NodeEventArg) => {
         nodes.forEach((node) => node.repaint());
         this.edgeUI.repaint();
         this.config.emit(EVENT.NODE.UPDATED.CLIENT, { nodes, type: "model" });
@@ -252,10 +263,14 @@ export class MindWired {
     this.repaint();
     return this;
   }
-  findNode(predicate) {
+  findNode(predicate: (node: NodeUI) => boolean) {
     return this.rootUI.find(predicate);
   }
-  addNode(parentNode: NodeUI, nodeData: NodeSpec, option?) {
+  addNode(
+    parentNode: NodeUI,
+    nodeData: NodeSpec,
+    option?: { siblingNode: NodeUI }
+  ) {
     const data: NodeSpec = {
       root: false,
       model: nodeData.model,
@@ -279,14 +294,22 @@ export class MindWired {
     }
     nodeUI.repaint();
     // this.canvas.repaint(nodeUI);
-
-    this.config.emit(EVENT.NODE.CREATED, { nodes: [nodeUI] }, true);
-    if (option && (option.editing || option.select)) {
-      this.config.emit(EVENT.NODE.SELECTED, { node: nodeUI });
-    }
-    if (option && option.editing) {
-      this.nodeEditingContext.edit(nodeUI);
-    }
+    this.edgeUI.addEdge(nodeUI.parent, nodeUI);
+    this.config.emit(EVENT.NODE.CREATED.CLIENT, {
+      nodes: [nodeUI],
+      type: "create",
+    });
+    return nodeUI;
+    // FIXME 노드 생성 후 곧바로 편집 모드 전환하려는 코드인데 현재는 작동하지 않음.
+    // if (option && (option.editing || option.select)) {
+    //   this.config.emit(EVENT.NODE.SELECTED, {
+    //     node: nodeUI,
+    //     append: false,
+    //   });
+    // }
+    // if (option && option.editing) {
+    //   this.nodeEditingContext.edit(nodeUI);
+    // }
   }
   /**
    *
@@ -314,9 +337,25 @@ export class MindWired {
     }
   }
   deleteNodes(nodes: NodeUI[]) {
-    const updated = [];
-    const deleted = [];
+    const updated: NodeUI[] = [];
+    const deleted: NodeUI[] = [];
     nodes.forEach((node) => {
+      /**
+       * delete [N1]
+       * ```
+       *  parent
+       *   +- N0
+       *   +- N1 (delete)
+       *       +- C0 +- ...
+       *       +- C1 +- ...
+       * ```
+       * ```
+       *  parent
+       *   +- N0
+       *   +- C0 +- ...
+       *   +- C1 +- ...
+       * ```
+       */
       const { parent, childNodes } = node;
       if (childNodes.length > 0) {
         // 1. move node.children to node.parent
@@ -332,7 +371,6 @@ export class MindWired {
       const deletedChild = node.parent.removeChild(node);
       if (deletedChild) {
         this.canvas.unregisterNode(deletedChild);
-        this.config.emit(EVENT.NODE.DELETED, deletedChild);
         deleted.push(node);
       }
     });
@@ -343,8 +381,15 @@ export class MindWired {
       });
     }
     if (deleted.length > 0) {
-      this.config.emit(EVENT.NODE.DELETED.CLIENT, { nodes: deleted });
+      this.edgeUI.deleteEdges(deleted);
+      this.config.emit(EVENT.NODE.DELETED.CLIENT, {
+        nodes: deleted,
+        type: "delete",
+      });
     }
+  }
+  getNodeSelectionModel() {
+    return this.nodeSelectionModel;
   }
   getSelectedNodes() {
     return this.nodeSelectionModel.getNodes();
@@ -374,8 +419,21 @@ export class MindWired {
     this.canvas.clearNodeSelection();
     this.canvas.updateSelection(this.getSelectedNodes());
   }
-  listen(event, callback) {
-    this.config.ebus.listen(`${event}.client`, callback);
+  listen<A = any>(eventName: string, callback: (arg: A) => void) {
+    const event = parseEvent(`${eventName}.client`);
+    this.config.ebus.listen(event, callback);
+    return this;
+  }
+  listenStrict<A>(
+    event:
+      | NodeEvent<A>
+      | ViewportEvent<A>
+      | ViewportDragEvent<A>
+      | NodeDragEvent<A>,
+    callback: (arg: A) => void
+  ) {
+    const e = event.CLIENT || event;
+    this.config.ebus.listen(e, callback);
     return this;
   }
   getNodeRender(model: ModelSpec): INodeRenderer {

@@ -17,7 +17,11 @@
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "strictFunctionTypes": false,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@test/*": ["./test/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.scss"]
 }

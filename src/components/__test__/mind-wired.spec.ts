@@ -1,9 +1,10 @@
-import { describe, test, expect, beforeEach } from "vitest";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import Configuration from "../config";
 import { MindWired } from "../mind-wired";
 import { UserDefinedRenderer } from "../node";
 import mockApi, { Country } from "../../../test/mock-api";
 import { DomUtil } from "../../service/dom";
+import { EVENT } from "../../mindwired-event";
 
 let mwd: MindWired;
 beforeEach(() => {
@@ -35,10 +36,14 @@ describe("Adding datasource", () => {
     });
     ds.setData(countries);
 
+    const listenFor = vi.spyOn(mwd, "listenStrict");
+
+    mwd.listenStrict(EVENT.NODE.CREATED, () => {});
+
     mwd.nodes({
       model: {
         type: "text",
-        text: "World\nNations",
+        text: "ROOT",
       },
       view: {
         layout: { type: "X-AXIS" },
@@ -50,7 +55,6 @@ describe("Adding datasource", () => {
           model: {
             provider: {
               key: "BRA",
-              // render: "country-renderer",
             },
           },
           view: {
@@ -60,5 +64,12 @@ describe("Adding datasource", () => {
         },
       ],
     });
+
+    const node = mwd.addNode(mwd.rootUI, {
+      model: { text: "sub00" },
+      view: { x: -50, y: 50 },
+    });
+    expect(node.parent.uid).toBe(mwd.rootUI.uid);
+    expect(listenFor).toHaveBeenCalledOnce();
   });
 });

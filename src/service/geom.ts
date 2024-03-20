@@ -22,7 +22,7 @@ export class Point {
 }
 export class Heading {
   /**
-   * [-180, +180] degrees from X axis
+   * [-180, +180] degrees from positive X axis
    */
   private _degree: number;
   constructor(readonly target: Point, readonly base: Point = Point.ZERO) {
@@ -47,7 +47,7 @@ export class Heading {
     return deg < 0 ? 360 + deg : deg;
   }
   /**
-   * get quadrant number by ccwx degree
+   * get quadrant number in math
    * ```
    *   2 | 1
    *  ---+---> X

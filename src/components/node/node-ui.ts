@@ -134,7 +134,10 @@ export class NodeUI {
     if (callback(model)) {
       this.$dim = null;
       // this.repaint();
-      this.sharedConfig.emit(EVENT.NODE.UPDATED, [this]);
+      this.sharedConfig.emit(EVENT.NODE.UPDATED, {
+        nodes: [this],
+        type: "update",
+      });
     }
   }
   getHeading(): Heading {
@@ -188,22 +191,25 @@ export class NodeUI {
   isLeaf() {
     return this.subs.length === 0;
   }
-  children(callback: Function) {
+  /**
+   * iterates on child nodes
+   * @param callback
+   */
+  children(callback: (child: NodeUI, parent: NodeUI) => void) {
     this.subs.forEach((child) => callback(child, this));
   }
-  find(predicate: (node: NodeUI) => NodeUI): NodeUI {
+  find(predicate: (node: NodeUI) => boolean): NodeUI {
     // fix predicate 반환 타입 확인 필요함. boolean인지 실제 객체인지.
-    let found: NodeUI | undefined = predicate(this);
-    if (found) {
+    if (predicate(this)) {
       return this;
     }
+    let found = undefined;
     for (let i = 0; i < this.subs.length; i++) {
-      found = this.subs[i].find(predicate);
-      if (found) {
-        break;
+      if ((found = this.subs[i].find(predicate))) {
+        return found;
       }
     }
-    return found;
+    return undefined;
   }
   /**
    *

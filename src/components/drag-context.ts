@@ -19,7 +19,7 @@ export class DragContext {
   readonly capture = new Map<NodeUI, Capture>();
   readonly posMap = new Map<NodeUI, Point>();
   constructor() {}
-  prepareDnd(nodes: NodeUI[]) {
+  prepareCaptures(nodes: NodeUI[]) {
     this.clear();
     nodes
       .filter((node) => !node.isRoot())

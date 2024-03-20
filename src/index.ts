@@ -5,12 +5,14 @@ import "./assets/extra/mind-wired-editor.scss";
 import TreeDataSource from "./components/datasource/tree-ds";
 import { InitParam } from "./setting";
 import { DomUtil } from "./service/dom";
+
 export * from "./setting";
 export * from "./components/node/node-type";
 export * from "./components/edge";
 export * from "./components/canvas-ui";
 export * from "./components/node";
 export * from "./components/edge/edge-renderer-type";
+export * from "./mindwired-event";
 
 const injectCanvas = (el: HTMLElement, dom: DomUtil) => {
   const canvas = dom.tag.canvas();

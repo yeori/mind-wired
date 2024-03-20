@@ -1,78 +1,8 @@
-const EVENT: any = {
-  DRAG: {
-    VIEWPORT: { name: "viewport dragged", desc: "" },
-    NODE: { name: "node dragged", desc: "" },
-  },
-  SELECTION: {
-    NODE: {
-      name: "node selected",
-      desc: "",
-    },
-  },
-  NODE: {
-    CREATED: {
-      name: "node.created",
-      desc: "new node created",
-      CLIENT: {
-        name: "node.created.client",
-        desc: "client-side node creation event",
-      },
-    },
-    DELETED: {
-      name: "node.deleted",
-      desc: "node has been deleted",
-      CLIENT: {
-        name: "node.deleted.client",
-        desc: "client-side node deletion event",
-      },
-    },
-    UPDATED: {
-      name: "node.updated",
-      desc: "content of node updated",
-      CLIENT: {
-        name: "node.updated.client",
-        desc: "client-side node update event",
-      },
-    },
-    SELECTED: {
-      name: "node.selected",
-      desc: "one or more nodes selected",
-      CLIENT: {
-        name: "node.selected.client",
-        desc: "client-side node selection event",
-      },
-    },
-    CLICKED: {
-      name: "node.clicked",
-      desc: "a node clicked(without dragging)",
-      CLIENT: {
-        name: "node.clicked.client",
-        desc: "client-side node click event",
-      },
-    },
-    EDITING: {
-      name: "node.editing",
-      desc: "node's editing state",
-    },
-    FOLDED: {
-      name: "node.folded",
-      desc: "node is folded or unfolded",
-    },
-  },
-  VIEWPORT: {
-    RESIZED: {
-      name: "viewport.resized",
-      desc: "viewport size chaged",
-    },
-    CLICKED: {
-      name: "viewport.clicked",
-      desc: "viewport has been clicked",
-    },
-  },
-};
-const parseEvent = (eventName: string) => {
+import { EVENT, MindWiredEvent } from "../mindwired-event";
+
+const parseEvent = <T extends MindWiredEvent<any>>(eventName: string): T => {
   const pathes = eventName.toUpperCase().split(".");
-  let obj = EVENT;
+  let obj: any = EVENT;
   for (let i = 0; i < pathes.length; i++) {
     obj = obj[pathes[i]];
     if (!obj) {
@@ -82,18 +12,18 @@ const parseEvent = (eventName: string) => {
   if (obj.name !== eventName) {
     throw new Error(`event name mismatch: [${eventName}]`);
   }
-  return obj;
+  return obj as T;
 };
 class EventBus {
   callbacks: Map<string, Function[]>;
   constructor() {
     this.callbacks = new Map();
   }
-  on(eventName: string, callback: Function) {
-    let callbackList = this.callbacks.get(eventName);
+  on<A = any>(event: MindWiredEvent<A>, callback: (arg: A) => void) {
+    let callbackList = this.callbacks.get(event.name);
     if (!callbackList) {
       callbackList = [];
-      this.callbacks.set(eventName, callbackList);
+      this.callbacks.set(event.name, callbackList);
     }
     callbackList.push(callback);
   }
@@ -107,15 +37,15 @@ class EventBus {
   }
   /**
    * used to register client-side callback
-   * @param {string} eventName like "valid.event.path" format
+   * @param {MindWiredEvent} eventName like "valid.event.path" format
    * @param {function} callback
    */
-  listen(eventName: string, callback: Function) {
-    const event = parseEvent(eventName);
+  listen<A = any>(event: MindWiredEvent<A>, callback: (arg: A) => void) {
+    // const event = parseEvent(eventName.name);
     this.on(event, callback);
   }
-  emit(eventName: string, payload: any, emitForClient: boolean | undefined) {
-    const callbackList = this.callbacks.get(eventName) || [];
+  emit<A = any>(event: MindWiredEvent<A>, payload: A) {
+    const callbackList = this.callbacks.get(event.name) || [];
     callbackList.forEach((cb) => {
       try {
         cb(payload);
@@ -123,12 +53,12 @@ class EventBus {
         console.log(e);
       }
     });
-    if (emitForClient) {
-      self.setTimeout(() => {
-        this.emit(eventName["CLIENT"], payload, false);
-      });
-    }
+    // if (emitForClient) {
+    //   self.setTimeout(() => {
+    //     this.emit(event["CLIENT"], payload, false);
+    //   });
+    // }
   }
 }
 
-export { EventBus, EVENT };
+export { EventBus, EVENT, parseEvent };

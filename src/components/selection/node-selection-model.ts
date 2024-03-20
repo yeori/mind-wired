@@ -3,11 +3,14 @@ import { EVENT } from "../../service/event-bus";
 import Configuration from "../config";
 import { MindWired } from "../mind-wired";
 import { type NodeUI } from "../node/node-ui";
+import { NodeSelectArg } from "../../mindwired-event";
 const clearSelection = (nodeMap: Map<string, NodeUI>) => {
-  for (let nodeUI of nodeMap.values()) {
-    nodeUI.setSelected(false);
-  }
+  const nodes = [...nodeMap.values()];
+  nodes.forEach((node) => {
+    node.setSelected(false);
+  });
   nodeMap.clear();
+  return nodes;
 };
 const skipStateForInsert = (nodes: NodeUI[]) => {
   if (nodes.length !== 1) {
@@ -18,6 +21,7 @@ const skipStateForInsert = (nodes: NodeUI[]) => {
   }
   return false;
 };
+
 const skipStateForDelete = (nodes: NodeUI[]) => {
   if (nodes.length === 0) {
     return true;
@@ -45,37 +49,39 @@ const deleteNodes = (selectionModel, nodesToDel) => {
   const mwd = selectionModel.config.mindWired();
   mwd.deleteNodes(nodesToDel);
 };
-const notifySelection = (model: NodeSelectionModel) => {
+const notifySelection = (model: NodeSelectionModel, append: boolean) => {
   const { config } = model;
   const nodes = model.getNodes();
-  setTimeout(() => config.emit(EVENT.NODE.SELECTED.CLIENT, { nodes }));
+  setTimeout(() =>
+    config.emit(EVENT.NODE.SELECTED.CLIENT, {
+      nodes,
+      append,
+      type: "select",
+    })
+  );
 };
 export class NodeSelectionModel {
   config: Configuration;
+  /**
+   * selected nodes<uid, NodeUI>
+   *
+   * @template key - uid of node
+   * @template value - NodeUI instance
+   */
   nodeMap: Map<string, NodeUI>;
   constructor(config: Configuration) {
     this.config = config;
     this.nodeMap = new Map(); // [uid:strng, NodeUI]
 
     const canvasUI = this.config.getCanvas();
-    this.config.listen(EVENT.NODE.SELECTED, ({ node, append }) => {
-      const selected = this.nodeMap.has(node.uid);
-      if (append) {
-        this.nodeMap.set(node.uid, node);
-        node.setSelected(true);
-        notifySelection(this);
-      } else if (!selected) {
-        clearSelection(this.nodeMap);
-        this.nodeMap.set(node.uid, node);
-        node.setSelected(true); // toggling
-        notifySelection(this);
-      } else {
+    this.config.listen(
+      EVENT.NODE.SELECTED,
+      ({ nodes, append }: NodeSelectArg) => {
+        this.selectNodes(nodes, append, true);
       }
-    });
+    );
     this.config.listen(EVENT.VIEWPORT.CLICKED, () => {
-      clearSelection(this.nodeMap);
-      canvasUI.clearNodeSelection();
-      notifySelection(this);
+      this.clearSelection();
     });
 
     const { dom } = this.config;
@@ -89,9 +95,9 @@ export class NodeSelectionModel {
       if ("Space" === code && !editing) {
         e.stopPropagation();
         canvasUI.clearNodeSelection();
-        this.config.emit(EVENT.NODE.EDITING, { editing: true, nodeUI });
+        this.config.emit(EVENT.NODE.EDITING, { editing: true, node: nodeUI });
       } else if ("Escape" === code) {
-        this.config.emit(EVENT.NODE.EDITING, { editing: false, nodeUI });
+        this.config.emit(EVENT.NODE.EDITING, { editing: false, node: nodeUI });
       }
     });
     dom.event.keydown(
@@ -132,15 +138,52 @@ export class NodeSelectionModel {
         e.stopImmediatePropagation();
         deleteNodes(this, nodes);
         clearSelection(this.nodeMap);
-        notifySelection(this);
+        notifySelection(this, false);
       },
       "delete"
     );
+  }
+  /**
+   * set the state of nodes 'selected'
+   * @param nodes nodes to select
+   * @param append if true, keep current selection state, otherwise reset selection state with the nodes
+   * @returns
+   */
+  selectNodes(
+    nodes: NodeUI[],
+    append: boolean,
+    propagateEvent: boolean = false
+  ) {
+    const nodesToSelect: NodeUI[] = nodes.filter(
+      (node) => !this.nodeMap.has(node.uid)
+    );
+    if (nodesToSelect.length === 0) {
+      return nodesToSelect;
+    }
+    if (!append) {
+      clearSelection(this.nodeMap);
+    }
+    nodesToSelect.forEach((node) => {
+      this.nodeMap.set(node.uid, node);
+      node.setSelected(true);
+    });
+    if (propagateEvent) {
+      notifySelection(this, append);
+    }
+    return nodesToSelect;
   }
   isEmpty() {
     return this.nodeMap.size === 0;
   }
   getNodes() {
     return [...this.nodeMap.values()];
+  }
+  clearSelection() {
+    const nodes = clearSelection(this.nodeMap);
+    if (nodes.length > 0) {
+      this.config.getCanvas().clearNodeSelection();
+      notifySelection(this, false);
+    }
+    return nodes;
   }
 }

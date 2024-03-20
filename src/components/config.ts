@@ -2,11 +2,12 @@ import type { ModelSpec, NodeSpec, ViewSpec } from "./node/node-type";
 import { clone } from "../service";
 import { EventBus } from "../service/event-bus";
 import { Point } from "../service/geom";
-import { InitParam, SnapToEntitySetting, UISetting } from "../setting";
+import type { MindWiredEvent } from "../mindwired-event";
+import type { InitParam, SnapToEntitySetting, UISetting } from "../setting";
 import type { CanvasUI } from "./canvas-ui";
-import { type NodeUI } from "./node/node-ui";
-import { NodeRenderingContext } from "./node/node-rendering-context";
-import { MindWired } from "./mind-wired";
+import type { NodeUI } from "./node/node-ui";
+import type { NodeRenderingContext } from "./node/node-rendering-context";
+import type { MindWired } from "./mind-wired";
 import type { DomUtil } from "../service/dom";
 const DEFAULT_UI_SETTING: UISetting = {
   width: 600,
@@ -36,7 +37,7 @@ const DEFAULT_UI_SETTING: UISetting = {
 class Configuration {
   el: HTMLElement;
   ui: UISetting;
-  ebus: EventBus;
+  readonly ebus: EventBus;
   dom: DomUtil;
   mindWired?: () => MindWired;
   model: ModelSpec;
@@ -48,15 +49,17 @@ class Configuration {
     el,
     ui,
     dom,
+    eventBus,
   }: {
     el: HTMLElement;
     ui: UISetting;
     dom: DomUtil;
+    eventBus: EventBus;
   }) {
     this.el = el;
     this.ui = ui;
     this.dom = dom;
-    this.ebus = new EventBus();
+    this.ebus = eventBus || new EventBus();
   }
   get width() {
     return this.ui.width;
@@ -106,18 +109,18 @@ class Configuration {
   foldedNodeClassName(): string {
     return this.ui.clazz.folded || "folded";
   }
-  listen(eventName: string, callback: Function) {
+  listen<A = any>(eventName: MindWiredEvent<A>, callback: (arg: A) => void) {
     this.ebus.on(eventName, callback);
     return this;
   }
-  off(eventName: string, callback: Function) {
-    this.ebus.off(eventName, callback);
+  off<A = any>(event: MindWiredEvent<A>, callback: Function) {
+    this.ebus.off(event.name, callback);
   }
-  emit(eventName: string, args?: any, emitForClient?: boolean) {
-    this.ebus.emit(eventName, args, !!emitForClient);
+  emit<A = any>(event: MindWiredEvent<A>, args?: A) {
+    this.ebus.emit(event, args);
     return this;
   }
-  static parse(param: InitParam, dom: DomUtil) {
+  static parse(param: InitParam, dom: DomUtil, eventBus?: EventBus) {
     const ui: UISetting = clone.mergeLeaf(
       param.ui || ({} as UISetting),
       clone.deepCopy(DEFAULT_UI_SETTING)
@@ -130,7 +133,7 @@ class Configuration {
       typeof param.el === "string"
         ? (document.querySelector(param.el as string) as HTMLElement)
         : param.el;
-    return new Configuration({ el, ui, dom });
+    return new Configuration({ el, ui, dom, eventBus });
   }
 }
 const normalizeOffset = (ui: UISetting) => {
