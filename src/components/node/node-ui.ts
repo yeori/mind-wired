@@ -71,6 +71,12 @@ export class NodeUI {
   get y() {
     return this.spec.view.y;
   }
+  /**
+   * offset(distance) from the direct parent node
+   */
+  get relativeOffset() {
+    return new Point(this.x, this.y);
+  }
   get layout(): NodeLayout {
     let { layout } = this.spec.view;
     if (layout) {
@@ -89,11 +95,11 @@ export class NodeUI {
   isReady() {
     return !!this.$el;
   }
-  dimension(): NodeRect {
+  dimension(relative: boolean = false): NodeRect {
     // FIXME - scale 적용은 canvas에서 해야 함
     const scale = this.sharedConfig.scale;
     const el = this.$bodyEl;
-    const offset = this.offset();
+    const offset = relative ? this.relativeOffset : this.offset();
     offset.x *= scale;
     offset.y *= scale;
     return (this.$dim = new NodeRect(
@@ -246,7 +252,7 @@ export class NodeUI {
   }
   lastChild() {
     if (this.subs.length === 0) {
-      return null;
+      return undefined;
     }
     return this.subs[this.subs.length - 1];
   }

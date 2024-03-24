@@ -6,13 +6,14 @@ import { type NodeUI } from "../node/node-ui";
 import { type NodeLayoutType, type NodeLayout } from "../node/node-type";
 import { INodeLayoutManager } from "./node-layout-manager";
 import { type Direction } from "../direction";
+import Configuration from "../config";
 
 const layoutMap = new Map<NodeLayoutType, INodeLayoutManager>();
 
 export type LayoutParam = { dir: Direction };
-export type PositionParam = { baseNode: NodeUI; rect: DOMRect };
+export type PositionParam = { baseNode: NodeUI; offset: number };
 export class NodeLayoutContext {
-  constructor() {
+  constructor(readonly config: Configuration) {
     layoutMap.set("DEFAULT", new DefaultNodeLayout(this));
     layoutMap.set("X-AXIS", new XAxisNodeLayout(this));
     layoutMap.set("Y-AXIS", new YAxisNodeLayout(this));

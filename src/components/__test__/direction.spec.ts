@@ -19,11 +19,14 @@ const expectTrueFlow = (dir: Direction, truthy: DirectionFlow[]) => {
 describe("by X axis", () => {
   test("LR RL movement", () => {
     /**
-     * ---+---
-     *  2 | 1
-     * ---+---
-     *  3 | 4
-     * ---+---
+     * +---+------> [X]
+     * | 2 | 1      Q1: (+X, -Y)
+     * |---+---     Q2: (-X, -Y)
+     * | 3 | 4      Q3: (-X, +Y)
+     * |---+---     Q4: (+X, +Y)
+     * |
+     * v
+     * [Y]
      */
     const node = new NodeUI(
       { model: { text: "not used" }, view: { x: -1, y: -1 } },
@@ -31,47 +34,47 @@ describe("by X axis", () => {
     );
     const dir = new Direction(node);
 
-    // from [-1, -1] quad 3
+    // from [-1, -1] Q2
     dir.capture();
-    node.setPos(1, -1, false); // (quad 3 -> quad 4)
+    node.setPos(1, -1, false); // (Q2 -> quad 1)
     expectTrueFlow(dir, ["LR"]);
 
-    node.setPos(-2, -2, false); // (quad 3 -> quad 3)
+    node.setPos(-2, -2, false); // (Q2 -> Q2)
     expectTrueFlow(dir, undefined);
 
-    node.setPos(-1, 1, false); // (quad 3 -> quad 2)
+    node.setPos(-1, 1, false); // (Q2 -> quad 3)
+    expectTrueFlow(dir, ["TB"]);
+
+    node.setPos(1, 1, false); // (Q2 -> quad 4)
+    expectTrueFlow(dir, ["LR", "TB"]);
+
+    // [1, 1], quandrant 4
+    dir.capture();
+
+    node.setPos(2, 2, false); // (Q4 -> Q4)
+    expectTrueFlow(dir, undefined);
+
+    node.setPos(1, -1, false); // (Q4 -> Q1)
     expectTrueFlow(dir, ["BT"]);
 
-    node.setPos(1, 1, false); // (quad 3 -> quad 1)
-    expectTrueFlow(dir, ["LR", "BT"]);
+    node.setPos(-1, -1, false); //(Q4 -> Q2)
+    expectTrueFlow(dir, ["RL", "BT"]);
 
-    // [1, 1], quandrant 1
-    dir.capture();
-
-    node.setPos(2, 2, false); // (quad 1 -> quad 1)
-    expectTrueFlow(dir, undefined);
-
-    node.setPos(1, -1, false); // (quad 1 -> quad 4)
-    expectTrueFlow(dir, ["TB"]);
-
-    node.setPos(-1, -1, false); //(quad 1 -> quat 3)
-    expectTrueFlow(dir, ["RL", "TB"]);
-
-    node.setPos(-1, 1, false); // (quad 1 -> quad 2)
+    node.setPos(-1, 1, false); // (Q4 -> Q3)
     expectTrueFlow(dir, ["RL"]);
 
-    // [-1, 1] quad 2
+    // [-1, 1] Q3
     dir.capture();
-    node.setPos(2, 2, false); // (quad 2 -> quad 1)
+    node.setPos(2, 2, false); // (Q3 -> Q4)
     expectTrueFlow(dir, ["LR"]);
 
-    node.setPos(-1, -1, false); // (quad 2 -> quad 3)
-    expectTrueFlow(dir, ["TB"]);
+    node.setPos(-1, -1, false); // (Q3 -> Q2)
+    expectTrueFlow(dir, ["BT"]);
 
-    node.setPos(-2, 2, false); // (quad 2 -> quad 2)
+    node.setPos(-2, 2, false); // (Q3 -> Q3)
     expectTrueFlow(dir, undefined);
 
-    node.setPos(1, -1, false); // (quad 2 -> quad 4)
-    expectTrueFlow(dir, ["LR", "TB"]);
+    node.setPos(1, -1, false); // (Q3 -> Q1)
+    expectTrueFlow(dir, ["LR", "BT"]);
   });
 });

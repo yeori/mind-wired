@@ -29,9 +29,34 @@ export class XAxisNodeLayout implements INodeLayoutManager {
     }
   };
   setPosition = (nodeUI: NodeUI, context: PositionParam) => {
-    const { baseNode, rect } = context;
-    const x = baseNode.x;
-    const y = baseNode.y + rect.height + 10;
+    const { baseNode } = context;
+    const heading = baseNode
+      ? baseNode.getHeading()
+      : nodeUI.parent.getHeading();
+    const rightSide = heading.cwy <= 180;
+    let x = 0;
+    let y = 0;
+    let halfWidth = nodeUI.dimension(true).width / 2;
+    if (baseNode) {
+      const rect = baseNode.dimension(true);
+      if (rightSide) {
+        x = rect.left + halfWidth;
+      } else {
+        x = rect.right - halfWidth;
+      }
+      y = rect.bottom + 20;
+    } else {
+      const rect = nodeUI.parent.dimension(true);
+      const offset = context.offset + halfWidth;
+      if (rightSide) {
+        x = rect.width / 2 + offset;
+      } else {
+        x = -rect.width / 2 - offset;
+      }
+    }
+
+    // const { baseNode, rect } = context;
+
     nodeUI.setPos(x, y);
   };
 }

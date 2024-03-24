@@ -4,7 +4,10 @@
 const DEGREE_PER_RADIAN = 180 / Math.PI;
 
 export type RotationParam = { scale: number };
-
+/**
+ * class Point(x, y) means screen-based coord, not mathmatical coord
+ *
+ */
 export class Point {
   x: number;
   y: number;
@@ -28,7 +31,7 @@ export class Heading {
   constructor(readonly target: Point, readonly base: Point = Point.ZERO) {
     const dx = this.target.x - base.x;
     const dy = this.target.y - base.y;
-    this._degree = Math.atan2(dy, dx) * DEGREE_PER_RADIAN;
+    this._degree = Math.atan2(dy === 0 ? 0 : -dy, dx) * DEGREE_PER_RADIAN;
   }
   /**
    * counter clock wise from X-AXIS(east), which is quadrant(1 > 2 > 3 > 4)

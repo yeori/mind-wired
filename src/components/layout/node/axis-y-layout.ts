@@ -26,9 +26,33 @@ export class YAxisNodeLayout implements INodeLayoutManager {
     }
   };
   setPosition = (nodeUI: NodeUI, context: PositionParam) => {
-    const { baseNode, rect } = context;
-    const x = baseNode.x + rect.width + 10;
-    const y = baseNode.y;
+    const { baseNode } = context;
+    const heading = baseNode
+      ? baseNode.getHeading()
+      : nodeUI.parent.getHeading();
+    const topSide = heading.ccwx <= 180;
+    let x = 0;
+    let y = 0;
+    const nodeRect = nodeUI.dimension(true);
+    let halfHeight = nodeRect.height / 2;
+    if (baseNode) {
+      const rect = baseNode.dimension(true);
+      x = rect.cx + (rect.width + nodeRect.width + context.offset) / 2;
+      if (topSide) {
+        y = rect.bottom - halfHeight;
+      } else {
+        y = rect.top + halfHeight;
+      }
+    } else {
+      const rect = nodeUI.parent.dimension(true);
+      const offset = context.offset + halfHeight;
+      x = 0;
+      if (topSide) {
+        y = -rect.height / 2 - offset;
+      } else {
+        y = rect.height / 2 + offset;
+      }
+    }
     nodeUI.setPos(x, y);
   };
 }

@@ -115,7 +115,7 @@ export class MindWired {
     config.getNodeRenderer = () => this.nodeRenderingContext;
 
     this.nodeSelectionModel = new NodeSelectionModel(config);
-    this.nodeLayoutContext = new NodeLayoutContext();
+    this.nodeLayoutContext = new NodeLayoutContext(config);
 
     this.nodeRenderingContext = new NodeRenderingContext(
       this.canvas,
@@ -278,21 +278,28 @@ export class MindWired {
     };
     if (!data.view) {
       data.view = {
-        x: 100,
+        x: 0,
         y: 0,
       };
     }
+    const lastChild = parentNode.lastChild();
     const nodeUI = new NodeUI(data, this.config, parentNode);
     this.canvas.regsiterNode(nodeUI);
     parentNode.addChild(nodeUI);
-    if (option?.siblingNode) {
-      const rect = this.config.dom.domRect(option.siblingNode.$bodyEl);
-      this.nodeLayoutContext.setPosition(nodeUI, {
-        baseNode: option.siblingNode,
-        rect,
-      });
-    }
     nodeUI.repaint();
+
+    this.nodeLayoutContext.setPosition(nodeUI, {
+      baseNode: lastChild,
+      offset: 60,
+    });
+
+    // if (option?.siblingNode) {
+    //   const rect = this.config.dom.domRect(option.siblingNode.$bodyEl);
+    //   this.nodeLayoutContext.setPosition(nodeUI, {
+    //     baseNode: option.siblingNode,
+    //     rect,
+    //   });
+    // }
     // this.canvas.repaint(nodeUI);
     this.edgeUI.addEdge(nodeUI.parent, nodeUI);
     this.config.emit(EVENT.NODE.CREATED.CLIENT, {
