@@ -17,7 +17,13 @@ import {
   installDefaultRenderers,
   NodeRenderingContext,
 } from "./node/node-rendering-context";
-import { ModelSpec, NodeLayout, NodeSpec, ViewSpec } from "./node/node-type";
+import {
+  ModelSpec,
+  NodeLayout,
+  NodeSpec,
+  SchemaSpec,
+  ViewSpec,
+} from "./node/node-type";
 import { NodeSelectionModel } from "./selection";
 import {
   DataSourceFactory,
@@ -36,6 +42,8 @@ import type {
   ViewportDragEventArg,
   ViewportEvent,
 } from "../mindwired-event";
+import { SchemaContext } from "./node/schema-context";
+import { ExportContext, ExportParam } from "./export";
 
 const exportTree = (config: Configuration, nodeUI: NodeUI): NodeSpec => {
   const v: ViewSpec = nodeUI.spec.view;
@@ -106,6 +114,7 @@ export class MindWired {
   edgeUI: EdgeUI;
   rootUI: NodeUI;
   private _dsFactory: DataSourceFactory;
+  private _schemaContext: SchemaContext;
   /**
    *
    * @param {Configuration} config
@@ -138,6 +147,8 @@ export class MindWired {
     this.alignmentUI = new AlignmentUI(config);
     this.dragContext = new DragContext();
     this.edgeUI = new EdgeUI(config, this.canvas);
+
+    this._schemaContext = new SchemaContext();
 
     this.config
       .listen(EVENT.DRAG.VIEWPORT, (e: ViewportDragEventArg) => {
@@ -266,6 +277,7 @@ export class MindWired {
     if (this.rootUI) {
       this._dispose();
     }
+    this.canvas.drawSchemaStyles(this._schemaContext.getSchemas());
     if (elems instanceof TreeDataSource) {
       const root = elems.build();
       this.rootUI = NodeUI.build(root, this.config);
@@ -480,11 +492,29 @@ export class MindWired {
       return model;
     }
   }
-  export() {
+  /**
+   * return NodeSpec data. If you want to export schema or ui, use `exportwith` instead.
+   * @see {exportWith}
+   * @deprecated use exportWith(param: ExportParam)
+   * @param stringify if true, return JSON.stringify(nodeSpec), else return nodeSpec
+   * @returns nodeSpec
+   */
+  export(stringify = true) {
     const nodeSpec = exportTree(this.config, this.rootUI);
-    return Promise.resolve(JSON.stringify(nodeSpec));
+    const value = stringify ? JSON.stringify(nodeSpec) : nodeSpec;
+    return Promise.resolve(value);
+  }
+  exportWith(param?: ExportParam) {
+    const exporter = new ExportContext(this);
+    return exporter.export(param);
   }
   registerEdgeRenderer(renderer: IEdgeRenderer) {
     this.edgeUI.addEdgeRenderer(renderer);
+  }
+  getSchemaContext() {
+    return this._schemaContext;
+  }
+  registerSchema(schemaSpec: SchemaSpec) {
+    this._schemaContext.addSchema(schemaSpec);
   }
 }

@@ -8,8 +8,8 @@ import iconfolding from "@/assets/icon-folded.svg";
 import { geom, type Point } from "../service/geom";
 import Configuration from "./config";
 import { NodeUI } from "./node/node-ui";
-import { type MindWired } from "./mind-wired";
-import type { NodeRect } from "./node/node-type";
+import { MindWired } from "./mind-wired";
+import type { NodeRect, SchemaSpec } from "./node/node-type";
 import { INodeEditor } from "./node";
 import type { DomUtil } from "../service/dom";
 
@@ -673,5 +673,31 @@ export class CanvasUI {
       nodeEl = registerElement(this, nodeUI);
     }
     return nodeEl.querySelector<HTMLElement>(`.mwd-body`);
+  }
+  drawSchemaStyles(schemaSpecs: SchemaSpec[]) {
+    const { mapId } = this.config.ui;
+    const styleId = `#mwd-schema-@mapId-@schema`.replace("@mapId", mapId || "");
+    const styleDef =
+      `[data-mind-wired-viewport@mapId] .mwd-node.@schema > .mwd-body { @body }`.replace(
+        "@mapId",
+        mapId ? `="${mapId}"` : ""
+      );
+    schemaSpecs.forEach((schema) => {
+      const { name, css } = schema;
+      const styleEl = this.dom.tag.style(styleId.replace("@schema", name));
+      if (css) {
+        const body = Object.keys(css).reduce((cssText, prop) => {
+          const dashedprop = prop.replace(
+            /[A-Z]/g,
+            (match) => `-${match.toLowerCase()}`
+          );
+          return cssText + `${dashedprop}: ${css[prop]};`;
+        }, "");
+        styleEl.innerHTML = styleDef
+          .replace("@body", body)
+          .replace("@schema", name);
+        document.head.appendChild(styleEl);
+      }
+    });
   }
 }

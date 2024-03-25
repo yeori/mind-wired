@@ -6,10 +6,15 @@ export { Point };
  * "120px", "100%", etc
  */
 export type CssSizeForm = string;
-
+/**
+ * string value as class of HTMLElement. You don't have to add leading dot(.)
+ *
+ * @example "city", "asian food"
+ */
 export type CssClassName = string;
 /**
- * '#aabbcc' format
+ * `#rrbbgg` or `#rrggbbaa` format
+ * @example '#aabbcc', '#0000004d'
  */
 export type WebColorString = string;
 
@@ -22,7 +27,7 @@ export type CssSelectorForm = string;
 
 export type EntityClassNaming = {
   /**
-   * classname for active node
+   * class name for active nodes
    *
    * @default 'active-node'
    */
@@ -74,6 +79,10 @@ export type SelectionSetting = {
  * * scale - initial scale factor
  */
 export type UISetting = {
+  /**
+   * unique map id
+   *
+   */
   mapId?: string | undefined;
   /**
    * width of mindmap viewport. ex) "600px", "100%"
@@ -87,12 +96,16 @@ export type UISetting = {
    */
   height?: CssSizeForm | number;
   /**
-   * initial scale factor
+   * initial scale factor. (1: 100%, 0.5: 50%, etc)
    *
    * @default 1
    */
   scale?: number;
   clazz?: EntityClassNaming;
+  /**
+   * relative offst from center of viewport
+   * @internal
+   */
   offset?: Point;
   snap?: SnapToEntitySetting | false;
   selection?: SelectionSetting;

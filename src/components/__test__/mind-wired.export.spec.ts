@@ -14,7 +14,7 @@ describe("a", () => {
   });
 
   test("1. plain export", async () => {
-    const json = await mwd.export();
+    const json = (await mwd.export(true)) as string;
     console.log(json);
 
     const spec: NodeSpec = JSON.parse(json);

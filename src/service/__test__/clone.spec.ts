@@ -21,9 +21,20 @@ describe("clone.deepCopy", () => {
   });
   test("array", () => {
     expect(clone.deepCopy([2, 3, 5, 7])).toEqual([2, 3, 5, 7]);
-    expect(clone.deepCopy(["one", "Two"])).toEqual(["one", "Two"]);
+    const origin = ["one", "Two"];
+    expect(clone.deepCopy(origin)).toEqual(["one", "Two"]);
+    expect(origin === clone.deepCopy(origin)).toBe(false);
   });
-
+  test("obj in array", () => {
+    const src = [{ id: ["a"] }, { id: ["b"] }];
+    const dst = clone.deepCopy(src);
+    expect(src !== dst).toBe(true);
+    expect(src[0] !== dst[0]).toBe(true);
+    expect(src[0].id !== dst[0].id).toBe(true);
+    expect(src[1] !== dst[1]).toBe(true);
+    expect(src[1].id !== dst[1].id).toBe(true);
+    expect(src).toEqual(dst);
+  });
   test("literal object", () => {
     const src = { name: "Name", languages: ["Java", "Typescript"] };
     const out = clone.deepCopy(src);

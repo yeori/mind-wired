@@ -161,7 +161,9 @@ const normalizeSnap = (ui: UISetting, dom: DomUtil) => {
     if (snap.dash !== false) {
       snap.dash = snap.dash || defaultSnap.dash;
     }
-    snap.enabled = true;
+    if (snap.enabled === undefined) {
+      snap.enabled = true;
+    }
   }
 };
 // Configuration

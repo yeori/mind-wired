@@ -40,6 +40,13 @@ export type IconBadgeSpec = {
 export type ThumbnailSpec = { path: string; size: ImageSizeSpec };
 export type LinkSpec = { url: string; body: ModelSpec };
 export type ProviderSpec = { key: any };
+export type SchemaSpec = {
+  /**
+   * name of schema(must be unique in a map)
+   */
+  name: string;
+  css?: Partial<CSSStyleDeclaration>;
+};
 export type ModelSpec = {
   type?: NodeModelType;
   schema?: string;

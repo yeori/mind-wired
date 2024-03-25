@@ -61,6 +61,7 @@ type TagUtil = {
     imgUrl: string
   ) => Promise<{ img: HTMLImageElement; width: number; height: number }>;
   div: (attr?: string) => HTMLDivElement;
+  style: (attr?: string) => HTMLStyleElement;
   canvas: (attr?: string) => HTMLCanvasElement;
 };
 const tag: TagUtil = {
@@ -93,6 +94,8 @@ const tag: TagUtil = {
     });
   },
   div: (attr?: string) => createEl<HTMLDivElement>("DIV", parseAttr(attr)),
+  style: (attr?: string) =>
+    createEl<HTMLStyleElement>("STYLE", parseAttr(attr)),
   canvas: (attr?: string) =>
     createEl("CANVAS", parseAttr(attr)) as HTMLCanvasElement,
 };
