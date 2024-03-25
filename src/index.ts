@@ -5,6 +5,7 @@ import "./assets/extra/mind-wired-editor.scss";
 import TreeDataSource from "./components/datasource/tree-ds";
 import { InitParam } from "./setting";
 import { DomUtil } from "./service/dom";
+export * from "./components/layout";
 
 export * from "./setting";
 export * from "./components/node/node-type";

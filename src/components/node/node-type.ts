@@ -69,7 +69,12 @@ export type EdgeSpec = {
   inherit?: boolean;
   option?: any;
 };
-export type NodeLayoutType = "X-AXIS" | "Y-AXIS" | "XY-AXIS" | "DEFAULT";
+export type NodeLayoutType =
+  | "X-AXIS"
+  | "Y-AXIS"
+  | "XY-AXIS"
+  | "DEFAULT"
+  | string;
 export type NodeLayout = {
   type: NodeLayoutType;
 };

@@ -80,10 +80,13 @@ class Edge {
   }
 }
 export class EdgeUI {
+  listRenderers(): IEdgeRenderer[] {
+    return [...this.renderers.values()];
+  }
   config: Configuration;
   canvas: CanvasUI;
   private edges: Edge[];
-  renderers = new Map<EdgeRendererName, IEdgeRenderer>();
+  private renderers = new Map<EdgeRendererName, IEdgeRenderer>();
   constructor(config: Configuration, canvas: CanvasUI) {
     this.config = config;
     this.canvas = canvas;

@@ -96,13 +96,11 @@ export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOp
       max = s;
     }
 
-    min.center.x = min.right + padding.hor;
-    max.center.x = max.left - padding.hor;
-    if (padding.ver > 0) {
-      min.center.y = min.bottom + padding.ver;
-      max.center.y = max.bottom + padding.ver;
-    }
-    const dx = max.cx - min.cx;
+    const x0 = min.center.x;
+    const x1 = max.center.x;
+    const y0 = min.center.y;
+    const y1 = max.center.y;
+
     if (
       padding.ver > 0 &&
       srcNode.isRoot() &&
@@ -110,7 +108,18 @@ export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOp
     ) {
       renderUnderline(canvas, srcNode, s, padding);
     }
+    min.center.x = min.right + padding.hor;
+    max.center.x = max.left - padding.hor;
+    if (padding.ver > 0) {
+      min.center.y = min.bottom + padding.ver;
+      max.center.y = max.bottom + padding.ver;
+    }
+    const dx = max.cx - min.cx;
     renderCurve(canvas, srcNode, s, dstNode, e, s === min ? dx : -dx);
+    min.center.x = x0;
+    max.center.x = x1;
+    min.center.y = y0;
+    max.center.y = y1;
     if (padding.ver > 0) {
       renderUnderline(canvas, dstNode, e, padding);
     }

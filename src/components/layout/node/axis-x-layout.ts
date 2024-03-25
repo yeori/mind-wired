@@ -7,6 +7,9 @@ import { type INodeLayoutManager } from "../node-layout-manager";
  */
 export class XAxisNodeLayout implements INodeLayoutManager {
   constructor(readonly layoutContext: NodeLayoutContext) {}
+  get name() {
+    return "X-AXIS";
+  }
   /**
    * reflective layout manager relative to parent
    *

@@ -4,6 +4,9 @@ import { INodeLayoutManager } from "../node-layout-manager";
 
 export class YAxisNodeLayout implements INodeLayoutManager {
   constructor(readonly layoutContext: NodeLayoutContext) {}
+  get name() {
+    return "Y-AXIS";
+  }
   /**
    * reflective layout manager relative to parent
    *

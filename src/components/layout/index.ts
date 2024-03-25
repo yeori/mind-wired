@@ -8,23 +8,21 @@ import { INodeLayoutManager } from "./node-layout-manager";
 import { type Direction } from "../direction";
 import Configuration from "../config";
 
-const layoutMap = new Map<NodeLayoutType, INodeLayoutManager>();
-
+export type { INodeLayoutManager };
 export type LayoutParam = { dir: Direction };
 export type PositionParam = { baseNode: NodeUI; offset: number };
 export class NodeLayoutContext {
-  constructor(readonly config: Configuration) {
-    layoutMap.set("DEFAULT", new DefaultNodeLayout(this));
-    layoutMap.set("X-AXIS", new XAxisNodeLayout(this));
-    layoutMap.set("Y-AXIS", new YAxisNodeLayout(this));
-    layoutMap.set("XY-AXIS", new XYAxisNodeLayout(this));
-  }
+  private _layoutMap = new Map<NodeLayoutType, INodeLayoutManager>();
+  constructor(readonly config: Configuration) {}
   get canvas() {
     return this.config.getCanvas();
   }
+  registerLayoutManager(layout: INodeLayoutManager) {
+    this._layoutMap.set(layout.name, layout);
+  }
   getLayoutManager(layout: NodeLayout): INodeLayoutManager {
     const layoutName = layout ? layout.type : "DEFAULT";
-    return layoutMap.get(layoutName);
+    return this._layoutMap.get(layoutName);
   }
   setPosition(nodeUI: NodeUI, context: PositionParam) {
     const { layout } = nodeUI;
@@ -36,4 +34,14 @@ export class NodeLayoutContext {
     const manager = this.getLayoutManager(layout);
     manager.doLayout(nodeUI, context);
   }
+  listLayoutManagers(): INodeLayoutManager[] {
+    return [...this._layoutMap.values()];
+  }
 }
+
+export const installDefaultLayoutManagers = (ctx: NodeLayoutContext) => {
+  ctx.registerLayoutManager(new DefaultNodeLayout(ctx));
+  ctx.registerLayoutManager(new XAxisNodeLayout(ctx));
+  ctx.registerLayoutManager(new YAxisNodeLayout(ctx));
+  ctx.registerLayoutManager(new XYAxisNodeLayout(ctx));
+};

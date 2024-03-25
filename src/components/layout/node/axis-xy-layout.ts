@@ -6,6 +6,9 @@ import { INodeLayoutManager } from "../node-layout-manager";
 
 export class XYAxisNodeLayout implements INodeLayoutManager {
   constructor(readonly layoutContext: NodeLayoutContext) {}
+  get name() {
+    return "XY-AXIS";
+  }
   doLayout(nodeUI: NodeUI, context: LayoutParam) {
     const { dir } = context;
     if (!dir) {

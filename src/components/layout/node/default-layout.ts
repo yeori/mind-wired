@@ -9,6 +9,9 @@ import { INodeLayoutManager } from "../node-layout-manager";
 
 export class DefaultNodeLayout implements INodeLayoutManager {
   constructor(readonly layoutContext: NodeLayoutContext) {}
+  get name() {
+    return "DEFAULT";
+  }
   doLayout(nodeUI: NodeUI) {}
   setPosition() {}
 }

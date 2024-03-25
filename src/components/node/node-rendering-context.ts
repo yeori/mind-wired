@@ -90,6 +90,9 @@ export class NodeRenderingContext {
     }
     return renderer;
   }
+  listRenderers() {
+    return [...renderings.get(this.uid).values()];
+  }
   select(nodeUI: NodeUI, cssSelector: string) {
     return nodeUI.$bodyEl.querySelector(cssSelector) as HTMLElement;
   }
