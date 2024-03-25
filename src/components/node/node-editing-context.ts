@@ -18,6 +18,9 @@ export const installDefaultEditors = (ctx: NodeEditingContext) => {
   ctx.registerEditor(new LinkEditor(ctx));
 };
 export class NodeEditingContext {
+  dispose() {
+    this.node = undefined;
+  }
   /**
    * current editing node
    */

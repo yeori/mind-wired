@@ -126,4 +126,9 @@ export class DataSourceFactory {
     const ds = this._findBy<any, any>((ds) => ds.containsKey(key));
     return ds.getData(key);
   }
+  clear() {
+    this._dsToRendererMap.clear();
+    this._dsToEditorMap.clear();
+    this._dsMap.clear();
+  }
 }

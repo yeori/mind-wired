@@ -113,4 +113,7 @@ export class NodeRenderingContext {
     }
     return { width, height };
   }
+  dispose() {
+    this.editingNode = undefined;
+  }
 }

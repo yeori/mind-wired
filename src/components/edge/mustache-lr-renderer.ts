@@ -15,10 +15,11 @@ const valignOf = (option: MustachLREdgeOption) => {
 const renderUnderline = (
   canvas: CanvasUI,
   node: NodeUI,
-  rect: any,
-  padding: any
+  rect: NodeRect,
+  padding: { hor: number; ver: number }
 ) => {
-  const width = node.$style.width;
+  const { scale } = canvas;
+  const width = node.$style.width * scale;
   canvas.drawPath(
     [
       { x: rect.left - padding.hor, y: rect.bottom + padding.ver } as Point,
@@ -36,17 +37,17 @@ const renderCurve = (
   e: NodeRect,
   dx: number
 ) => {
-  // const { scale } = canvas;
-  const srcWidth = srcNode.$style.width;
-  const dstWidth = dstNode.$style.width;
+  const { scale } = canvas;
+  const srcWidth = srcNode.$style.width * scale;
+  const dstWidth = dstNode.$style.width * scale;
   const width = Math.min(srcWidth, dstWidth);
   const offset = Math.abs(srcWidth - dstWidth);
-  s.offset.y -= offset / 2;
+  s.center.y -= offset / 2;
   const props = { lineWidth: width, strokeStyle: dstNode.$style.color };
   const rendererFn = dstNode.$style.getEdgeRenderer();
   canvas.drawBeizeCurve(
-    s.offset,
-    e.offset,
+    s.center,
+    e.center,
     {
       cpoints: [
         { x: s.cx + dx / 2, y: s.cy } as Point,
@@ -57,10 +58,10 @@ const renderCurve = (
     rendererFn
   );
   if (offset > 0) {
-    s.offset.y += offset;
+    s.center.y += offset;
     canvas.drawBeizeCurve(
-      s.offset,
-      e.offset,
+      s.center,
+      e.center,
       {
         cpoints: [
           { x: s.cx + dx / 2, y: s.cy } as Point,
@@ -77,7 +78,9 @@ export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOp
     return "mustache_lr";
   }
   render(canvas: CanvasUI, srcNode: NodeUI, dstNode: NodeUI) {
-    const [s, e] = [srcNode, dstNode].map((node) => node.dimension());
+    const [s, e] = [srcNode, dstNode].map((node) =>
+      canvas.getNodeDimension(node)
+    );
     const padding = { hor: 0, ver: 0 };
     const option = this.getRenderingOption(srcNode);
     if (valignOf(option) === "bottom") {
@@ -93,11 +96,11 @@ export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOp
       max = s;
     }
 
-    min.offset.x = min.right + padding.hor;
-    max.offset.x = max.left - padding.hor;
+    min.center.x = min.right + padding.hor;
+    max.center.x = max.left - padding.hor;
     if (padding.ver > 0) {
-      min.offset.y = min.bottom + padding.ver;
-      max.offset.y = max.bottom + padding.ver;
+      min.center.y = min.bottom + padding.ver;
+      max.center.y = max.bottom + padding.ver;
     }
     const dx = max.cx - min.cx;
     if (

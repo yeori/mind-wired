@@ -82,45 +82,36 @@ export type NodeSpec = {
 };
 
 export class NodeRect {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-  width: number;
-  height: number;
-
-  // icon?: null;
-  constructor(readonly offset: Point, rect: DOMRect) {
-    // offset.x *= scale;
-    // offset.y *= scale;
-    const { width, height } = rect;
-    const w = width * 1;
-    const h = height * 1;
-    this.top = offset.y - h / 2;
-    this.right = offset.x + w / 2;
-    this.bottom = offset.y + h / 2;
-    this.left = offset.x - w / 2;
-    this.width = width;
-    this.height = height;
-    // this.icon = null;
+  constructor(readonly center: Point, private _rect: DOMRect) {}
+  get width() {
+    return this._rect.width;
+  }
+  get height() {
+    return this._rect.height;
+  }
+  get left() {
+    return this.center.x - this._rect.width / 2;
+  }
+  get right() {
+    return this.center.x + this._rect.width / 2;
+  }
+  get top() {
+    return this.center.y - this._rect.height / 2;
+  }
+  get bottom() {
+    return this.center.y + this._rect.height / 2;
   }
   get cx() {
-    return this.offset.x;
+    return this.center.x;
   }
   get cy() {
-    return this.offset.y;
+    return this.center.y;
   }
   get x() {
     return this.left;
   }
-  set x(value: number) {
-    this.left = value;
-  }
   get y() {
     return this.top;
-  }
-  set y(value: number) {
-    this.top = value;
   }
   get r() {
     return this.right;
@@ -129,14 +120,21 @@ export class NodeRect {
     return this.bottom;
   }
   merge(other: NodeRect) {
-    this.top = Math.min(this.top, other.top);
-    this.right = Math.max(this.right, other.right);
-    this.bottom = Math.max(this.bottom, other.bottom);
-    this.left = Math.min(this.left, other.left);
-    this.width = this.right - this.left;
-    this.height = this.bottom - this.top;
-    this.offset.x = other.offset.x;
-    this.offset.y = other.offset.y;
+    if (this === other) {
+      return this;
+    }
+    this.center.x = other.center.x;
+    this.center.y = other.center.y;
+
+    const minX = Math.min(this._rect.x, other._rect.x);
+    const minY = Math.min(this._rect.y, other._rect.y);
+    const maxX = Math.max(this._rect.right, other._rect.right);
+    const maxY = Math.max(this._rect.bottom, other._rect.bottom);
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    this.center.x = cx;
+    this.center.y = cy;
+    this._rect = new DOMRect(minX, minY, maxX - minX, maxY - minY);
     return this;
   }
 }

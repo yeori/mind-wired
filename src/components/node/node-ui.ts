@@ -37,7 +37,6 @@ export class NodeUI {
   parent?: NodeUI;
   $style: EdgeStyle;
   // folding: boolean;
-  $cachedStyle: EdgeStyle | null;
   $dim: NodeRect;
   constructor(
     spec: NodeSpec,
@@ -55,8 +54,7 @@ export class NodeUI {
     this.parent = parentNode;
     this.$style = new EdgeStyle(this);
     // this.folding = false;
-    this.$dim = null;
-    this.$cachedStyle = null;
+    this.$dim = undefined;
   }
   get model() {
     return { ...this.spec.model };
@@ -96,12 +94,8 @@ export class NodeUI {
     return !!this.$el;
   }
   dimension(relative: boolean = false): NodeRect {
-    // FIXME - scale 적용은 canvas에서 해야 함
-    const scale = this.sharedConfig.scale;
     const el = this.$bodyEl;
     const offset = relative ? this.relativeOffset : this.offset();
-    offset.x *= scale;
-    offset.y *= scale;
     return (this.$dim = new NodeRect(
       offset,
       this.sharedConfig.dom.domRect(el)

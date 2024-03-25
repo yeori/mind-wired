@@ -103,6 +103,7 @@ const registerElement = (canvasUI: CanvasUI, nodeUI: NodeUI) => {
   const $bodyEl = canvasUI.getNodeBody(nodeUI);
   nodeRenderer.install(nodeUI.model, $bodyEl);
   if (model.schema) {
+    registerSchema(model.schema, $el, canvasUI.config);
     registerSchema(model.schema, $bodyEl, canvasUI.config);
   }
   const placeHolder = canvasUI.elemOf(".mwd-nodes");
@@ -116,12 +117,22 @@ const registerElement = (canvasUI: CanvasUI, nodeUI: NodeUI) => {
   $el.dataset.uid = nodeUI.uid;
   return nodeUI.$el;
 };
-const unregisterElement = (canvasUI: CanvasUI, nodeUI: NodeUI) => {
+const unregisterElement = (
+  canvasUI: CanvasUI,
+  nodeUI: NodeUI,
+  propagateAll: boolean = false
+) => {
   if (!nodeUI.$el) {
     throw new Error(`[MINDWIRED][ERROR] not registered node. (${nodeUI.uid})`);
   }
   nodeUI.$el.remove();
   delete nodeUI.$el;
+  if (propagateAll) {
+    const { subs } = nodeUI;
+    if (subs) {
+      subs.forEach((child) => unregisterElement(canvasUI, child));
+    }
+  }
 };
 const installDnd = (canvasUI: CanvasUI) => {
   const { dom } = canvasUI;
@@ -334,6 +345,13 @@ export class CanvasUI {
     const el = this.$canvas;
     return { width: el!.offsetWidth, height: el!.offsetHeight };
   }
+  getNodeDimension(node: NodeUI, relative = false) {
+    const dim = node.dimension(relative);
+    const { scale } = this.config;
+    dim.center.x *= scale;
+    dim.center.y *= scale;
+    return dim;
+  }
   elemOf(cssSelector: string) {
     return this.$viewport.querySelector(cssSelector);
   }
@@ -545,7 +563,7 @@ export class CanvasUI {
       return;
     }
     this.clearNodeSelection();
-    const rects = nodes.map((n: NodeUI) => n.dimension());
+    const rects = nodes.map((n: NodeUI) => this.getNodeDimension(n));
     this.selectionArea = rects.reduce(
       (acc: NodeRect, rect: NodeRect) => acc.merge(rect),
       rects[0]
@@ -623,6 +641,9 @@ export class CanvasUI {
   unregisterNode(nodeUI: NodeUI) {
     unregisterElement(this, nodeUI);
     this.clearNodeSelection();
+  }
+  unregisterNodeTree(node: NodeUI) {
+    unregisterElement(this, node, true);
   }
   updateFoldingNodes(nodeUI: NodeUI) {
     const display = nodeUI.isFolded() ? "none" : "";

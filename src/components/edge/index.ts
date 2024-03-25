@@ -163,4 +163,9 @@ export class EdgeUI {
       }
     });
   }
+  dispose() {
+    const { edges } = this;
+    edges.splice(0, edges.length);
+    this.repaint();
+  }
 }

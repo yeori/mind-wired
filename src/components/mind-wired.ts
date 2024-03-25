@@ -45,15 +45,21 @@ const exportTree = (config: Configuration, nodeUI: NodeUI): NodeSpec => {
     layout: undefined,
     folding: undefined,
   };
-  if (nodeUI.isRoot()) {
-    view.x = config.ui.offset.x;
-    view.y = config.ui.offset.y;
-  }
+  // 1.2345... => 1.2
+  const root = nodeUI.isRoot();
+  let x = root ? config.ui.offset.x : v.x;
+  let y = root ? config.ui.offset.y : v.y;
+  view.x = Math.floor(10 * x) / 10;
+  view.y = Math.floor(10 * y) / 10;
+
   if (v.layout) {
     view.layout = v.layout;
   }
   if (v.edge) {
     view.edge = v.edge;
+  }
+  if (v.folding) {
+    view.folding = true;
   }
   const subs: NodeSpec[] = [];
   nodeUI.subs.forEach((childUI) => {
@@ -62,7 +68,7 @@ const exportTree = (config: Configuration, nodeUI: NodeUI): NodeSpec => {
   return {
     model: nodeUI.model,
     view,
-    subs,
+    subs: subs.length > 0 ? subs : undefined,
   };
 };
 const repaintTree = (mwd: MindWired, node: NodeUI, propagate = true) => {
@@ -247,7 +253,19 @@ export class MindWired {
   isEditing() {
     return this.nodeEditingContext.isEditing();
   }
+  private _dispose() {
+    this.nodeRenderingContext.dispose();
+    this.nodeEditingContext.dispose();
+    this._dsFactory.clear();
+    this.edgeUI.dispose();
+    this.alignmentUI.turnOff();
+    this.dragContext.clear();
+    this.canvas.unregisterNodeTree(this.rootUI);
+  }
   nodes(elems: NodeSpec) {
+    if (this.rootUI) {
+      this._dispose();
+    }
     if (elems instanceof TreeDataSource) {
       const root = elems.build();
       this.rootUI = NodeUI.build(root, this.config);
@@ -293,14 +311,6 @@ export class MindWired {
       offset: 60,
     });
 
-    // if (option?.siblingNode) {
-    //   const rect = this.config.dom.domRect(option.siblingNode.$bodyEl);
-    //   this.nodeLayoutContext.setPosition(nodeUI, {
-    //     baseNode: option.siblingNode,
-    //     rect,
-    //   });
-    // }
-    // this.canvas.repaint(nodeUI);
     this.edgeUI.addEdge(nodeUI.parent, nodeUI);
     this.config.emit(EVENT.NODE.CREATED.CLIENT, {
       nodes: [nodeUI],
@@ -411,7 +421,7 @@ export class MindWired {
     targetNode.config.view.edge = edgeSpec;
     this.repaint(nodeUI);
   }
-  setScale(scale) {
+  setScale(scale: number) {
     this.config.ui.scale = scale;
     console.log(this.config.ui.scale);
     this.repaint();

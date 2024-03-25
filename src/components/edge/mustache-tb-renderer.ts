@@ -13,16 +13,16 @@ const renderCurve = (
   dy: number
 ) => {
   const { scale } = canvas;
-  const srcWidth = srcNode.$style.width;
-  const dstWidth = dstNode.$style.width;
+  const srcWidth = srcNode.$style.width * scale;
+  const dstWidth = dstNode.$style.width * scale;
   const width = Math.min(srcWidth, dstWidth);
   const offset = Math.abs(srcWidth - dstWidth);
-  s.offset.x -= offset / 2;
-  const props = { lineWidth: width * scale, strokeStyle: dstNode.$style.color };
+  s.center.x -= offset / 2;
+  const props = { lineWidth: width, strokeStyle: dstNode.$style.color };
   const rendererFn = dstNode.$style.getEdgeRenderer();
   canvas.drawBeizeCurve(
-    s.offset,
-    e.offset,
+    s.center,
+    e.center,
     {
       cpoints: [
         { x: s.cx, y: s.cy + dy / 2 } as Point,
@@ -33,10 +33,10 @@ const renderCurve = (
     rendererFn
   );
   if (offset > 0) {
-    s.offset.y += offset;
+    s.center.y += offset;
     canvas.drawBeizeCurve(
-      s.offset,
-      e.offset,
+      s.center,
+      e.center,
       {
         cpoints: [
           { x: s.cx, y: s.cy + dy / 2 } as Point,
@@ -53,7 +53,9 @@ export class MustacheTBEdgeRenderer extends AbstractEdgeRenderer<void> {
     return "mustache_tb";
   }
   render(canvas: CanvasUI, srcNode: NodeUI, dstNode: NodeUI) {
-    const [s, e] = [srcNode, dstNode].map((node) => node.dimension());
+    const [s, e] = [srcNode, dstNode].map((node) =>
+      canvas.getNodeDimension(node)
+    );
     const padding = { hor: 0, ver: 5 };
 
     let min: NodeRect, max: NodeRect;
@@ -65,8 +67,8 @@ export class MustacheTBEdgeRenderer extends AbstractEdgeRenderer<void> {
       max = s;
     }
 
-    min.offset.y = min.bottom + padding.ver;
-    max.offset.y = max.top - padding.ver;
+    min.center.y = min.bottom + padding.ver;
+    max.center.y = max.top - padding.ver;
 
     const dy = max.cy - min.cy;
     renderCurve(canvas, srcNode, s, dstNode, e, s === min ? dy : -dy);

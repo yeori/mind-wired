@@ -1,4 +1,5 @@
 import { SnapToEntitySetting, UISetting } from "../../setting";
+import type { CanvasUI } from "../canvas-ui";
 import type Configuration from "../config";
 import { NodeRect } from "../node/node-type";
 import type { NodeUI } from "../node/node-ui";
@@ -7,12 +8,13 @@ const captureSnapLines = (
   nodes: NodeUI[],
   node: NodeUI,
   hSnaps: Set<number>,
-  vSnaps: Set<number>
+  vSnaps: Set<number>,
+  canvas: CanvasUI
 ) => {
   if (nodes.includes(node)) {
     return;
   }
-  const dim = node.dimension();
+  const dim = canvas.getNodeDimension(node);
   // top, center, bottom
   hSnaps.add(dim.y);
   hSnaps.add(dim.cy);
@@ -25,7 +27,7 @@ const captureSnapLines = (
     return;
   }
   node.subs.forEach((child) => {
-    captureSnapLines(nodes, child, hSnaps, vSnaps);
+    captureSnapLines(nodes, child, hSnaps, vSnaps, canvas);
   });
 };
 const abs = (a: number) => Math.abs(a);
@@ -65,10 +67,11 @@ export default class AligmentUI {
     if (!nodes || nodes.length === 0 || !this.config.snapEnabled) {
       return;
     }
+    const canvas = this.config.getCanvas();
     const vLines = new Set<number>(); // [x in (x,0), (x,H)]
     const hLines = new Set<number>(); // [y in (0,y), (W,y)]
     this.activeNodes = [...nodes];
-    captureSnapLines(nodes, rootNode, hLines, vLines);
+    captureSnapLines(nodes, rootNode, hLines, vLines, canvas);
     this.snaps = { hLines, vLines };
   }
   turnOff() {
@@ -86,7 +89,7 @@ export default class AligmentUI {
     const canvas = this.config.getCanvas();
     canvas.clear();
 
-    const dim = node.dimension();
+    const dim = canvas.getNodeDimension(node);
     const vLines = [...this.snaps.vLines.values()].filter(
       (x) =>
         Math.abs(dim.x - x) <= limit ||

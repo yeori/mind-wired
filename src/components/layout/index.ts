@@ -19,6 +19,9 @@ export class NodeLayoutContext {
     layoutMap.set("Y-AXIS", new YAxisNodeLayout(this));
     layoutMap.set("XY-AXIS", new XYAxisNodeLayout(this));
   }
+  get canvas() {
+    return this.config.getCanvas();
+  }
   getLayoutManager(layout: NodeLayout): INodeLayoutManager {
     const layoutName = layout ? layout.type : "DEFAULT";
     return layoutMap.get(layoutName);
