@@ -38,6 +38,9 @@ const installViewport = (canvasUI: CanvasUI) => {
     if (!ui.useDefaultIcon) {
       viewport.querySelector("img")?.remove();
     }
+    if (ui.mapId) {
+      viewport.dataset.mindWiredViewport = ui.mapId;
+    }
     el.append(viewport);
   }
   {

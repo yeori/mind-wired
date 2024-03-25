@@ -74,6 +74,7 @@ export type SelectionSetting = {
  * * scale - initial scale factor
  */
 export type UISetting = {
+  mapId?: string | undefined;
   /**
    * width of mindmap viewport. ex) "600px", "100%"
    *
