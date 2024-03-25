@@ -11,7 +11,6 @@ import Configuration from "../config";
 import EdgeStyle from "../edge/edge-style";
 
 const parseSubs = (nodeUi: NodeUI) => {
-  // fix view.subs[{model, view, subs}]
   const { subs } = nodeUi.spec;
   if (!subs || subs.length === 0) {
     return [];

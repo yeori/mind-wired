@@ -57,11 +57,36 @@ export type ModelSpec = {
   provider?: ProviderSpec;
 };
 import { Point, WebColorString } from "../../setting";
-
+/**
+ * edge width by node's level
+ *
+ * * root - edge width of root node(level 0)
+ * * delta - used to determine edge width by level (root + level * delta)
+ * * min - minimal edge width
+ *
+ * Example
+ *
+ * ```js
+ *   width: { root: 6, detal: -2, min: 1 }
+ * ```
+ * * root node(level-0): 6px
+ * * node at level-1 : 4px;
+ * * node at level-2 : 2px;
+ * * node at level-3 : 1px;
+ * * node at level-4 : 1px;
+ */
+export type LevelBasedEdgeWidth = {
+  root: number;
+  delta: number;
+  min: number;
+};
 export type EdgeSpec = {
   name?: string;
   color?: WebColorString;
-  width?: number | ((node: NodeSpec, level: number) => number);
+  width?:
+    | number
+    | LevelBasedEdgeWidth
+    | ((node: NodeSpec, level: number) => number);
   dash?: number[];
   /**
    * if true, all descendant nodes use this edge(default: true)

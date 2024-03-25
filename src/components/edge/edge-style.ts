@@ -8,7 +8,7 @@
  * - width:number(line width)
  */
 
-import { type EdgeSpec } from "../node/node-type";
+import type { LevelBasedEdgeWidth, EdgeSpec } from "../node/node-type";
 import { type NodeUI } from "../node/node-ui";
 
 // fix edge style 필요
@@ -49,8 +49,14 @@ export default class EdgeStyle {
     const width = traceStyle(this.nodeUI, "width");
     if (typeof width === "function") {
       return width(this.nodeUI.spec, this.nodeUI.level());
-    } else {
+    } else if (typeof width === "number") {
       return width;
+    } else {
+      const lvlWidth = width as LevelBasedEdgeWidth;
+      return Math.max(
+        lvlWidth.root + lvlWidth.delta * this.nodeUI.level(),
+        lvlWidth.min
+      );
     }
   }
   get dash() {
