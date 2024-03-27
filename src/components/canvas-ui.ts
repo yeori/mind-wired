@@ -612,7 +612,10 @@ export class CanvasUI {
     const mwd = this.config.mindWired();
     const nodeRenderer = mwd.getNodeRender(nodeUI.model);
     const model = mwd.translateModel(nodeUI.model);
-    nodeRenderer.render(model, $body);
+    nodeRenderer.render(model, $body, {
+      selected: nodeUI.selected,
+      editing: nodeUI.editing,
+    });
   }
   showNodeEditor(nodeUI: NodeUI, nodeEditor: INodeEditor) {
     const { uid } = nodeUI;

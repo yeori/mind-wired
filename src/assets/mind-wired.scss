@@ -117,4 +117,28 @@
     color: #0001ee;
     text-decoration: underline;
   }
+  .mwd-link-node {
+    position: relative;
+    & > a {
+      position: relative;
+      z-index: 5;
+    }
+    & > [data-mwd-link-opener] {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 1;
+      display: none;
+      &.visible {
+        transform: translate(100%, 0);
+        display: flex;
+      }
+      a {
+        padding: 4px 6px;
+        background-color: white;
+        border: 1px solid #0001ee;
+        transform: translateX(6px);
+      }
+    }
+  }
 }

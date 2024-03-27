@@ -1,4 +1,9 @@
-import { INodeRenderer, type NodeUI, type UserDefinedRenderer } from "..";
+import {
+  INodeRenderer,
+  NodeState,
+  type NodeUI,
+  type UserDefinedRenderer,
+} from "..";
 import type { NodeRenderingContext } from "../node-rendering-context";
 import type { ModelSpec, NodeModelType } from "../node-type";
 
@@ -25,9 +30,9 @@ export class RenderingDelegate<T> implements INodeRenderer {
     const renderer = this._pickRenderer();
     renderer.install(model, parentEl);
   }
-  render(model: ModelSpec, parentEl: HTMLElement): void {
+  render(model: ModelSpec, parentEl: HTMLElement, state: NodeState): void {
     const renderer = this._pickRenderer();
-    renderer.render(model, parentEl);
+    renderer.render(model, parentEl, state);
   }
   editor?(node: NodeUI): void {
     throw new Error("Method not implemented.");

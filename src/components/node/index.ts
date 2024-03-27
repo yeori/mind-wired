@@ -7,10 +7,14 @@ import type {
 } from "./node-type";
 import { type NodeUI } from "./node-ui";
 
+export type NodeState = {
+  selected: boolean;
+  editing: boolean;
+};
 export interface INodeRenderer {
   name: string;
   install(model: ModelSpec, parentEl: HTMLElement): void;
-  render(model: ModelSpec, parentEl: HTMLElement): void;
+  render(model: ModelSpec, parentEl: HTMLElement, state: NodeState): void;
   /**
    * show editor for the given node
    * @param node node to edit
