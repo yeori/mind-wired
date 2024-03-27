@@ -37,7 +37,12 @@ export type IconBadgeSpec = {
   text: string;
   size?: ImageSizeSpec;
 };
-export type ThumbnailSpec = { path: string; size: ImageSizeSpec };
+export type ThumbnailFillMode = "contain" | "cover";
+export type ThumbnailSpec = {
+  path: string;
+  size: ImageSizeSpec;
+  mode: ThumbnailFillMode;
+};
 export type LinkSpec = { url: string; body: ModelSpec };
 export type ProviderSpec = { key: any };
 export type SchemaSpec = {

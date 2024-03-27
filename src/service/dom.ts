@@ -235,6 +235,12 @@ type EventUtil = {
     callback: (e: Event) => void,
     options?: string
   ) => void;
+  input: (
+    target: HTMLElement,
+    callback: (e: Event) => void,
+    option?: { debouce: number }
+  ) => void;
+  change: (target: HTMLElement, callback: (e: Event) => void) => void;
 };
 const event: EventUtil = {
   consume: (target: HTMLElement, eventName: string) => {
@@ -296,6 +302,29 @@ const event: EventUtil = {
     });
     // registerEvent(target, "keyup", callback, options);
   },
+  input: (
+    target: HTMLElement,
+    callback: (e: Event) => void,
+    option?: { debouce: number }
+  ) => {
+    if (option?.debouce > 0) {
+      let timer: NodeJS.Timeout;
+      registerEvent(
+        target,
+        "input",
+        (e) => {
+          clearTimeout(timer);
+          timer = setTimeout(callback, option.debouce, e);
+        },
+        undefined
+      );
+    } else {
+      registerEvent(target, "input", callback, undefined);
+    }
+  },
+  change: (target: HTMLElement, callback: (e: Event) => void) => {
+    registerEvent(target, "change", callback, undefined);
+  },
 };
 
 const converters = {
@@ -332,8 +361,14 @@ const parseTemplate = <T = HTMLElement>(
 };
 const findOne = <T = HTMLElement>(el: HTMLElement, cssSelector: string) =>
   el.querySelector<HTMLElement>(cssSelector) as T;
-const findAll = (el: HTMLElement, selectors: string[]) =>
-  selectors.map((cssSelector) => findOne(el, cssSelector));
+const findAll = <T extends HTMLElement>(el: HTMLElement, selectors: string[]) =>
+  selectors.reduce((holder, cssSelector) => {
+    const elems = el.querySelectorAll<T>(cssSelector);
+    elems.forEach((elem) => {
+      holder.push(elem);
+    });
+    return holder;
+  }, [] as T[]);
 const is = (
   el: HTMLElement,
   cssSelector: string,
@@ -395,7 +430,7 @@ export class DomUtil {
   css: (el: HTMLElement, styles: any) => void;
   parseTemplate: <T = HTMLElement>(template: string, params?: any) => T;
   findOne: <T = HTMLElement>(el: HTMLElement, cssSelector: string) => T;
-  findAll: (el: HTMLElement, selectors: string[]) => HTMLElement[];
+  findAll: <T extends HTMLElement>(el: HTMLElement, selectors: string[]) => T[];
   is: (el: HTMLElement, cssSelector: string, searchParent?: boolean) => boolean;
   data: {
     int: (el: HTMLElement, attrList: string[]) => any;

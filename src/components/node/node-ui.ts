@@ -21,7 +21,6 @@ const parseSubs = (nodeUi: NodeUI) => {
     return node;
   });
 };
-let uid = 100;
 let zIndex = 1;
 
 export class NodeUI {
@@ -47,7 +46,7 @@ export class NodeUI {
     this.$el = undefined;
     this.selected = false;
     this.editing = false;
-    this.uid = `uuid-${uid++}`;
+    this.uid = this.sharedConfig.ui.uuid();
     this.zIndex = 0;
     this.subs = parseSubs(this);
     this.parent = parentNode;

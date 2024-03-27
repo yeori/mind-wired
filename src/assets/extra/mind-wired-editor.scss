@@ -31,21 +31,18 @@
         width: 100%;
       }
     }
-    .preview {
-      position: relative;
+    .mode {
       display: flex;
-      justify-content: center;
-      > .img {
-        background-position: center center;
-        background-size: contain;
-        background-repeat: no-repeat;
+      & > input {
+        flex: 1 1 50%;
       }
     }
     .path-form {
-      display: none;
+      display: flex;
+      height: 60px;
       > textarea {
-        flex: 1 1 auto;
-        resize: none;
+        flex: 1 1 100%;
+        width: 100%;
       }
     }
   }

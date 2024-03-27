@@ -9,10 +9,13 @@ import type { NodeUI } from "./node/node-ui";
 import type { NodeRenderingContext } from "./node/node-rendering-context";
 import type { MindWired } from "./mind-wired";
 import type { DomUtil } from "../service/dom";
+
+let nodeUuid = 100;
 const DEFAULT_UI_SETTING: UISetting = {
   width: 600,
   height: 600,
   scale: 1.0,
+  uuid: () => `uuid-${nodeUuid++}`,
   clazz: {
     node: "active-node",
     edge: "active-edge",

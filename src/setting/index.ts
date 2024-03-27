@@ -85,6 +85,11 @@ export type UISetting = {
    */
   mapId?: string | undefined;
   /**
+   * It assigns unique identifier for nodes without uuid
+   * @returns unique identifier for all nodes
+   */
+  uuid?: () => string;
+  /**
    * width of mindmap viewport. ex) "600px", "100%"
    *
    * @default "600px"

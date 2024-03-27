@@ -92,10 +92,14 @@ export class NodeEditingContext {
   query<T extends HTMLElement>(el: HTMLElement, cssSelector: string): T {
     return this.config.dom.findOne(el, cssSelector) as T;
   }
+  queryAll<T extends HTMLElement>(el: HTMLElement, cssSelector: string): T[] {
+    return this.config.dom.findAll<T>(el, [cssSelector]);
+  }
   updateModel(callback: (model: ModelSpec) => boolean) {
     let closing = false;
     this.node.updateModel((model) => {
-      return (closing = callback(model));
+      closing = callback(model);
+      return true;
     });
     if (closing) {
       this.close();

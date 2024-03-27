@@ -15,7 +15,7 @@ const parseEvent = <T extends MindWiredEvent<any>>(eventName: string): T => {
   return obj as T;
 };
 class EventBus {
-  callbacks: Map<string, Function[]>;
+  private callbacks: Map<string, Function[]>;
   constructor() {
     this.callbacks = new Map();
   }

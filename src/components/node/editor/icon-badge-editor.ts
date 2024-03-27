@@ -6,7 +6,7 @@ const template = {
   editor: `<div class="mwd-node-editor thumbnail-editor">
     <div><input type="text" data-icon></div>
     <div><textarea data-text></textarea></div>
-    <div><button data-submit>UPDAE</button></div>
+    <div><button data-close>CLOSE</button></div>
 </div>`,
 };
 export class IconBadgeEditor implements INodeEditor {
@@ -16,31 +16,50 @@ export class IconBadgeEditor implements INodeEditor {
   }
   showEditor(model: ModelSpec, parentEl: HTMLElement): HTMLElement {
     const { dom } = this.ctx.config;
+
+    const iconBadge = model["icon-badge"];
     const $editor = this.ctx.parse(template.editor);
-    const $icon = dom.findOne($editor, "[data-icon]") as HTMLInputElement;
-    const $textarea = dom.findOne(
-      $editor,
-      "[data-text]"
-    ) as HTMLTextAreaElement;
     {
-      const { icon, text } = model["icon-badge"];
-      $icon.value = icon;
-      $textarea.value = text;
+      const $icon = dom.findOne<HTMLInputElement>($editor, "[data-icon]");
+      $icon.value = iconBadge.icon;
+      dom.event.input(
+        $icon,
+        (e) => {
+          const path = (e.target as HTMLTextAreaElement).value.trim();
+          this.ctx.updateModel(() => {
+            iconBadge.icon = path;
+            return false;
+          });
+        },
+        { debouce: 500 }
+      );
+    }
+
+    {
+      const $textarea = dom.findOne(
+        $editor,
+        "[data-text]"
+      ) as HTMLTextAreaElement;
+      $textarea.value = iconBadge.text;
+      dom.event.input(
+        $textarea,
+        (e) => {
+          const text = (e.target as HTMLTextAreaElement).value.trim();
+          this.ctx.updateModel(() => {
+            iconBadge.text = text;
+            return false;
+          });
+        },
+        { debouce: 500 }
+      );
+    }
+    {
+      const $close = dom.findOne($editor, "[data-close]");
+      dom.event.click($close, () => {
+        this.ctx.close();
+      });
     }
     parentEl.appendChild($editor);
-
-    dom.event.click($editor, (e) => {
-      const target = e.target as HTMLElement;
-      if (dom.is(target, "[data-submit]")) {
-        this.ctx.updateModel((model) => {
-          const iconBadge = model["icon-badge"];
-          iconBadge.icon = $icon.value;
-          iconBadge.text = $textarea.value;
-          return true;
-        });
-      }
-    });
-
     return $editor;
   }
 }
