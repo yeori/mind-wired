@@ -557,8 +557,8 @@ export class CanvasUI {
     const ctrl = dom.findOne(el, "div");
     dom.css(ctrl, {
       display: "",
-      width: 24 / Math.max(this.scale, 1),
-      height: 24 / Math.max(this.scale, 1),
+      width: 24,
+      height: 24,
     });
   }
   updateSelection(nodes: NodeUI[]) {
@@ -622,6 +622,7 @@ export class CanvasUI {
     const $editorEl = nodeEditor.showEditor(model, nodeEl);
     // mark editor element for focus management
     // see installFocusHandler();
+    this.dom.css($editorEl, { transform: `scale(${1 / this.scale})` });
     $editorEl.dataset.editorElement = "";
 
     return new Promise((ok) => {

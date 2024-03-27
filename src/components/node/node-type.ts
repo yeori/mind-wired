@@ -160,18 +160,15 @@ export class NodeRect {
     if (this === other) {
       return this;
     }
-    this.center.x = other.center.x;
-    this.center.y = other.center.y;
-
-    const minX = Math.min(this._rect.x, other._rect.x);
-    const minY = Math.min(this._rect.y, other._rect.y);
-    const maxX = Math.max(this._rect.right, other._rect.right);
-    const maxY = Math.max(this._rect.bottom, other._rect.bottom);
-    const cx = (minX + maxX) / 2;
-    const cy = (minY + maxY) / 2;
-    this.center.x = cx;
-    this.center.y = cy;
-    this._rect = new DOMRect(minX, minY, maxX - minX, maxY - minY);
+    const minX = Math.min(this.left, other.left);
+    const minY = Math.min(this.top, other.top);
+    const maxX = Math.max(this.right, other.right);
+    const maxY = Math.max(this.bottom, other.bottom);
+    this.center.x = (maxX + minX) / 2;
+    this.center.y = (maxY + minY) / 2;
+    const width = maxX - minX;
+    const height = maxY - minY;
+    this._rect = new DOMRect(minX, minY, width, height);
     return this;
   }
 }
