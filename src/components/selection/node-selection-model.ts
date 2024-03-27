@@ -4,6 +4,7 @@ import Configuration from "../config";
 import { MindWired } from "../mind-wired";
 import { type NodeUI } from "../node/node-ui";
 import { NodeSelectArg } from "../../mindwired-event";
+import { clone } from "@/service";
 const clearSelection = (nodeMap: Map<string, NodeUI>) => {
   const nodes = [...nodeMap.values()];
   nodes.forEach((node) => {
@@ -36,10 +37,14 @@ const appendNode = (
   sibling: NodeUI
 ) => {
   const mwd: MindWired = model.config.mindWired();
+  let modelSpec: ModelSpec = sibling
+    ? clone.deepCopy(sibling.spec.model)
+    : ({ text: "Text Node" } as ModelSpec);
+
   mwd.addNode(
     parent,
     {
-      model: { text: "TITLE" } as ModelSpec,
+      model: modelSpec,
       view: undefined,
     },
     { siblingNode: sibling }
