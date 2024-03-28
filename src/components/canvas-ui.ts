@@ -355,6 +355,14 @@ export class CanvasUI {
     dim.center.y *= scale;
     return dim;
   }
+  getAbsoluteDimensions(nodes: NodeUI[]) {
+    const rects = nodes.map((n: NodeUI) => this.getNodeDimension(n));
+    const area = rects.reduce(
+      (acc: NodeRect, rect: NodeRect) => acc.merge(rect),
+      rects[0]
+    );
+    return area;
+  }
   elemOf(cssSelector: string) {
     return this.$viewport.querySelector(cssSelector);
   }
@@ -566,11 +574,7 @@ export class CanvasUI {
       return;
     }
     this.clearNodeSelection();
-    const rects = nodes.map((n: NodeUI) => this.getNodeDimension(n));
-    this.selectionArea = rects.reduce(
-      (acc: NodeRect, rect: NodeRect) => acc.merge(rect),
-      rects[0]
-    );
+    this.selectionArea = this.getAbsoluteDimensions(nodes);
     this.drawNodeSelection();
   }
   clearNodeSelection() {

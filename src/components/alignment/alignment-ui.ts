@@ -1,52 +1,30 @@
 import { SnapToEntitySetting, UISetting } from "../../setting";
-import type { CanvasUI } from "../canvas-ui";
 import type Configuration from "../config";
-import { NodeRect } from "../node/node-type";
 import type { NodeUI } from "../node/node-ui";
+import { CompositeSnapResolver } from "./snap/composite-snap-resolver";
+import { DefaultTargetResolver } from "./snap/default-snap-resolver";
+import { DistanceBasedSnapResolver } from "./snap/distance-snap-resolver";
+import { ISnapLineResolver } from "./snap/snap-target-resolver";
 
-const captureSnapLines = (
-  nodes: NodeUI[],
-  node: NodeUI,
-  hSnaps: Set<number>,
-  vSnaps: Set<number>,
-  canvas: CanvasUI
-) => {
-  if (nodes.includes(node)) {
-    return;
-  }
-  const dim = canvas.getNodeDimension(node);
-  // top, center, bottom
-  hSnaps.add(dim.y);
-  hSnaps.add(dim.cy);
-  hSnaps.add(dim.b);
-  // left, center, right
-  vSnaps.add(dim.x);
-  vSnaps.add(dim.cx);
-  vSnaps.add(dim.r);
-  if (node.isFolded()) {
-    return;
-  }
-  node.subs.forEach((child) => {
-    captureSnapLines(nodes, child, hSnaps, vSnaps, canvas);
-  });
-};
 const abs = (a: number) => Math.abs(a);
-const adj = <K extends keyof NodeRect>(
-  points: number[],
-  dim: NodeRect,
-  dir: K
+const captureNearest = (
+  lines: number[],
+  value: number,
+  min: { idx: number; gap: number },
+  limit: number
 ) => {
-  return points.reduce((adj, p) => {
-    const a = (dim[dir] as number) - adj;
-    const b = (dim[dir] as number) - p;
-    return abs(a) <= abs(b) ? adj : p;
-  }, points[0]);
+  for (let k = 0; k < lines.length; k++) {
+    const b = lines[k] - value;
+    const vb = abs(b);
+    if (vb > limit) {
+      continue;
+    }
+    if (vb < abs(min.gap)) {
+      min.idx = k;
+      min.gap = b;
+    }
+  }
 };
-const minGapIndex = (gaps: number[]) =>
-  gaps.reduce(
-    (minIdx, gap, idx) => (abs(gap) < abs(gaps[minIdx]) ? idx : minIdx),
-    0
-  );
 const lineStyling = (
   ctx: CanvasRenderingContext2D,
   ui: UISetting,
@@ -63,15 +41,48 @@ export default class AligmentUI {
   activeNodes: NodeUI[];
   snaps: { hLines: Set<number>; vLines: Set<number> };
   constructor(readonly config: Configuration) {}
+  private _resolveSnapTarget(rootNode: NodeUI): ISnapLineResolver {
+    const { snap } = this.config.ui;
+    if (snap === false) {
+      return undefined;
+    }
+    const setting = snap as SnapToEntitySetting;
+    if (setting.enabled === false) {
+      return undefined;
+    }
+    const { target } = setting;
+    const canvas = this.config.getCanvas();
+    if (target === undefined || target.length === 0) {
+      return new DefaultTargetResolver(rootNode, [...this.activeNodes], canvas);
+    }
+    const resolvers = target
+      .map((rule) => {
+        if (rule.distance) {
+          return new DistanceBasedSnapResolver(
+            this.activeNodes,
+            canvas,
+            rule.distance
+          );
+        } else {
+          return undefined;
+        }
+      })
+      .filter((resolver) => resolver !== undefined);
+    return new CompositeSnapResolver(resolvers);
+  }
   turnOn(rootNode: NodeUI, nodes: NodeUI[]) {
     if (!nodes || nodes.length === 0 || !this.config.snapEnabled) {
       return;
     }
-    const canvas = this.config.getCanvas();
+    this.activeNodes = [...nodes];
+    const snapTargetResolver = this._resolveSnapTarget(rootNode);
+    if (snapTargetResolver === undefined) {
+      return;
+    }
     const vLines = new Set<number>(); // [x in (x,0), (x,H)]
     const hLines = new Set<number>(); // [y in (0,y), (W,y)]
-    this.activeNodes = [...nodes];
-    captureSnapLines(nodes, rootNode, hLines, vLines, canvas);
+
+    snapTargetResolver.resolveLines(hLines, vLines);
     this.snaps = { hLines, vLines };
   }
   turnOff() {
@@ -83,18 +94,16 @@ export default class AligmentUI {
       return;
     }
     const { snapSetting } = this.config;
-    const node = this.activeNodes[0];
     const limit = snapSetting.limit;
-    const snap = snapSetting.limit;
     const canvas = this.config.getCanvas();
     canvas.clear();
 
-    const dim = canvas.getNodeDimension(node);
+    const dim = canvas.getAbsoluteDimensions(this.activeNodes);
     const vLines = [...this.snaps.vLines.values()].filter(
       (x) =>
         Math.abs(dim.x - x) <= limit ||
         Math.abs(dim.r - x) <= limit ||
-        abs(dim.cx - x) <= limit
+        Math.abs(dim.cx - x) <= limit
     );
     const hLines = [...this.snaps.hLines.values()].filter(
       (y) =>
@@ -105,36 +114,26 @@ export default class AligmentUI {
 
     const delta = { x: 0, y: 0 };
     if (vLines.length > 0) {
-      const adjL = adj(vLines, dim, "x");
-      const adjC = adj(vLines, dim, "cx");
-      const adjR = adj(vLines, dim, "r");
-      const gaps = [adjC - dim.cx, adjL - dim.x, adjR - dim.r];
-      const idx = minGapIndex(gaps);
-      if (abs(gaps[idx]) <= snap) {
-        delta.x = gaps[idx];
-      }
-      if (this.config.snapEnabled) {
-        canvas.drawVLines([adjL, adjC, adjR], (ctx) =>
-          lineStyling(ctx, this.config.ui, "vertical")
-        );
-      }
+      const min = { idx: 0, gap: vLines[0] - dim.cx };
+      captureNearest(vLines, dim.cx, min, limit);
+      captureNearest(vLines, dim.x, min, limit);
+      captureNearest(vLines, dim.r, min, limit);
+      delta.x = min.gap;
+      canvas.drawVLines([vLines[min.idx]], (ctx) =>
+        lineStyling(ctx, this.config.ui, "vertical")
+      );
     }
 
     if (hLines.length > 0) {
-      const adjT = adj(hLines, dim, "y");
-      const adjC = adj(hLines, dim, "cy");
-      const adjB = adj(hLines, dim, "b");
+      const min = { idx: 0, gap: hLines[0] - dim.cy };
+      captureNearest(hLines, dim.cy, min, limit);
+      captureNearest(hLines, dim.y, min, limit);
+      captureNearest(hLines, dim.b, min, limit);
+      delta.y = min.gap;
 
-      const gaps = [adjC - dim.cy, adjT - dim.y, adjB - dim.b];
-      const idx = minGapIndex(gaps);
-      if (abs(gaps[idx]) <= snap) {
-        delta.y = gaps[idx];
-      }
-      if (this.config.snapEnabled) {
-        canvas.drawHLines([adjT, adjC, adjB], (ctx) =>
-          lineStyling(ctx, this.config.ui, "horizontal")
-        );
-      }
+      canvas.drawHLines([hLines[min.idx]], (ctx) =>
+        lineStyling(ctx, this.config.ui, "horizontal")
+      );
     }
 
     this.activeNodes.forEach((each) => {
@@ -143,6 +142,5 @@ export default class AligmentUI {
       off.y += delta.y;
       each.setOffset(off);
     });
-    // node.setOffset(pos);
   }
 }

@@ -54,6 +54,21 @@ export type EntityClassNaming = {
   folded?: string;
 };
 
+export type SnapTargetSetting = {
+  /**
+   * determines nodes to be used to draw aligment lines.
+   *
+   * @description 좀 더 생각해보자...
+   * @example `[1,1]` means all direct children(`path[1]`) of the adjacent parent(`path[0]`), which are siblings.
+   * @example `[1, 0]` is the adjacent parent node
+   * @example `[1, -1]` is the all descendant nodes of the adjacent parent(`path[0]`)
+   */
+  // path?: [number, number];
+  /**
+   *
+   */
+  distance?: number;
+};
 export type SnapToEntitySetting = {
   enabled?: boolean;
   limit?: ZeroOrPositiveNumber;
@@ -65,6 +80,7 @@ export type SnapToEntitySetting = {
         horizontal: WebColorString;
         vertical: WebColorString;
       };
+  target?: SnapTargetSetting[];
 };
 export type SelectionSetting = {
   padding?: ZeroOrPositiveNumber;
