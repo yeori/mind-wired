@@ -42,10 +42,9 @@ export class LineEdgeRenderer extends AbstractEdgeRenderer<void> {
     if (valign === "center") {
       pathes.push(s.center, e.center);
     } else if (valign === "bottom") {
-      const offsetY = lineWidth / 2;
+      const offsetY = lineWidth / 2 + 1;
       const isLR = s.cx <= e.cx;
-      if (srcNode.isRoot() && srcNode.firstChild() === dstNode) {
-        // const p = bottomLine(s);
+      if (srcNode.firstChild() === dstNode) {
         const dir = isLR ? "left" : "right";
         pathes.push(pointAt(s, "bottom", dir, offsetY));
       }
@@ -57,7 +56,13 @@ export class LineEdgeRenderer extends AbstractEdgeRenderer<void> {
         pathes.push(p0);
         pathes.push(p);
         pathes.push(pointAt(e, "bottom", "left", offsetY));
-        pathes.push(pointAt(e, "bottom", "right", offsetY));
+        if (dstNode.isLeaf()) {
+          pathes.push(pointAt(e, "bottom", "right", offsetY));
+        } else {
+          const d = pathes[pathes.length - 1].clone();
+          d.x++;
+          pathes.push(d);
+        }
       } else {
         // dst ... src
         const p = pointAt(s, "bottom", "left", offsetY);
@@ -66,7 +71,13 @@ export class LineEdgeRenderer extends AbstractEdgeRenderer<void> {
         pathes.push(p0);
         pathes.push(p);
         pathes.push(pointAt(e, "bottom", "right", offsetY));
-        pathes.push(pointAt(e, "bottom", "left", offsetY));
+        if (dstNode.isLeaf()) {
+          pathes.push(pointAt(e, "bottom", "left", offsetY));
+        } else {
+          const d = pathes[pathes.length - 1].clone();
+          d.x--;
+          pathes.push(d);
+        }
       }
     }
     canvas.drawPath(

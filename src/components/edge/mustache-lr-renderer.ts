@@ -50,8 +50,8 @@ const renderCurve = (
   s.center.y -= offset / 2;
   const props = { lineWidth: width, strokeStyle: dstNode.$style.color };
   const rendererFn = (ctx: CanvasRenderingContext2D) => {
-    if (srcNode.$style.dash) {
-      ctx.setLineDash(srcNode.$style.dash);
+    if (dstNode.$style.dash) {
+      ctx.setLineDash(dstNode.$style.dash);
     }
   };
   canvas.drawBeizeCurve(
@@ -110,12 +110,8 @@ export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOp
     const y0 = min.center.y;
     const y1 = max.center.y;
 
-    if (
-      padding.ver > 0 &&
-      srcNode.isRoot() &&
-      srcNode.firstChild() === dstNode
-    ) {
-      renderUnderline(canvas, srcNode, s, padding);
+    if (padding.ver > 0 && srcNode.firstChild() === dstNode) {
+      renderUnderline(canvas, dstNode, s, padding);
     }
     min.center.x = min.right + padding.hor;
     max.center.x = max.left - padding.hor;
@@ -129,7 +125,7 @@ export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOp
     max.center.x = x1;
     min.center.y = y0;
     max.center.y = y1;
-    if (padding.ver > 0) {
+    if (dstNode.isLeaf() && padding.ver > 0) {
       renderUnderline(canvas, dstNode, e, padding);
     }
     // renderUnderline(canvas, dstNode, e, padding);
