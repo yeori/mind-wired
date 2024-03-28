@@ -19,7 +19,11 @@ const renderCurve = (
   const offset = Math.abs(srcWidth - dstWidth);
   s.center.x -= offset / 2;
   const props = { lineWidth: width, strokeStyle: dstNode.$style.color };
-  const rendererFn = dstNode.$style.getEdgeRenderer();
+  const rendererFn = (ctx: CanvasRenderingContext2D) => {
+    if (srcNode.$style.dash) {
+      ctx.setLineDash(srcNode.$style.dash);
+    }
+  };
   canvas.drawBeizeCurve(
     s.center,
     e.center,

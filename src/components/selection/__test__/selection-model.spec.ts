@@ -13,7 +13,7 @@ describe("selection model", () => {
   });
 
   test("replace select", () => {
-    const one = casting.mockNodeUi({ text: "One" }, config);
+    const one = casting.mockNode({ text: "One" }, config);
 
     expect(model.getNodes().length).toBe(0);
     // 1. set ['One']
@@ -24,14 +24,14 @@ describe("selection model", () => {
     expect(model.getNodes().length).toBe(1);
 
     // 2. appending ['One', 'Two']
-    const two = casting.mockNodeUi({ text: "Two" }, config);
+    const two = casting.mockNode({ text: "Two" }, config);
     model.selectNodes([two], true);
     expect(model.getNodes().length).toBe(2);
     expect(one.isSelected()).toBeTruthy();
     expect(two.isSelected()).toBeTruthy();
 
     // 3. set ['Three']
-    const three = casting.mockNodeUi({ text: "Three" }, config);
+    const three = casting.mockNode({ text: "Three" }, config);
     model.selectNodes([three], false);
     expect(model.getNodes().length).toBe(1);
     expect(one.isSelected()).toBeFalsy();
@@ -52,7 +52,7 @@ describe("selection model", () => {
     const spyOnListen = vi.spyOn(config, "listen");
     config.listen(EVENT.NODE.SELECTED.CLIENT, () => {});
 
-    const one = casting.mockNodeUi({ text: "One" }, config);
+    const one = casting.mockNode({ text: "One" }, config);
     model.selectNodes([one], false, true);
 
     vi.runAllTimers();

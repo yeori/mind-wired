@@ -1,6 +1,7 @@
 import { describe, test, expect } from "vitest";
 import { NodeUI } from "../node/node-ui";
 import { Direction, DirectionFlow } from "../direction";
+import { mockConfig } from "@/__test__/test-util";
 
 const expectTrueFlow = (dir: Direction, truthy: DirectionFlow[]) => {
   truthy = truthy || [];
@@ -30,7 +31,7 @@ describe("by X axis", () => {
      */
     const node = new NodeUI(
       { model: { text: "not used" }, view: { x: -1, y: -1 } },
-      undefined
+      mockConfig.create()
     );
     const dir = new Direction(node);
 

@@ -3,6 +3,7 @@ import type {
   ModelSpec,
   NodeSpec,
   NodeLayout,
+  ViewSpec,
 } from "@/components/node/node-type";
 import { DomUtil } from "@/service/dom";
 import { EventBus } from "@/service/event-bus";
@@ -29,8 +30,9 @@ const structNode = (
   }
 };
 export const casting = {
-  mockNodeUi: (model: ModelSpec, config: Configuration) => {
-    return NodeUI.build({ model, view: { x: 0, y: 0 } }, config);
+  mockNode: (model: ModelSpec, config: Configuration, view?: ViewSpec) => {
+    view = view || { x: 0, y: 0 };
+    return NodeUI.build({ model, view: view }, config);
   },
   widthNode: (
     node: Partial<NodeSpec>,

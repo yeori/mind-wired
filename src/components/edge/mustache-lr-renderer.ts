@@ -19,14 +19,19 @@ const renderUnderline = (
   padding: { hor: number; ver: number }
 ) => {
   const { scale } = canvas;
-  const width = node.$style.width * scale;
+  const style = node.$style;
+  const width = style.width * scale;
   canvas.drawPath(
     [
       { x: rect.left - padding.hor, y: rect.bottom + padding.ver } as Point,
       { x: rect.right + padding.hor, y: rect.bottom + padding.ver } as Point,
     ],
     { lineWidth: width, strokeStyle: node.$style.color },
-    node.$style.getEdgeRenderer()
+    (ctx) => {
+      if (style.dash) {
+        ctx.setLineDash(style.dash);
+      }
+    }
   );
 };
 const renderCurve = (
@@ -44,7 +49,11 @@ const renderCurve = (
   const offset = Math.abs(srcWidth - dstWidth);
   s.center.y -= offset / 2;
   const props = { lineWidth: width, strokeStyle: dstNode.$style.color };
-  const rendererFn = dstNode.$style.getEdgeRenderer();
+  const rendererFn = (ctx: CanvasRenderingContext2D) => {
+    if (srcNode.$style.dash) {
+      ctx.setLineDash(srcNode.$style.dash);
+    }
+  };
   canvas.drawBeizeCurve(
     s.center,
     e.center,
