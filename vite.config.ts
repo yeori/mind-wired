@@ -6,6 +6,7 @@ import path from "path";
 export default defineConfig({
   build: {
     sourcemap: true,
+    minify: "esbuild",
     lib: {
       entry: "src/index.ts",
       name: "mindwired",

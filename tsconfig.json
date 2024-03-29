@@ -18,6 +18,7 @@
     "noImplicitReturns": true,
     "strictFunctionTypes": false,
     "noImplicitAny": false,
+    "removeComments": true,
     "paths": {
       "@/*": ["./src/*"],
       "@test/*": ["./test/*"]
