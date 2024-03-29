@@ -16,17 +16,17 @@ const renderUnderline = (
   canvas: CanvasUI,
   node: NodeUI,
   rect: NodeRect,
-  padding: { hor: number; ver: number }
+  offset: number
 ) => {
   const { scale } = canvas;
   const style = node.$style;
   const width = style.width * scale;
   canvas.drawPath(
     [
-      { x: rect.left - padding.hor, y: rect.bottom + padding.ver } as Point,
-      { x: rect.right + padding.hor, y: rect.bottom + padding.ver } as Point,
+      { x: rect.left, y: rect.bottom + offset } as Point,
+      { x: rect.right, y: rect.bottom + offset } as Point,
     ],
-    { lineWidth: width, strokeStyle: node.$style.color },
+    { lineWidth: width, strokeStyle: style.color },
     (ctx) => {
       if (style.dash) {
         ctx.setLineDash(style.dash);
@@ -90,11 +90,12 @@ export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOp
     const [s, e] = [srcNode, dstNode].map((node) =>
       canvas.getNodeDimension(node)
     );
-    const padding = { hor: 0, ver: 0 };
+    const padding = {
+      src: (srcNode.$style.width * canvas.scale) / 2,
+      dst: (dstNode.$style.width * canvas.scale) / 2,
+    };
     const option = this.getRenderingOption(srcNode);
-    if (valignOf(option) === "bottom") {
-      padding.ver = 5;
-    }
+    const isBottom = valignOf(option) === "bottom";
 
     let min: NodeRect, max: NodeRect;
     if (s.cx <= e.cx) {
@@ -110,14 +111,14 @@ export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOp
     const y0 = min.center.y;
     const y1 = max.center.y;
 
-    if (padding.ver > 0 && srcNode.firstChild() === dstNode) {
-      renderUnderline(canvas, dstNode, s, padding);
+    if (isBottom && srcNode.firstChild() === dstNode) {
+      renderUnderline(canvas, dstNode, s, padding.src);
     }
-    min.center.x = min.right + padding.hor;
-    max.center.x = max.left - padding.hor;
-    if (padding.ver > 0) {
-      min.center.y = min.bottom + padding.ver;
-      max.center.y = max.bottom + padding.ver;
+    min.center.x = min.right;
+    max.center.x = max.left;
+    if (isBottom) {
+      min.center.y = min.bottom + padding.src;
+      max.center.y = max.bottom + padding.src;
     }
     const dx = max.cx - min.cx;
     renderCurve(canvas, srcNode, s, dstNode, e, s === min ? dx : -dx);
@@ -125,8 +126,8 @@ export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOp
     max.center.x = x1;
     min.center.y = y0;
     max.center.y = y1;
-    if (dstNode.isLeaf() && padding.ver > 0) {
-      renderUnderline(canvas, dstNode, e, padding);
+    if (dstNode.isLeaf() && isBottom) {
+      renderUnderline(canvas, dstNode, e, padding.dst);
     }
     // renderUnderline(canvas, dstNode, e, padding);
     // if (dstNode.isLeaf() && padding.ver > 0) {

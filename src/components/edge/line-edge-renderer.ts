@@ -42,7 +42,7 @@ export class LineEdgeRenderer extends AbstractEdgeRenderer<void> {
     if (valign === "center") {
       pathes.push(s.center, e.center);
     } else if (valign === "bottom") {
-      const offsetY = lineWidth / 2 + 1;
+      const offsetY = lineWidth / 2;
       const isLR = s.cx <= e.cx;
       if (srcNode.firstChild() === dstNode) {
         const dir = isLR ? "left" : "right";
