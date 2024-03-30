@@ -3,6 +3,7 @@ import type { CanvasUI } from "../canvas-ui";
 import { type NodeRect } from "../node/node-type";
 import { type NodeUI } from "../node/node-ui";
 import { AbstractEdgeRenderer } from "./edge-renderer-type";
+import type EdgeStyle from "./edge-style";
 
 export type MustachLREdgeOption = {
   valign: "bottom" | "center" | "top";
@@ -11,22 +12,29 @@ const valignOf = (option: MustachLREdgeOption) => {
   const valign = option && option.valign;
   return valign || "center";
 };
-// fix padding{ hor: 0, ver: 0 } 타입 필요
+const pointAt = <K extends keyof NodeRect>(
+  rect: NodeRect,
+  lblY: K,
+  lblX: K,
+  offsetY: number
+) => {
+  const x = rect[lblX] as number;
+  const y = rect[lblY] as number;
+  return new Point(x, y + offsetY);
+};
 const renderUnderline = (
   canvas: CanvasUI,
-  node: NodeUI,
+  style: EdgeStyle,
   rect: NodeRect,
-  offset: number
+  lineWidth: number
 ) => {
-  const { scale } = canvas;
-  const style = node.$style;
-  const width = style.width * scale;
+  const offset = lineWidth / 2;
   canvas.drawPath(
     [
       { x: rect.left, y: rect.bottom + offset } as Point,
       { x: rect.right, y: rect.bottom + offset } as Point,
     ],
-    { lineWidth: width, strokeStyle: style.color },
+    { lineWidth, strokeStyle: style.color },
     (ctx) => {
       if (style.dash) {
         ctx.setLineDash(style.dash);
@@ -34,47 +42,50 @@ const renderUnderline = (
     }
   );
 };
-const renderCurve = (
+const rnederCurve = (
   canvas: CanvasUI,
-  srcNode: NodeUI,
-  s: NodeRect,
-  dstNode: NodeUI,
-  e: NodeRect,
-  dx: number
+  src: Point,
+  srcStyle: EdgeStyle,
+  dst: Point,
+  dstStyle: EdgeStyle
 ) => {
   const { scale } = canvas;
-  const srcWidth = srcNode.$style.width * scale;
-  const dstWidth = dstNode.$style.width * scale;
-  const width = Math.min(srcWidth, dstWidth);
-  const offset = Math.abs(srcWidth - dstWidth);
-  s.center.y -= offset / 2;
-  const props = { lineWidth: width, strokeStyle: dstNode.$style.color };
+  const srcLineWidth = srcStyle.width * scale;
+  const dstLineWidth = dstStyle.width * scale;
+  const lineWidth = Math.min(srcLineWidth, dstLineWidth);
+  const distance = dst.x - src.x;
+  const lineOffset = Math.abs(srcLineWidth - dstLineWidth);
+  src.y -= lineOffset / 2;
+  const props = { lineWidth: lineWidth, strokeStyle: dstStyle.color };
   const rendererFn = (ctx: CanvasRenderingContext2D) => {
-    if (dstNode.$style.dash) {
-      ctx.setLineDash(dstNode.$style.dash);
+    if (dstStyle.dash) {
+      ctx.setLineDash(dstStyle.dash);
     }
   };
   canvas.drawBeizeCurve(
-    s.center,
-    e.center,
+    src,
+    dst,
     {
       cpoints: [
-        { x: s.cx + dx / 2, y: s.cy } as Point,
-        { x: e.cx - dx / 2, y: e.cy } as Point,
+        { x: src.x + distance / 2, y: src.y } as Point,
+        { x: dst.x - distance / 2, y: dst.y } as Point,
       ],
       props,
     },
     rendererFn
   );
-  if (offset > 0) {
-    s.center.y += offset;
+  if (lineOffset > 0) {
+    src.y += lineOffset;
+    if (lineOffset / 2 >= dstLineWidth) {
+      props.lineWidth = srcLineWidth;
+    }
     canvas.drawBeizeCurve(
-      s.center,
-      e.center,
+      src,
+      dst,
       {
         cpoints: [
-          { x: s.cx + dx / 2, y: s.cy } as Point,
-          { x: e.cx - dx / 2, y: e.cy } as Point,
+          { x: src.x + distance / 2, y: src.y } as Point,
+          { x: dst.x - distance / 2, y: dst.y } as Point,
         ],
         props,
       },
@@ -91,46 +102,31 @@ export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOp
       canvas.getNodeDimension(node)
     );
     const padding = {
-      src: (srcNode.$style.width * canvas.scale) / 2,
-      dst: (dstNode.$style.width * canvas.scale) / 2,
+      src: srcNode.$style.width * canvas.scale,
+      dst: dstNode.$style.width * canvas.scale,
     };
     const option = this.getRenderingOption(srcNode);
     const isBottom = valignOf(option) === "bottom";
 
-    let min: NodeRect, max: NodeRect;
-    if (s.cx <= e.cx) {
-      min = s;
-      max = e;
-    } else {
-      min = e;
-      max = s;
-    }
-
-    const x0 = min.center.x;
-    const x1 = max.center.x;
-    const y0 = min.center.y;
-    const y1 = max.center.y;
-
     if (isBottom && srcNode.firstChild() === dstNode) {
-      renderUnderline(canvas, dstNode, s, padding.src);
+      renderUnderline(canvas, srcNode.$style, s, padding.src);
     }
-    min.center.x = min.right;
-    max.center.x = max.left;
-    if (isBottom) {
-      min.center.y = min.bottom + padding.src;
-      max.center.y = max.bottom + padding.src;
+
+    let sp: Point, ep: Point;
+    const isLR = s.cx <= e.cx; // [srcNode ... dstNode]
+    const labelY = isBottom ? "bottom" : "cy";
+    if (isLR) {
+      // srcNode ... dstNode
+      sp = pointAt(s, labelY, "right", padding.src / 2);
+      ep = pointAt(e, labelY, "left", padding.dst / 2);
+    } else {
+      // dstNode ... srcNode
+      sp = pointAt(s, labelY, "left", padding.src / 2);
+      ep = pointAt(e, labelY, "right", padding.dst / 2);
     }
-    const dx = max.cx - min.cx;
-    renderCurve(canvas, srcNode, s, dstNode, e, s === min ? dx : -dx);
-    min.center.x = x0;
-    max.center.x = x1;
-    min.center.y = y0;
-    max.center.y = y1;
+    rnederCurve(canvas, sp, srcNode.$style, ep, dstNode.$style);
     if (dstNode.isLeaf() && isBottom) {
-      renderUnderline(canvas, dstNode, e, padding.dst);
+      renderUnderline(canvas, dstNode.$style, e, padding.dst);
     }
-    // renderUnderline(canvas, dstNode, e, padding);
-    // if (dstNode.isLeaf() && padding.ver > 0) {
-    // }
   }
 }

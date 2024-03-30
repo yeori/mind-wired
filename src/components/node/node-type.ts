@@ -50,7 +50,7 @@ export type SchemaSpec = {
    * name of schema(must be unique in a map)
    */
   name: string;
-  css?: Partial<CSSStyleDeclaration>;
+  style?: Partial<CSSStyleDeclaration>;
 };
 export type ModelSpec = {
   type?: NodeModelType;

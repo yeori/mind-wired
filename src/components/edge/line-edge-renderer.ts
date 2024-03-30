@@ -37,61 +37,85 @@ export class LineEdgeRenderer extends AbstractEdgeRenderer<void> {
     const option = this.getRenderingOption(srcNode);
     const valign = valignOf(option);
     const pathes: Point[] = [];
-    const style = dstNode.$style;
-    const lineWidth = style.width * scale;
+    const auxPathes: Point[] = [];
+    const srcStyle = srcNode.$style;
+    const srcLineWidth = srcStyle.width * scale;
+    const dstStyle = dstNode.$style;
+    const dstLineWidth = dstStyle.width * scale;
+    const lineGap = Math.abs(srcLineWidth - dstLineWidth);
+    const offsetY = dstLineWidth / 2;
+
     if (valign === "center") {
       pathes.push(s.center, e.center);
     } else if (valign === "bottom") {
-      const offsetY = lineWidth / 2;
       const isLR = s.cx <= e.cx;
-      if (srcNode.firstChild() === dstNode) {
-        const dir = isLR ? "left" : "right";
-        pathes.push(pointAt(s, "bottom", dir, offsetY));
-      }
-      if (isLR) {
-        // src ... dst
-        const p = pointAt(s, "bottom", "right", offsetY);
-        const p0 = p.clone();
-        p0.x = p.x - 1;
-        pathes.push(p0);
-        pathes.push(p);
-        pathes.push(pointAt(e, "bottom", "left", offsetY));
-        if (dstNode.isLeaf()) {
-          pathes.push(pointAt(e, "bottom", "right", offsetY));
-        } else {
-          const d = pathes[pathes.length - 1].clone();
-          d.x++;
-          pathes.push(d);
-        }
-      } else {
-        // dst ... src
-        const p = pointAt(s, "bottom", "left", offsetY);
-        const p0 = p.clone();
-        p0.x = p.x + 1;
-        pathes.push(p0);
-        pathes.push(p);
-        pathes.push(pointAt(e, "bottom", "right", offsetY));
-        if (dstNode.isLeaf()) {
-          pathes.push(pointAt(e, "bottom", "left", offsetY));
-        } else {
-          const d = pathes[pathes.length - 1].clone();
-          d.x--;
-          pathes.push(d);
-        }
+      const shiftX = isLR ? 2 : -2;
+      const sLabel = isLR ? "right" : "left";
+      const eLabel: ["left" | "right", "left" | "right"] = isLR
+        ? ["left", "right"]
+        : ["right", "left"];
+      const s0 = pointAt(s, "bottom", sLabel, offsetY);
+      const s1 = s0.clone();
+      s1.x += shiftX;
+      const d1 = pointAt(e, "bottom", eLabel[0], offsetY);
+      const d0 = d1.clone();
+      d0.x -= shiftX;
+      pathes.push(s0, s1, d0, d1);
+      pathes.push(pointAt(e, "bottom", eLabel[1], offsetY));
+      if (lineGap > 0) {
+        const p0 = s0.clone();
+        p0.y += lineGap;
+        const p1 = s1.clone();
+        p1.y += lineGap;
+        auxPathes.push(p0, p1, d0, d1);
       }
     }
     canvas.drawPath(
       pathes,
       {
-        lineWidth,
-        strokeStyle: style.color,
+        lineWidth: dstLineWidth,
+        strokeStyle: dstStyle.color,
         lineJoin: "round",
       },
       (ctx) => {
-        if (style.dash) {
-          ctx.setLineDash(style.dash);
+        if (dstStyle.dash) {
+          ctx.setLineDash(dstStyle.dash);
         }
       }
     );
+    if (auxPathes.length > 0) {
+      canvas.drawPath(
+        auxPathes,
+        {
+          lineWidth: dstLineWidth,
+          strokeStyle: dstStyle.color,
+          lineJoin: "round",
+        },
+        (ctx) => {
+          if (dstStyle.dash) {
+            ctx.setLineDash(dstStyle.dash);
+          }
+        }
+      );
+    }
+    if (srcNode.isRoot() && valign === "bottom") {
+      const offset = srcLineWidth / 2;
+      canvas.drawPath(
+        [
+          pointAt(s, "bottom", "left", offset),
+          pointAt(s, "bottom", "right", offset),
+        ],
+        {
+          lineWidth: srcLineWidth,
+          strokeStyle: srcStyle.color,
+          lineJoin: "round",
+        },
+        (ctx) => {
+          if (srcStyle.dash) {
+            ctx.setLineDash(srcStyle.dash);
+          }
+        }
+      );
+    }
   }
 }
