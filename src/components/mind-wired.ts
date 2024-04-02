@@ -1,6 +1,6 @@
 import { EVENT, parseEvent } from "../service/event-bus";
 import { CanvasUI } from "./canvas-ui";
-import { EdgeUI } from "./edge";
+import { EdgeContext } from "./edge";
 import { NodeUI } from "./node/node-ui";
 import { NodeLayoutContext, installDefaultLayoutManagers } from "./layout";
 import {
@@ -46,6 +46,7 @@ import type {
 import { SchemaContext } from "./node/schema-context";
 import { ExportContext, type ExportParam, type ExportResponse } from "./export";
 import { INodeLayoutManager } from "./layout/node-layout-manager";
+import { installDefaultEdgeRenderers } from "./edge/edge-context";
 
 const exportTree = (config: Configuration, nodeUI: NodeUI): NodeSpec => {
   const v: ViewSpec = nodeUI.spec.view;
@@ -89,10 +90,7 @@ const repaintTree = (mwd: MindWired, node: NodeUI, propagate = true) => {
     });
   }
   if (node.isFolded()) {
-    mwd.config.emit(EVENT.NODE.FOLDED, {
-      node: node,
-      folded: true,
-    });
+    mwd.setFoldingState([node], true);
   }
 };
 const updateLevelClass = (
@@ -113,7 +111,7 @@ export class MindWired {
   nodeEditingContext: NodeEditingContext;
   alignmentUI: AlignmentUI;
   dragContext: DragContext;
-  edgeUI: EdgeUI;
+  private _edgeContext: EdgeContext;
   rootUI: NodeUI;
   private _dsFactory: DataSourceFactory;
   private _schemaContext: SchemaContext;
@@ -149,7 +147,8 @@ export class MindWired {
 
     this.alignmentUI = new AlignmentUI(config);
     this.dragContext = new DragContext();
-    this.edgeUI = new EdgeUI(config, this.canvas);
+    this._edgeContext = new EdgeContext(config, this.canvas);
+    installDefaultEdgeRenderers(this._edgeContext);
 
     this._schemaContext = new SchemaContext(config);
 
@@ -157,7 +156,7 @@ export class MindWired {
       .listen(EVENT.DRAG.VIEWPORT, (e: ViewportDragEventArg) => {
         this.config.setOffset(e.offset);
         this.canvas.repaintNodeHolder();
-        this.edgeUI.repaint();
+        this._edgeContext.repaint();
         if (e.state === "done") {
           this.rootUI.setPos(e.offset.x, e.offset.y, false);
           try {
@@ -201,10 +200,10 @@ export class MindWired {
             });
           });
           this.canvas.updateSelection(this.nodeSelectionModel.getNodes());
-          this.edgeUI.repaint(!this.config.snapEnabled);
+          this._edgeContext.repaint(!this.config.snapEnabled);
         } else if (e.state === "done") {
           this.alignmentUI.turnOff();
-          this.edgeUI.repaint(true);
+          this._edgeContext.repaint(true);
           const nodes = this.dragContext.getUpdatedNodes();
           if (nodes.length > 0) {
             this.config.emit(EVENT.NODE.UPDATED.CLIENT, {
@@ -229,12 +228,12 @@ export class MindWired {
           this.nodeEditingContext.close();
         }
       })
-      .listen(EVENT.NODE.FOLDED, ({ node }: NodeFoldingArg) => {
-        this.canvas.updateFoldingNodes(node);
+      .listen(EVENT.NODE.FOLDED, ({ node, folded }: NodeFoldingArg) => {
+        this.setFoldingState([node], folded);
       })
       .listen(EVENT.NODE.UPDATED, ({ nodes }: NodeEventArg) => {
         nodes.forEach((node) => node.repaint());
-        this.edgeUI.repaint();
+        this._edgeContext.repaint();
         this.config.emit(EVENT.NODE.UPDATED.CLIENT, { nodes, type: "model" });
       });
   }
@@ -271,7 +270,7 @@ export class MindWired {
     this.nodeRenderingContext.dispose();
     this.nodeEditingContext.dispose();
     this._dsFactory.clear();
-    this.edgeUI.dispose();
+    this._edgeContext.dispose();
     this.alignmentUI.turnOff();
     this.dragContext.clear();
     this.canvas.unregisterNodeTree(this.rootUI);
@@ -280,14 +279,13 @@ export class MindWired {
     if (this.rootUI) {
       this._dispose();
     }
-    // this.canvas.drawSchemaStyles(this._schemaContext.getSchemas());
     if (elems instanceof TreeDataSource) {
       const root = elems.build();
       this.rootUI = NodeUI.build(root, this.config);
     } else if (elems) {
       this.rootUI = NodeUI.build(elems, this.config);
     }
-    this.edgeUI.setRootNode(this.rootUI);
+    this._edgeContext.setRootNode(this.rootUI);
     this.config.ui.offset.x = this.rootUI.spec.view.x;
     this.config.ui.offset.y = this.rootUI.spec.view.y;
     this.rootUI.spec.view.x = 0;
@@ -326,7 +324,7 @@ export class MindWired {
       offset: 60,
     });
 
-    this.edgeUI.addEdge(nodeUI.parent, nodeUI);
+    this._edgeContext.addEdge(nodeUI.parent, nodeUI);
     this.config.emit(EVENT.NODE.CREATED.CLIENT, {
       nodes: [nodeUI],
       type: "create",
@@ -413,7 +411,7 @@ export class MindWired {
       });
     }
     if (deleted.length > 0) {
-      this.edgeUI.deleteEdges(deleted);
+      this._edgeContext.deleteEdges(deleted);
       this.config.emit(EVENT.NODE.DELETED.CLIENT, {
         nodes: deleted,
         type: "delete",
@@ -441,12 +439,25 @@ export class MindWired {
     console.log(this.config.ui.scale);
     this.repaint();
   }
+  /**
+   * update the given nodes' visibility
+   * @param nodes
+   * @param folding if true(false), node is hidden(visible).
+   */
+  setFoldingState(nodes: NodeUI[], folding: boolean) {
+    nodes.forEach((node) => {
+      node.setFolding(folding);
+      this.canvas.updateFoldingNodes(node);
+      this._edgeContext.setEdgeVisible(node, !folding, false);
+    });
+    this._edgeContext.repaint();
+  }
   repaint(nodeUI?: NodeUI) {
     nodeUI = nodeUI || this.rootUI;
     repaintTree(this, nodeUI);
     this.canvas.repaintNodeHolder();
     this._nodeLayoutContext.layout(nodeUI, { dir: undefined });
-    this.edgeUI.repaint();
+    this._edgeContext.repaint();
 
     this.canvas.clearNodeSelection();
     this.canvas.updateSelection(this.getSelectedNodes());
@@ -484,7 +495,7 @@ export class MindWired {
    * @returns all edge renderers
    */
   listEdgeRenderers(): IEdgeRenderer[] {
-    return this.edgeUI.listRenderers();
+    return this._edgeContext.listRenderers();
   }
   listNodeLayoutManagers(): INodeLayoutManager[] {
     return this._nodeLayoutContext.listLayoutManagers();
@@ -530,7 +541,7 @@ export class MindWired {
     return exporter.export(param);
   }
   registerEdgeRenderer(renderer: IEdgeRenderer) {
-    this.edgeUI.addEdgeRenderer(renderer);
+    this._edgeContext.registerEdgeRenderer(renderer);
   }
   getSchemaContext() {
     return this._schemaContext;

@@ -207,7 +207,9 @@ const installFoldingIcon = (
   config: Configuration,
   callback: (foldingEl: HTMLElement) => void
 ) => {
-  let foldingEl = nodeEl.querySelector<HTMLElement>(`[data-cmd="unfolding"]`);
+  let foldingEl = nodeEl.querySelector<HTMLElement>(
+    `:scope > [data-cmd="unfolding"]`
+  );
   if (!foldingEl) {
     const { dom } = config;
     foldingEl = dom.parseTemplate(template.foldingControl, {});
@@ -659,10 +661,9 @@ export class CanvasUI {
   updateFoldingNodes(nodeUI: NodeUI) {
     const display = nodeUI.isFolded() ? "none" : "";
     const { dom } = this;
-    nodeUI.subs.forEach((childNode) => {
-      updateFolding(childNode, display, dom);
-    });
     const nodeEl = dom.findOne(this.$holder, `[data-uid="${nodeUI.uid}"]`)!;
+    const subEl = dom.findOne(nodeEl, ":scope > .mwd-subs");
+    dom.css(subEl, { display });
     if (nodeUI.isFolded()) {
       const rect = dom.domRect(nodeUI.$bodyEl);
       installFoldingIcon(nodeEl, rect, this.config, (foldingEl) => {
