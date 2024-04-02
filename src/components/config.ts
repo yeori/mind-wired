@@ -23,6 +23,12 @@ const DEFAULT_UI_SETTING: UISetting = {
     level: (level: number): string => `level-${level}`,
     folded: "folded",
   },
+  styleDef: {
+    schema: {
+      styleId: `#mwd-schema-@schema@mapId`,
+      selector: `[data-mind-wired-viewport@mapId] .mwd-node.@schema > .mwd-body`,
+    },
+  },
   offset: new Point(0, 0),
   snap: {
     limit: 4,

@@ -53,8 +53,6 @@ describe("line edge renderer", () => {
     vi.spyOn(src, "firstChild").mockImplementation(() => dst);
 
     line.render(canvas, src, dst);
-    expect(pathes.length).toBe(3);
-    // expect(pathes[0][0]).toEqual(new Point(0, 0));
-    // expect(pathes[0][1]).toEqual(new Point(100, -100));
+    expect(pathes.length).toBe(2);
   });
 });

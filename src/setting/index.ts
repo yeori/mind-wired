@@ -37,6 +37,11 @@ export type EntityClassNaming = {
    * @deprecated
    */
   edge: CssClassName;
+  /**
+   * returns schema name itself
+   * @param schemaName
+   * @returns
+   */
   schema?: (schemaName: string) => CssClassName;
   /**
    * level classname for node.
@@ -52,6 +57,12 @@ export type EntityClassNaming = {
    * @default 'folded'
    */
   folded?: string;
+};
+export type StyleDefinition = {
+  schema: {
+    styleId: string;
+    selector: string;
+  };
 };
 
 export type SnapTargetSetting = {
@@ -123,6 +134,7 @@ export type UISetting = {
    */
   scale?: number;
   clazz?: EntityClassNaming;
+  styleDef?: StyleDefinition;
   /**
    * relative offst from center of viewport
    * @internal

@@ -682,30 +682,39 @@ export class CanvasUI {
     }
     return nodeEl.querySelector<HTMLElement>(`.mwd-body`);
   }
-  drawSchemaStyles(schemaSpecs: SchemaSpec[]) {
-    const { mapId } = this.config.ui;
-    const styleId = `#mwd-schema-@mapId-@schema`.replace("@mapId", mapId || "");
-    const styleDef =
-      `[data-mind-wired-viewport@mapId] .mwd-node.@schema > .mwd-body { @body }`.replace(
-        "@mapId",
-        mapId ? `="${mapId}"` : ""
-      );
-    schemaSpecs.forEach((schema) => {
-      const { name, css } = schema;
-      const styleEl = this.dom.tag.style(styleId.replace("@schema", name));
-      if (css) {
-        const body = Object.keys(css).reduce((cssText, prop) => {
-          const dashedprop = prop.replace(
-            /[A-Z]/g,
-            (match) => `-${match.toLowerCase()}`
-          );
-          return cssText + `${dashedprop}: ${css[prop]};`;
-        }, "");
-        styleEl.innerHTML = styleDef
-          .replace("@body", body)
-          .replace("@schema", name);
+  drawSchema(schemaSpec: SchemaSpec) {
+    const { name, style } = schemaSpec;
+    if (style) {
+      const { mapId, styleDef } = this.config.ui;
+      const styleId = styleDef.schema.styleId
+        .replace("@schema", name)
+        .replace("@mapId", mapId ? `-${mapId}` : "");
+      let styleEl = document.querySelector(styleId);
+      if (!styleEl) {
+        styleEl = this.dom.tag.style(styleId);
         document.head.appendChild(styleEl);
       }
-    });
+      const body = Object.keys(style).reduce((cssText, prop) => {
+        const dashedprop = prop.replace(
+          /[A-Z]/g,
+          (match) => `-${match.toLowerCase()}`
+        );
+        return cssText + `${dashedprop}: ${style[prop]};`;
+      }, "");
+      const selector = styleDef.schema.selector
+        .replace("@schema", name)
+        .replace("@mapId", mapId ? `="${mapId}"` : "");
+      styleEl.innerHTML = `${selector} { ${body} }`;
+    }
+  }
+  removeSchema(schemaName: string) {
+    const { mapId, styleDef } = this.config.ui;
+    const styleId = styleDef.schema.styleId
+      .replace("@schema", schemaName)
+      .replace("@mapId", mapId ? `-${mapId}` : "");
+    let styleEl = document.querySelector(styleId);
+    if (styleEl) {
+      styleEl.remove();
+    }
   }
 }

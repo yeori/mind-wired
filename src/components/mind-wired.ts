@@ -44,7 +44,7 @@ import type {
   ViewportEvent,
 } from "../mindwired-event";
 import { SchemaContext } from "./node/schema-context";
-import { ExportContext, ExportParam } from "./export";
+import { ExportContext, type ExportParam, type ExportResponse } from "./export";
 import { INodeLayoutManager } from "./layout/node-layout-manager";
 
 const exportTree = (config: Configuration, nodeUI: NodeUI): NodeSpec => {
@@ -151,7 +151,7 @@ export class MindWired {
     this.dragContext = new DragContext();
     this.edgeUI = new EdgeUI(config, this.canvas);
 
-    this._schemaContext = new SchemaContext();
+    this._schemaContext = new SchemaContext(config);
 
     this.config
       .listen(EVENT.DRAG.VIEWPORT, (e: ViewportDragEventArg) => {
@@ -280,7 +280,7 @@ export class MindWired {
     if (this.rootUI) {
       this._dispose();
     }
-    this.canvas.drawSchemaStyles(this._schemaContext.getSchemas());
+    // this.canvas.drawSchemaStyles(this._schemaContext.getSchemas());
     if (elems instanceof TreeDataSource) {
       const root = elems.build();
       this.rootUI = NodeUI.build(root, this.config);
@@ -517,15 +517,15 @@ export class MindWired {
    * return NodeSpec data. If you want to export schema or ui, use `exportwith` instead.
    * @see {exportWith}
    * @deprecated use exportWith(param: ExportParam)
-   * @param stringify if true, return JSON.stringify(nodeSpec), else return nodeSpec
+   * @param stringify if true, return JSON.stringify(nodeSpec), else return nodeSpec itself
    * @returns nodeSpec
    */
-  export(stringify = true) {
+  export(stringify = true): Promise<string | NodeSpec> {
     const nodeSpec = exportTree(this.config, this.rootUI);
     const value = stringify ? JSON.stringify(nodeSpec) : nodeSpec;
     return Promise.resolve(value);
   }
-  exportWith(param?: ExportParam) {
+  exportWith(param?: ExportParam): Promise<ExportResponse> {
     const exporter = new ExportContext(this);
     return exporter.export(param);
   }

@@ -11,7 +11,7 @@ describe("schema", () => {
     mwd = new MindWired(config);
     mwd.registerSchema({
       name: "beverage",
-      css: { backgroundColor: "#ff9988" },
+      style: { backgroundColor: "#ff9988" },
     });
     const spec = casting.withModel({ text: "root" });
     spec.subs = [

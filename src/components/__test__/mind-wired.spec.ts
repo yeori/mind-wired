@@ -20,6 +20,11 @@ beforeEach(() => {
 describe("init", () => {
   test("init", () => {
     expect(mwd).toBeDefined();
+    const { styleDef } = mwd.config.ui;
+    expect(styleDef).toBeDefined();
+    expect(styleDef.schema).toBeDefined();
+    expect(styleDef.schema.styleId).toBeDefined();
+    expect(styleDef.schema.selector).toBeDefined();
   });
 });
 

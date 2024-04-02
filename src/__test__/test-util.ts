@@ -67,3 +67,14 @@ export const mockConfig = {
     return config;
   },
 };
+export const text = {
+  sliceBetween: (text: string, { s, e }: { s: string; e: string }) => {
+    const p = text.indexOf(s);
+    if (p < 0) {
+      return undefined;
+    }
+    let q = text.indexOf(e, p + s.length);
+    q = q < 0 ? text.length : q;
+    return text.substring(p + s.length, q);
+  },
+};
