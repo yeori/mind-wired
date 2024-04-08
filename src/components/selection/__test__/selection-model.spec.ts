@@ -1,5 +1,5 @@
 import { casting, mockConfig } from "@/__test__/test-util";
-import Configuration from "@/components/config";
+import type { Configuration } from "@/components/config";
 import { describe, test, expect, beforeEach, vi } from "vitest";
 import { NodeSelectionModel } from "../node-selection-model";
 import { EVENT } from "@/mindwired-event";

@@ -55,7 +55,15 @@ export type NodeEventArg = {
    * affected nodes
    */
   nodes: NodeUI[];
-  type: "select" | "click" | "create" | "update" | "delete" | "path";
+  type:
+    | "select"
+    | "click"
+    | "create"
+    | "update"
+    | "delete"
+    | "path"
+    | "pos"
+    | "model";
 };
 export type NodeSelectArg = {
   nodes: NodeUI[];

@@ -7,8 +7,8 @@ import {
 } from "./node-type";
 import { EVENT } from "../../service/event-bus";
 import { type Heading, Point, geom } from "../../service/geom";
-import Configuration from "../config";
-import EdgeStyle from "../edge/edge-style";
+import type { Configuration } from "../config";
+import { EdgeStyle } from "../edge/edge-style";
 
 const parseSubs = (nodeUi: NodeUI) => {
   const { subs } = nodeUi.spec;
@@ -264,6 +264,10 @@ export class NodeUI {
       folded: this.folding,
     });
   }
+  /**
+   *
+   * @returns true if this node is folded, which means child nodes are invisible
+   */
   isFolded() {
     return this.folding;
   }

@@ -1,10 +1,10 @@
-import { type ModelSpec } from "../node/node-type";
+import type { ModelSpec } from "../node/node-type";
 import { EVENT } from "../../service/event-bus";
-import Configuration from "../config";
-import { MindWired } from "../mind-wired";
-import { type NodeUI } from "../node/node-ui";
-import { NodeSelectArg } from "../../mindwired-event";
-import { clone } from "@/service";
+import type { Configuration } from "../config";
+import type { MindWired } from "../mind-wired";
+import type { NodeUI } from "../node/node-ui";
+import type { NodeSelectArg } from "../../mindwired-event";
+import clone from "@/service/clone";
 const clearSelection = (nodeMap: Map<string, NodeUI>) => {
   const nodes = [...nodeMap.values()];
   nodes.forEach((node) => {

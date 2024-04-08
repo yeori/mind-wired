@@ -31,7 +31,7 @@ const traceStyle = <K extends keyof EdgeSpec>(node: NodeUI, prop: K) => {
   }
   return style[prop] || DEFAULT_EDGE_STYLE[prop];
 };
-export default class EdgeStyle {
+export class EdgeStyle {
   nodeUI: NodeUI;
   constructor(nodeUI: NodeUI) {
     this.nodeUI = nodeUI;

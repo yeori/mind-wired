@@ -3,7 +3,7 @@ import type { CanvasUI } from "../canvas-ui";
 import { type NodeRect } from "../node/node-type";
 import { type NodeUI } from "../node/node-ui";
 import { AbstractEdgeRenderer } from "./edge-renderer-type";
-import type EdgeStyle from "./edge-style";
+import type { EdgeStyle } from "./edge-style";
 
 export type MustachLREdgeOption = {
   valign: "bottom" | "center" | "top";
@@ -125,7 +125,7 @@ export class MustacheLREdgeRenderer extends AbstractEdgeRenderer<MustachLREdgeOp
       ep = pointAt(e, labelY, "right", padding.dst / 2);
     }
     rnederCurve(canvas, sp, srcNode.$style, ep, dstNode.$style);
-    if (dstNode.isLeaf() && isBottom) {
+    if ((dstNode.isFolded() || dstNode.isLeaf()) && isBottom) {
       renderUnderline(canvas, dstNode.$style, e, padding.dst);
     }
   }

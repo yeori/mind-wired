@@ -33,6 +33,6 @@ describe("alignment by distance", () => {
     expect(mwd).toBeDefined();
     const { rootUI } = mwd;
     const L1 = mwd.findNode((node) => node.model.text === "L1");
-    mwd.alignmentUI.turnOn(rootUI, [L1]);
+    mwd.getAligmentContext().turnOn(rootUI, [L1]);
   });
 });

@@ -1,4 +1,4 @@
-import type Configuration from "../config";
+import type { Configuration } from "../config";
 import type { SchemaSpec } from "./node-type";
 
 export class SchemaContext {

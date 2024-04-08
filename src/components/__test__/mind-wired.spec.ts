@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
-import Configuration from "../config";
+import { Configuration } from "../config";
 import { MindWired } from "../mind-wired";
 import { UserDefinedRenderer } from "../node";
 import mockApi, { Country } from "../../../test/mock-api";
@@ -76,5 +76,44 @@ describe("Adding datasource", () => {
     });
     expect(node.parent.uid).toBe(mwd.rootUI.uid);
     expect(listenFor).toHaveBeenCalledOnce();
+  });
+});
+
+describe("edge of node", () => {
+  test("changing edge renderer", () => {
+    mwd.nodes({
+      model: {
+        type: "text",
+        text: "ROOT",
+      },
+      view: {
+        layout: { type: "X-AXIS" },
+        edge: { color: "red", name: "mustache_lr", width: 2 },
+        x: 0,
+        y: 0,
+      },
+    });
+    const root = mwd.rootUI;
+    const { edge } = root.spec.view;
+    expect(edge.name).toBe("mustache_lr");
+    expect(edge.color).toBe("red");
+    expect(edge.width).toBe(2);
+
+    mwd.setEdge({ name: "line" }, root);
+
+    expect(edge.name).toBe("line");
+    expect(edge.color).toBe("red");
+    expect(edge.width).toBe(2);
+
+    mwd.setEdge({ width: 4 }, root);
+
+    expect(edge.name).toBe("line");
+    expect(edge.color).toBe("red");
+    expect(edge.width).toBe(4);
+
+    mwd.setEdge({ color: "blue" }, root);
+    expect(edge.name).toBe("line");
+    expect(edge.color).toBe("blue");
+    expect(edge.width).toBe(4);
   });
 });

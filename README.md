@@ -2,240 +2,309 @@
 
 <img width="610" alt="mind-wired-demo" src="https://user-images.githubusercontent.com/10085153/171831668-f291fd79-ee76-4da7-89cb-a3a00bd67527.png">
 
-[VIEW DEMO](https://codepen.io/yeori/pen/XWZYejP)
+**mind-wired** is javascript library to build mindmap.
 
-`MindWired` is javascript library to build mindmap.
-
-## 1. installing
-
-### 1.1. installing library
+# 1. installing
 
 ```
-npm install @mind-wired/core
+npm install @mind-wired/core@0.2.0-alpha.2
 ```
 
-### 1.2. html
+# 2. Client type
 
-MDWD library needs a placeholder for mindmap
+## 2.1. Javascript modules(Typescript)
+
+> The example code in this document was generated using Vite(Vanilla + TS).
+
+```
+[PROJECT]
+  +- assets
+  +- src
+      +- api.ts
+      +- main.ts
+  +- index.html
+```
+
+#### index.html
+
+The library needs a placeholder for mindmap
 
 ```html
-<html>
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <link rel="stylesheet" href="mind-wired.css" />
-    <script src="mind-wired.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MindWired Demo</title>
   </head>
   <body>
-    <div id="mmap-root"></div>
+    <div id="mmap-root"><!-- viewport generated here--></div>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
 ```
 
-- `#mmap-root` - placeholder for rendering(free for naming)
-- `mind-wired.css` - required for minimal styling
-- `mind-wired.js` - mind-wired library
+- `#mmap-root` - placeholder for mindmap(You can name it freely)
 
-creating an instance of **mind-wired**
+#### main.ts
 
-> Sample 01: https://codepen.io/yeori/pen/abqGZWp
+It is a minimal initialization code for an instance of **mind-wired**
 
-```html
-<html>
-  <head>
-    <link .../>
-    <script ...></script>
-  </head>
-  <body>
-    <div id="mmap-root">
-  </body>
+```ts
+/* src/main.ts */
+import type { MindWired, NodeSpec, UISetting } from "@mind-wired/core";
+import { initMindWired } from "@mind-wired/core";
+import "@mind-wired/core/mind-wired.css";
+import "@mind-wired/core/mind-wired-form.scss";
+import { loadFromServer } from "./api";
 
-  <script>
-    window.mindwired.init({
-      el: "#mmap-root",
-      ui: null,
-    }).then((mwd) => {
-      // install nodes here
-      mwd.nodes({
-        model: {
-          type: "text",
-          text: "Mind\nWired",
-        },
-        view: {x: 0, y: 0}
-      })
-    })
-  </script>
-</html>
-```
-
-- It has a singl root node, `Mind\nWired`
-- `\n` means linewrap
-
-`ui: null` creates 600x600 canvas. You can specify canvas size.
-
-```javascript
-mindwired.init({
-  el: ...,
-  ui: {width: 800, height: 800}
-})
-```
-
-- 800x800 canvas.
-- `{width: "100%", height: 600}` is possible.
-
-Let's prepare tree structure
-
-```
-MindWired
- |
- +- Left at (-70, -40)
- |
- +- Right at (70, -20)
-     +- Cat at (60,  0)
-     +- Dog at (60, 40)
-```
-
-- root `MindWried` has two children, `Left` and `Right`
-- node `Right` has two children, `Cat` and `Dog`
-
-node structrue
-
-> Sample 02: [https://codepen.io/yeori/pen/GRQdqPz](https://codepen.io/yeori/pen/GRQdqPz)
-
-```html
-<html>
-  <body>
-    ...
-  </body>
-  <script>
-    window.mindwired
-      .init(...)
-      .then((mwd) => {
-        // install nodes here
-        mwd.nodes({
-          model: {
-            type: "text",
-            text: "Mind\nWired",
-          },
-          view: { x: 0, y: 0 },
-          subs: [
-            {
-              model: { text: "Left" },
-              view: { x: -70, y: -40 }
-            },
-            {
-              model: { text: "Right" },
-              view: { x: 70, y: -20 },
-              subs: [
-                {
-                  model: { text: "Cat" },
-                  view: { x: 60, y: 0 }
-                },
-                {
-                  model: { text: "Dog" },
-                  view: { x: 60, y: 40 }
-                },
-              ],
-            },
-          ],
-        });
-      });
-  </script>
-</html>
-```
-
-- coord (x, y) is relative to it's parent node
-- Node `Dog`is at (60, 40) from its parent `Right`
-- Node `Right` is at (70, -20) form it's parent `MindWired`
-- Nodes `Left`, `Cat` and `Dog` has no child. (`subs` can be skipped)
-
-## 2. Style
-
-### 2.1. Canvas Style
-
-#### 2.1.1. Snap to node
-
-MindWired supports **_snap to node_**, which helps node alignment while dragging.
-
-```javascript
-window.mindwired
-  .init({
-    ...
+window.onload = async () => {
+  const mapData: { node: NodeSpec } = await loadFromServer();
+  const el = document.querySelector<HTMLDivElement>("#mmap-root")!;
+  const mwd: MindWired = await initMindWired({
+    el,
     ui: {
-      ...
-      snap: {           # optional
-        limit: 4,       # within 4 pixels
-        width: 0.4,     # snap line width
-        dash: [6, 2],   # dashed line style
-        color: "red",   # line color
+      width: "100%",
+      height: 500,
+    } as UISetting,
+  });
+  mwd.nodes(mapData.node);
+};
+```
+
+- initMindWired({el, ui}) - called to initialize mindmap.
+- `el` - placeholder for mindmap.
+- `ui` - size, scale, class namings and snap layout etc.
+- `@mind-wired/core/mind-wired.css` - minimal css style for mindmap. You can add or modify style for your own css(scss). See section `3. Style`
+- `@mind-wired/core/mind-wired-form.scss` - style for default editing form.
+- `loadFromServer` - fetch mindmap data(nodes, ui, and schema) from your server
+
+You might fetch mindmap data from server like this.
+
+```ts
+/* src/api.ts */
+export const loadFromServer = (): Promise<{
+  node: NodeSpec;
+}> => {
+  // using axis(...) or fetch(...) in production code
+  return Promise.resolve({
+    node: {
+      model: { text: "Countries\nand\nCities" },
+      view: {
+        x: 0,
+        y: 0,
       },
-  }).then(...)
+      subs: [
+        {
+          model: { text: "Canada" },
+          view: { x: -100, y: 0 },
+          subs: [
+            { model: { text: "Toronto" }, view: { x: -90, y: 0 } },
+            { model: { text: "Quebec City" }, view: { x: -10, y: -40 } },
+          ],
+        },
+        {
+          model: { text: "Spain" },
+          view: { x: 100, y: 0 },
+          subs: [
+            { model: { text: "Madrid" }, view: { x: 90, y: 90 } },
+            { model: { text: "Barcelona" }, view: { x: 100, y: 0 } },
+            { model: { text: "Valencia" }, view: { x: 90, y: 45 } },
+          ],
+        },
+      ],
+    },
+  });
+};
 ```
 
-- Snap guide line is displayed when a node is whithin 4 pixels to the adjacent nodes.
+- root node is positioned at the center of viewport `view: {x:0, y:0}`
 
-You can disable `snap to node` by setting `false`
+`NodeSpec` has three key properties
 
-```javascript
-window.mindwired
-  .init({
-    ...
-    ui: {
-      ...,
-      snap: false
-  }).then(...)
-```
+- model - data of node(plain text, icon badge, or thumbnail)
+- view - relative offset (x, y) from it's direct parent node
+- subs - direct child nodes, which are also type of `NodeSpec[]`.
 
-### 2.2. Node Style
+For examples,
 
-All nodes are given some class values to support css styling.
+- Node `Spain(100, 0)` is positioned to the right of the root node.
+- Three cities of `Madrid, Barcelona, Valencia` are also positioned to the right of the parent node `Spain`
 
-After initialization, a `viewport`, `canvas` and `div.mwd-nodes` are injected into the element you specify
+### 2.2. Svelte
+
+- See [Client Svelte](https://github.com/yeori/mind-wired/wiki/001.client-Svelte)
+
+### 2.3. Vue
+
+- See [Client Vue3](https://github.com/yeori/mind-wired/wiki/002.client-Vue3)
+
+## 2.4. UMD
+
+- See [Client Umd](https://github.com/yeori/mind-wired/wiki/003.client-umd)
+
+# 3. Style
+
+**mind-wired** generates base structure.
 
 ```html
 <div id="mmap-root">
-  <!-- geneared automatically by mind-wired -->
+  <!-- generated automatically by mind-wired -->
   <div data-mind-wired-viewport>
     <canvas></canvas>
+    <div class="mwd-selection-area"></div>
+    <div class="mwd-nodes"></div>
+  </div>
+</div>
+```
+
+- `[data-mind-wired-viewport]` - reserved data attribute meaning root element of mindmap
+- `<canvas></canvas>` - placeholer for edges
+- `.mwd-selection-area` - used to highlight selected nodes
+- `.mwd-nodes` - placeholder for node structure
+
+## 3.1 Style file
+
+To define your node styles, create a css(scss) file
+
+```
+[PROJECT]
+  +- assets
+      +- mindmap.css (+)
+  +- src
+      +- main.ts
+  +- index.html
+```
+
+- `assets/mindmap.css` - you can name it as you want
+
+Then, import the css file
+
+```ts
+/* /src/main.ts */
+...
+import "@mind-wired/core/mind-wired.css";
+import "@mind-wired/core/mind-wired-form.scss";
+...
+import "./assets/mindmap.css"
+
+window.onload = async () => {
+  ...
+};
+```
+
+## 3.2. Snap to node
+
+MindWired supports **_snap to node_**, which helps **node alignment** while dragging.
+
+```ts
+initinitMindWired({
+  el,
+  ui: {
+    ...
+    snap: {           # optional
+      limit: 4,       # within 4 pixels
+      width: 0.4,     # snap line width
+      dash: [6, 2],   # dashed line style
+      color: "red",   # line color
+    },
+})
+```
+
+- Snap guide lines are displayed when a node is whithin 4 pixels to the adjacent nodes.
+- Lines are rendered on `<canvas/>`
+
+You can disable it by setting `false`
+
+```ts
+initinitMindWired({
+  el,
+  ui: {
+    ...
+    snap: false,
+})
+// or
+  ui: {
+    snap: {           # optional
+      limit: 4,       # within 4 pixels
+      width: 0.4,     # snap line width
+      dash: [6, 2],   # dashed line style
+      color: "red",   # line color
+      enabled: false  # disable snap
+    },
+  }
+```
+
+## 3.3. Node Style
+
+All nodes are placed in the `.mwd-nodes` with tree structure(recursively)
+
+```html
+<div id="mmap-root">
+  <div data-mind-wired-viewport>
+    ...
     <div class="mwd-nodes">
+      <!-- root node -->
       <div class="mwd-node">
-        <div class="node-body">...</div>
-      </div>
-      <div class="mwd-node">
-        <div class="node-body">...</div>
+        <div class="mwd-body"></div>
+        <div class="mwd-subs">
+          <!--child nodes -->
+          <div class="mwd-node">..Canada..</div>
+          <div class="mwd-node">..Spain..</div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 ```
 
-- `data-mind-wired-viewport` is reserved data attribute
-- Edges are rendered on `canvas`
-- Nodes are placed on `.mwd-nodes`
-- Each node is rendered on `.mwd-node > .node-body`
+### 3.3.1. Level
 
-#### 2.2.1. Level class value
-
-Each node is assigned `level` property, 0 for root node, 1 for child of root node and so on, which is used for level class value.
+Each node is assigned `level` number, 0 for root node, 1 for sub nodes of the root.
 
 ```
-
 [TOP]
   +- [Left]
   |
   +- [Right]
         |
         +--[Cat]
-
 ```
 
 - Root node `TOP` - `class="level-0"`
 - Node `Left` - `class="level-1"`
 - Node `Right` - `class="level-1"`
 - Node `Cat` - `class="level-2"`
-- `level number` changes whenever depth of node changes(except root node)
 
-Here is css to assign rouned border with bigger text to root node,
+```html
+<div class="mwd-nodes">
+  <div class="mwd-node">
+    <div class="mwd-body level-0">..TOP..</div>
+    <div class="mwd-subs">
+      <div class="mwd-node">
+        <div class="mwd-body level-1">..LEFT..</div>
+      </div>
+      <div class="mwd-node">
+        <div class="mwd-body level-1">..RIGHT..</div>
+        <div class="mwd-subs">
+          <div class="mwd-node">
+            <div class="mwd-body level-2">..Cat..</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+- level classname(`level-x`) is attached at `.mwd-body`
+- **level number** changes whenever depth of node changes(except root node)
+
+For example, here is css to assign rounded border with bigger text to root node,
 
 ```css
+/* assets/mindmap.css */
 [data-mind-wired-viewport] .mwd-body.level-0 {
   border: 1px solid #444;
   border-radius: 8px;
@@ -245,98 +314,85 @@ Here is css to assign rouned border with bigger text to root node,
 
 - be sure to keep `.node-body` together to override default css style
 
-If you want to define style for level 1(`Left`, `Right`)
+Style for level-1(`Left`, `Right`)
 
 ```css
+/* assets/mindmap.css */
 [data-mind-wired-viewport] .mwd-body.level-1 {
+  color: 'red'
   font-size: 1.25rem;
-  background-color: #e9ffe0;
-  color: darkgreen;
 }
 ```
 
-#### 2.2.2. Schema
+### 3.3.2. Schema
 
-A group of nodes need to have same style regardless of level (`pizza`, `bread`, `cheese` with same border, background and font style).
+A group of nodes(`Canada`, `Spain`) need to have same style(border, background and font style etc) regardless of level.
 
-Schema is defined in each node
+Schema can be specified in each node
 
 ```javascript
 {
-  model: {
-    text: "What to eat for lunch?",
+  node: {
+    model: { text: "Countries\nand\nCities" },
+    view: {...},
+    subs: [
+      {
+        model: { text: "Canada", schema: 'city' },
+        view: {...},
+        subs: [...],
+      },
+      {
+        model: { text: "Spain", schema: 'city' },
+        view: {...},
+        subs: [...],
+      },
+    ],
   },
-  view: {...},
-  subs: [{
-    model:{
-      text:'Pizza',
-      schema: 'food'
-    },
-    view: {...}
-  }, {
-    model:{
-      text:'Bread',
-      schema: 'food'
-    },
-    view: {...}
-  }, {
-    model:{
-      text:'Fried Chicken',
-      schema: 'food'
-    },
-    view: {...}
-  }]
 }
 ```
 
-- path - `model.schema` in each node definition
+- path - `model.schema` in each `NodeSpec`
 - type: `string`
 
 It is rendered as class value
 
 ```html
-<div id="mmap-root">
-  <!-- geneared automatically by mind-wired -->
-  <div data-mind-wired-viewport>
-    <canvas></canvas>
-    <div class="mwd-nodes">
-      <div class="mwd-node">
-        <div class="node-body">...</div>
-        <div class="mwd-subs">
-          <!-- nodes with schema 'food' are assigned class 'food' -->
-          <div class="mwd-node">
-            <div class="node-body food">[Pizza]</div>
-          </div>
-          <div class="mwd-node">
-            <div class="node-body food">[Bread]</div>
-          </div>
-          <div class="mwd-node">
-            <div class="node-body food">[Fried Chicken]</div>
-          </div>
-        </div>
+<div class="mwd-nodes">
+  <div class="mwd-node">
+    <div class="mwd-body level-0">..Countries...</div>
+    <div class="mwd-subs">
+      <div class="mwd-node city">
+        <div class="mwd-body city level-1">..Canada..</div>
+      </div>
+      <div class="mwd-node city">
+        <div class="mwd-body city level-1">..Span..</div>
+        ...
       </div>
     </div>
   </div>
 </div>
 ```
 
-- class `food` is assigned, which is the name of `schema`
+- class `city`(schema) is assigned at `.mwd-node` and `.mwd-body`
 
-Nodes of schema `food` can be styled like
+Nodes with schema `city` can be styled like this
 
 ```css
-[data-mind-wired-viewport] .mwd-body.food {
-  background-color: #ffec48;
-  border-radius: 60% 30% 60% 30%;
-  padding: 2px 4px;
-  font-weight: 500;
-  color: #6d4800;
+/* assets/mindmap.css */
+[data-mind-wired-viewport] .mwd-node.city > .mwd-body.city {
+  background-color: gold;
+  font-size: 1.2rem;
 }
 ```
 
-### 3.2. Edge Style
+- Child Combinator syntax(`.parent > .child`) should be used.
+- [https://developer.mozilla.org/en-US/docs/Web/CSS/Child_combinator](https://developer.mozilla.org/en-US/docs/Web/CSS/Child_combinator)
 
-```
+## 3.4. EdgeSpec
+
+> Edges are rendered on `<canvas/>`
+
+```javascript
 node: {
   model { ... },
   view: {
@@ -352,44 +408,33 @@ node: {
 }
 ```
 
-- path : `view.edge` of node
+- path : `view.edge` of `NodeSpec`
 - 4 edge styles(`line`, `natural_curve`, `mustache_lr` and `mustache_tb`) are available.
-- All nodes inherite edge style from it's parent(and so on)
+- All nodes inherite edge style from it's ancenstors
 
-#### Example: mustache_lr edge
+For example, `mustache_lr` edge on the root node
 
-Let install `mustache_lr` edge on the root node
-
-> SAMPLE 03: [https://codepen.io/yeori/pen/KKQRgdg](https://codepen.io/yeori/pen/KKQRgdg)
-
-```javascript
-window.mindwired
-  .init({...})
-  .then((mwd) => {
-    // install nodes here
-    mwd.nodes({
-      model: {
-        type: "text",
-        text: "Mind\nWired",
-      },
+```ts
+export const loadFromServer = () => {
+  return Promise.resolve({
+    node: {
+      model: { text: "Countries\nand\nCities" },
       view: {
         x: 0,
         y: 0,
-        edge: {
-          name: 'mustache_lr',
-          color: '#53ab76',
-          width: 2
-        }
+        edge: { name: "mustache_lr", color: "#2378ff", width: 2 },
       },
       subs: [...],
-    });
+    },
   });
+};
 ```
 
-- path : `view.edge` of node
+- path : `view.edge` (typeof `EdgeSpec`)
 - color - keyword defined in [css color keywords](https://www.w3.org/wiki/CSS/Properties/color/keywords) or web color (ex `#acdeff`)
+- All descendant nodes inherite `EdgeSpec` from the root node, if they has no one.
 
-#### Edge preview
+### 3.4.1. Edge preview
 
 **1. line**
 
@@ -483,86 +528,150 @@ window.mindwired
       }
 ```
 
-## 4. Layout
+# 4. Layout
 
-When you drag node `Right` to the left side of the root node in [Sample 03](https://codepen.io/yeori/pen/KKQRgdg), child nodes `cat` and `Dog` keep their side, which results in annoying troublesome(have to drag all sub nodes and so on).
+When you drag node `Right` to the left side of the root node, child nodes `cat` and `Dog` keep their side, which results in annoying troublesome(have to move all sub nodes to the left of the parent `Right`).
 
 ![should move the child nodes](https://user-images.githubusercontent.com/10085153/171351766-144a789e-51de-4e50-8962-7296221ba3e0.png)
 
-`Layout` can help moving all descendant nodes to the opposite side when a node moves.
+**Layout** can help moving all descendant nodes to the opposite side when a node moves.
+
+4 layouts are predefind.
+
+- X-AXIS
+- Y-AXIS
+- XY-AXIS
+- DEFAULT
+
+## 4.1. X-AXIS
+
+```
+               [A]
+                |
+         [B]    |    [B`]
+  [C] [D]       |       [D`] [C`]
+```
+
+- If node `B` moves to the opposite side `B'`, node `C, D` also moves to `D', C'`
 
 Let's install `X-AXIS` on the root node
 
-> Sample 04: [https://codepen.io/yeori/pen/rNJvMwp](https://codepen.io/yeori/pen/rNJvMwp)
-
-```javascript
-window.mindwired
-  .init({...})
-  .then((mwd) => {
-    // install nodes here
-    mwd.nodes({
-      model: {...},
+```ts
+export const loadFromServer = () => {
+  return Promise.resolve({
+    node: {
+      model: { text: "Countries\nand\nCities" },
       view: {
         x: 0,
         y: 0,
+        edge: {...},
         layout: {type: 'X-AXIS'},
-        edge: {...}
       },
       subs: [...],
-    });
+    },
   });
+};
 ```
 
-- path: `view.layout` of node
-- All nodes inherits layout configuration from the parent node.
+- path: `view.layout` of `NodeSpec`
+- All nodes inherit layout from it's ancenstors if it has no one.
 - Dragging node `Right` to the opposite side makes `Cat` and `Dog` change their sides.
 
-## 5. Events
+## 4.2. Y-AXIS
 
-### 5.1. Node
+```
+  [C] [D]
+         [B]
 
-| event name     | description                              |
-| -------------- | ---------------------------------------- |
-| `node.created` | node(s) created                          |
-| `node.updated` | node(s) updated(content, position, path) |
-| `node.deleted` | node(s) updated                          |
+---------------[A]---------------
+
+         [B']
+  [C'][D']
+```
+
+## 4.3. XY-AXIS
+
+- `X-AXIS` + `Y-AXIS`
+
+## 4.4. DEFAULT
+
+If root node has no layout, layout `DEFAULT` is assign, which does nothing.
+
+# 5. Events
+
+## 5.1. Node Event
+
+| event name      | description                         |
+| --------------- | ----------------------------------- |
+| `node.selected` | nodes are selected                  |
+| `node.clicked`  | a node is clicked                   |
+| `node.created`  | nodes are created                   |
+| `node.updated`  | nodes are updated(model, pos, path) |
+| `node.deleted`  | nodes are deleted                   |
+
+#### node.selected
+
+triggered when nodes has been selected(activate sate).
+
+```ts
+import {..., type NodeEventArg} from "@mind-wired/core";
+
+window.onload = async () => {
+  ...
+  mwd.listen("node.selected", async (e: NodeEventArg) => {
+    const {type, nodes} = e;
+    console.log(type, nodes);
+  })
+};
+```
+
+- `node.selected` always preoceds `node.clicked`
+- Clicking viewport also triggers the event with empty nodes.
+
+#### node.clicked
+
+triggered when a node has been clicked.
+
+```ts
+window.onload = async () => {
+  ...
+  mwd.listen("node.clicked", async (e: NodeEventArg) => {
+    const {type, nodes} = e;
+    console.log(type, nodes);
+  })
+};
+```
 
 #### node.created
 
-event triggered when node is created(`Enter`, or `Shift+Enter`)
+triggered when nodes has been created(for example `Enter`, or `Shift+Enter`)
 
-```javascript
-window.mindwired
-  .init({...})
-  .then((mwd) => {
-    mwd.nodes(...);
-    // install event listener
-    mwd.listen('node.created', (e) => {
-      const { nodes } = e;
-      console.log('[CREATED]', nodes);
-    })
-  });
+```ts
+window.onload = async () => {
+  ...
+  mwd.listen("node.created", async (e: NodeEventArg) => {
+    const {type, nodes} = e;
+    console.log(type, nodes);
+  })
+};
 ```
 
 #### node.updated
 
-triggered when node is updated by
+triggered when node has been updated by
 
-- dragging
-- changing parent
-- parent deleted
+- dragging, (x, y) changed. (type : `'pos'`)
+- changing parent(type: `'path'`)
+- content updated(type: `'model'`)
 
-```javascript
-window.mindwired
-  .init({...})
-  .then((mwd) => {
-    mwd.nodes(...);
-    // install event listener
-    mwd.listen('node.updated', (e) => {
-      const {nodes, type} = e;
-      console.log('[UPDATED]', nodes, type);
-    })
-  });
+```ts
+window.onload = async () => {
+  ...
+  mwd.listen("node.updated", async (e: NodeEventArg) => {
+    const {type, nodes} = e; // type: 'pos' | 'path' | 'model'
+    console.log(type, nodes);
+  })
+};
 ```
 
 - nodes - updated nodes
@@ -576,19 +685,16 @@ window.mindwired
 
 #### node.deleted
 
-triggered when node is deleted(`delete`, `fn+delete` in mac)
+triggered when nodes has been deleted(pressing `delete` key, `fn+delete` in mac)
 
-```javascript
-window.mindwired
-  .init({...})
-  .then((mwd) => {
-    mwd.nodes(...);
-    // install event listener
-    mwd.listen('node.deleted', (e) => {
-      const {nodes} = e;
-      console.log('[DELETED]', nodes);
-    })
-  });
+```ts
+window.onload = async () => {
+  ...
+  mwd.listen("node.deleted", async (e: NodeEventArg) => {
+    const { type, nodes } = e; // type: 'delete'
+    console.log(type, nodes);
+  })
+};
 ```
 
 If deleted node has children, they are moved to **node.parent**, which triggers `node.updated` event
@@ -603,10 +709,10 @@ If deleted node has children, they are moved to **node.parent**, which triggers 
 | ---- | --- | ----- | --- | ----------- |
 |      |     |       |     | none        |
 
-| Ctrl | Alt | Shift   | Click   | description        |
-| ---- | --- | ------- | ------- | ------------------ |
-|      |     |         | `click` | make node active   |
-|      |     | `shift` | `click` | add node to active |
+| Ctrl | Alt | Shift   | Click   | description              |
+| ---- | --- | ------- | ------- | ------------------------ |
+|      |     |         | `click` | make node active         |
+|      |     | `shift` | `click` | add node to active state |
 
 #### on active state
 
@@ -628,42 +734,62 @@ If deleted node has children, they are moved to **node.parent**, which triggers 
 |      |     |       | `Enter` | save data and finish editing      |
 |      |     |       | `esc`   | finish editing state without save |
 
-## 7. Store, Load
+## 7. Store
 
-Current mindmap can be serialized to `json` text.
+Calling `MindWired.exportWith()` exports current state of mindmap.
 
-```javascript
-let mwd;
-window.mindwired.
-  .init({...})
-  .then(instance => {
-    // 1. binding mindmap instance
-    mwd = instance;
-  })
+## 7.1. by listeners
 
-btnSave.addEventListener('click', () => {
-  // 2. export as json
-  mwd.export("json").then((json) => {
-    console.log(json);
-    // saved on localStorage or sent to backend-server
-  });
-}, false)
+```ts
+/* /src/main.ts */
+import type {..., NodeEventArg } from "@mind-wired/core";
+...
+
+const sendToBackend = (data: ExportResponse) => {
+  console.log(data)
+}
+window.onload = async () => {
+  ...
+  const mwd: MindWired = await initMindWired({...});
+  mwd.nodes(mapData.node);
+
+  mwd
+    .listen("node.updated", async (e: NodeEventArg) => {
+      const data = await mwd.exportWith();
+      sendToBackend(data)
+    }).listen("node.created", async (e: NodeEventArg) => {
+      const data = await mwd.exportWith();
+      sendToBackend(data)
+    }).listen("node.deleted", async (e: NodeEventArg) => {
+      const data = await mwd.exportWith();
+      sendToBackend(data)
+    });
+};
 ```
 
-You can load the map from json text.
+## 7.2. by control ui
 
-```javascript
-let mwd;
-load_from_your_server().then(res => {
-  const json = res.json // from your server
-  window.mindwired.
-    .init({...})
-    .then(instance => {
-      // 3. load the map from json
-      mwd = instance;
-      const nodes = JSON.parse(json);
-      mwd.nodes(nodes);
-    })
-})
+You could provide, for example, `<button/>` to export current state of mindmap
+
+```html
+<body>
+  <nav id="controls">
+    <button data-export>EXPORT</button>
+  </nav>
+  <div id="mmap-root">...</div>
+</body>
+```
+
+```ts
+window.onload = async () => {
+
+  const mwd: MindWired = await initMindWired({...});
+  ...
+  const btnExport = document.querySelector<HTMLButtonElement>('#controls > [data-export]')
+  btnExport!.addEventListener('click', async () => {
+    const data = await mwd.exportWith();
+    sendToBackend(data)
+  }, false)
+};
 
 ```

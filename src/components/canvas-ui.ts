@@ -6,7 +6,7 @@ import { EVENT } from "../service/event-bus";
 import iconSetPara from "../assets/icon-chng-parent.svg";
 import iconfolding from "@/assets/icon-folded.svg";
 import { geom, type Point } from "../service/geom";
-import Configuration from "./config";
+import type { Configuration } from "./config";
 import { NodeUI } from "./node/node-ui";
 import { MindWired } from "./mind-wired";
 import type { NodeRect, SchemaSpec } from "./node/node-type";

@@ -4,6 +4,7 @@
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
     "moduleResolution": "Node",
+    "declaration": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
@@ -18,7 +19,7 @@
     "noImplicitReturns": true,
     "strictFunctionTypes": false,
     "noImplicitAny": false,
-    "removeComments": true,
+    "removeComments": false,
     "paths": {
       "@/*": ["./src/*"],
       "@test/*": ["./test/*"]

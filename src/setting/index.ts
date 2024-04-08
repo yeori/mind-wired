@@ -24,22 +24,25 @@ export type ZeroOrPositiveNumber = number;
  * '#some .class'
  */
 export type CssSelectorForm = string;
-
+/**
+ * It specifies various class names to set on the nodes of the mind map.
+ */
 export type EntityClassNaming = {
   /**
    * class name for active nodes
    *
    * @default 'active-node'
    */
-  node: CssClassName;
+  node?: CssClassName;
   /**
    * classname for edge
    * @deprecated
    */
-  edge: CssClassName;
+  edge?: CssClassName;
   /**
    * returns schema name itself
    * @param schemaName
+   * @default (schemaName: string) => schemaName
    * @returns
    */
   schema?: (schemaName: string) => CssClassName;
@@ -67,30 +70,55 @@ export type StyleDefinition = {
 
 export type SnapTargetSetting = {
   /**
-   * determines nodes to be used to draw aligment lines.
+   * specifies the scope of nodes to reference when rendering alignment lines using this option.
    *
-   * @description 좀 더 생각해보자...
-   * @example `[1,1]` means all direct children(`path[1]`) of the adjacent parent(`path[0]`), which are siblings.
-   * @example `[1, 0]` is the adjacent parent node
-   * @example `[1, -1]` is the all descendant nodes of the adjacent parent(`path[0]`)
-   */
-  // path?: [number, number];
-  /**
+   * ```
+   * ======
+   *  RT
+   *   +- L10
+   *   |   +- L20
+   *   |       +- L30
+   *   +- L11
+   *   |   +- L21
+   *   |       +- L31
+   *   |       +- L32
+   *   +- L12
+   * ======
+   * ```
+   * If distance = 2,
+   * * L10: [RT, L11, L12]
+   * * L20: [L10, RT]
+   * * L21: [L11, RT]
+   * * L12: [RT, L10, L11]
    *
+   * @default undefined - all nodes are used to draw alignment lines
    */
   distance?: number;
 };
 export type SnapToEntitySetting = {
   enabled?: boolean;
   limit?: ZeroOrPositiveNumber;
+  /**
+   * @default 0.4
+   */
   width?: ZeroOrPositiveNumber;
+  /**
+   * use this option to draw dashed alignment line
+   * @default [6, 2]
+   */
   dash?: number[] | false;
+  /**
+   * color of snap lines(horizontal, vertical)
+   */
   color?:
     | WebColorString
     | {
         horizontal: WebColorString;
         vertical: WebColorString;
       };
+  /**
+   * use this option to filter nodes for alignment lines
+   */
   target?: SnapTargetSetting[];
 };
 export type SelectionSetting = {
@@ -107,23 +135,24 @@ export type SelectionSetting = {
  */
 export type UISetting = {
   /**
-   * unique map id
+   * When rendering multiple mind maps within one page,
+   * you can specify an identification string for each mind map.
    *
    */
   mapId?: string | undefined;
   /**
    * It assigns unique identifier for nodes without uuid
-   * @returns unique identifier for all nodes
+   * @returns unique identifier
    */
   uuid?: () => string;
   /**
-   * width of mindmap viewport. ex) "600px", "100%"
+   * width of mindmap viewport.(number like 500 is regarded as "500px") ex) "600px", "100%"
    *
    * @default "600px"
    */
   width?: CssSizeForm | number;
   /**
-   * height of mindmap viewport. ex) "600px", "100%"
+   * height of mindmap viewport.(number like 500 is regarded as "500px") ex) "600px", "100%"
    * @default "600px"
    */
   height?: CssSizeForm | number;

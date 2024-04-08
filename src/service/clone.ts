@@ -32,7 +32,7 @@ const deepCopy = (src: any) => {
  * src: {color: '#000', padding: {left: 8, right: 8}}
  * dst: {color: '#aaa', padding: {top: 16} }
  *
- * merged: {color: '#000', padding: {top: 16, left:8, right: 8}}
+ * merged dst: {color: '#000', padding: {top: 16, left:8, right: 8}}
  * ```
  * @param {object} src
  * @param {object} dst

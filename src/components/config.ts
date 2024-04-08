@@ -1,5 +1,5 @@
 import type { ModelSpec, NodeSpec, ViewSpec } from "./node/node-type";
-import { clone } from "../service";
+import clone from "../service/clone";
 import { EventBus } from "../service/event-bus";
 import { Point } from "../service/geom";
 import type { MindWiredEvent } from "../mindwired-event";
@@ -10,7 +10,7 @@ import type { NodeRenderingContext } from "./node/node-rendering-context";
 import type { MindWired } from "./mind-wired";
 import type { DomUtil } from "../service/dom";
 
-let nodeUuid = 100;
+let nodeUuid = 1000;
 const DEFAULT_UI_SETTING: UISetting = {
   width: 600,
   height: 600,
@@ -43,7 +43,7 @@ const DEFAULT_UI_SETTING: UISetting = {
   },
   useDefaultIcon: true,
 };
-class Configuration {
+export class Configuration {
   el: HTMLElement;
   ui: UISetting;
   readonly ebus: EventBus;
@@ -175,5 +175,3 @@ const normalizeSnap = (ui: UISetting, dom: DomUtil) => {
     }
   }
 };
-// Configuration
-export default Configuration;

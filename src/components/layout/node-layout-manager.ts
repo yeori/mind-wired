@@ -1,5 +1,5 @@
-import type { PositionParam, LayoutParam } from ".";
-import { type NodeUI } from "../node/node-ui";
+import type { PositionParam, LayoutParam } from "./node-layout-context";
+import type { NodeUI } from "../node/node-ui";
 
 export interface INodeLayoutManager {
   name: string;

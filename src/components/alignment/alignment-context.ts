@@ -1,5 +1,5 @@
 import { SnapToEntitySetting, UISetting } from "../../setting";
-import type Configuration from "../config";
+import type { Configuration } from "../config";
 import type { NodeUI } from "../node/node-ui";
 import { CompositeSnapResolver } from "./snap/composite-snap-resolver";
 import { DefaultTargetResolver } from "./snap/default-snap-resolver";
@@ -37,7 +37,7 @@ const lineStyling = (
     ctx.setLineDash(snap.dash);
   }
 };
-export default class AligmentUI {
+export class AlignmentContext {
   activeNodes: NodeUI[];
   snaps: { hLines: Set<number>; vLines: Set<number> };
   constructor(readonly config: Configuration) {}

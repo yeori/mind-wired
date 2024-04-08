@@ -15,7 +15,7 @@ export class RenderingDelegate<T> implements INodeRenderer {
   ) {}
   private _pickRenderer(): INodeRenderer {
     const ctx = this.renderingContext;
-    const { text, iconBadge, thumbnail } = this.delegate;
+    const { text, iconBadge, thumbnail, link } = this.delegate;
     let name: NodeModelType = "text";
     if (text) {
       name = "text";
@@ -23,6 +23,8 @@ export class RenderingDelegate<T> implements INodeRenderer {
       name = "icon-badge";
     } else if (thumbnail) {
       name = "thumbnail";
+    } else if (link) {
+      name = "link";
     }
     return ctx.getRenderer(name);
   }

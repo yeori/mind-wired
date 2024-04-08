@@ -1,4 +1,4 @@
-import Configuration from "@/components/config";
+import { Configuration } from "@/components/config";
 import type {
   ModelSpec,
   NodeSpec,

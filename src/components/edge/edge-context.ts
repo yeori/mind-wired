@@ -1,6 +1,6 @@
 import { EVENT } from "../../service/event-bus";
 import { type NodeUI } from "../node/node-ui";
-import type Configuration from "../config";
+import type { Configuration } from "../config";
 import type { CanvasUI } from "../canvas-ui";
 import type { EdgeRendererName, IEdgeRenderer } from "./edge-renderer-type";
 import type { NodeMoveArg, ViewportEventArg } from "../../mindwired-event";
@@ -33,7 +33,7 @@ const createEdges = (srcNode: NodeUI, edges: Edge[]) => {
   });
 };
 
-class Edge {
+export class Edge {
   srcNode: NodeUI;
   dstNode: NodeUI;
   visible: boolean;

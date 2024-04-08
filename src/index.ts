@@ -1,18 +1,12 @@
 import { MindWired } from "./components/mind-wired";
-import Configuration from "./components/config";
+import { Configuration } from "./components/config";
 import "./assets/mind-wired.scss";
 import "./assets/extra/mind-wired-editor.scss";
-import TreeDataSource from "./components/datasource/tree-ds";
 import { InitParam } from "./setting";
 import { DomUtil } from "./service/dom";
-export * from "./components/layout";
 
 export * from "./setting";
-export * from "./components/node/node-type";
-export * from "./components/edge";
-export * from "./components/canvas-ui";
-export * from "./components/node";
-export * from "./components/edge/edge-renderer-type";
+export * from "./components";
 export * from "./mindwired-event";
 
 const injectCanvas = (el: HTMLElement, dom: DomUtil) => {
@@ -50,6 +44,4 @@ const init = (param: InitParam) => {
 
 const initMindWired = init;
 
-const createDataSource = () => new TreeDataSource();
-
-export { init, initMindWired, createDataSource, MindWired };
+export { init, initMindWired };

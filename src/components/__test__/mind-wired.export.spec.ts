@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import type Configuration from "../config";
+import type { Configuration } from "../config";
 import { casting, mockConfig } from "@/__test__/test-util";
 import { MindWired } from "../mind-wired";
 import type { NodeSpec } from "../node/node-type";

@@ -9,10 +9,10 @@ import {
 } from "./node/node-editing-context";
 import { INodeRenderer } from "./node";
 import { RenderingDelegate } from "./node/renderer/renderer-delegate";
-import AlignmentUI from "./alignment/alignment-ui";
+import { AlignmentContext } from "./alignment";
 import TreeDataSource from "./datasource/tree-ds";
 import { DragContext, type Capture } from "./drag-context";
-import type Configuration from "./config";
+import type { Configuration } from "./config";
 import {
   installDefaultRenderers,
   NodeRenderingContext,
@@ -47,6 +47,7 @@ import { SchemaContext } from "./node/schema-context";
 import { ExportContext, type ExportParam, type ExportResponse } from "./export";
 import { INodeLayoutManager } from "./layout/node-layout-manager";
 import { installDefaultEdgeRenderers } from "./edge/edge-context";
+import clone from "@/service/clone";
 
 const exportTree = (config: Configuration, nodeUI: NodeUI): NodeSpec => {
   const v: ViewSpec = nodeUI.spec.view;
@@ -102,6 +103,13 @@ const updateLevelClass = (
   config.dom.clazz[method](nodeUI.$bodyEl, className);
   nodeUI.subs.forEach((childUI) => updateLevelClass(childUI, method, config));
 };
+const mergeEdgeSpec = (src: EdgeSpec, dst: EdgeSpec): EdgeSpec => {
+  if (!dst) {
+    return src;
+  }
+  clone.mergeLeaf(src, dst);
+  return dst;
+};
 export class MindWired {
   config: Configuration;
   canvas: CanvasUI;
@@ -109,7 +117,7 @@ export class MindWired {
   nodeSelectionModel: NodeSelectionModel;
   private _nodeLayoutContext: NodeLayoutContext;
   nodeEditingContext: NodeEditingContext;
-  alignmentUI: AlignmentUI;
+  private _alignmentContext: AlignmentContext;
   dragContext: DragContext;
   private _edgeContext: EdgeContext;
   rootUI: NodeUI;
@@ -145,7 +153,7 @@ export class MindWired {
     );
     installDefaultEditors(this.nodeEditingContext);
 
-    this.alignmentUI = new AlignmentUI(config);
+    this._alignmentContext = new AlignmentContext(config);
     this.dragContext = new DragContext();
     this._edgeContext = new EdgeContext(config, this.canvas);
     installDefaultEdgeRenderers(this._edgeContext);
@@ -179,7 +187,7 @@ export class MindWired {
             e.target === "all" ? nodes : nodes.flatMap((node) => node.subs);
           // this.draggingNodes = capatureDragData(dragTargets);
           this.dragContext.prepareCaptures(dragTargets);
-          this.alignmentUI.turnOn(this.rootUI, dragTargets);
+          this._alignmentContext.turnOn(this.rootUI, dragTargets);
           this.canvas.updateSelection(nodes);
         } else if (e.state === "drag") {
           const acceleration = e.target === "all" ? 1 : 2.5;
@@ -192,7 +200,7 @@ export class MindWired {
               !this.config.snapEnabled
             );
           });
-          this.alignmentUI.doAlign();
+          this._alignmentContext.doAlign();
           this.dragContext.eachCapture((capture: Capture) => {
             const { node, dir } = capture;
             this._nodeLayoutContext.layout(node, {
@@ -202,7 +210,7 @@ export class MindWired {
           this.canvas.updateSelection(this.nodeSelectionModel.getNodes());
           this._edgeContext.repaint(!this.config.snapEnabled);
         } else if (e.state === "done") {
-          this.alignmentUI.turnOff();
+          this._alignmentContext.turnOff();
           this._edgeContext.repaint(true);
           const nodes = this.dragContext.getUpdatedNodes();
           if (nodes.length > 0) {
@@ -236,6 +244,9 @@ export class MindWired {
         this._edgeContext.repaint();
         this.config.emit(EVENT.NODE.UPDATED.CLIENT, { nodes, type: "model" });
       });
+  }
+  getAligmentContext() {
+    return this._alignmentContext;
   }
   /**
    *
@@ -271,7 +282,7 @@ export class MindWired {
     this.nodeEditingContext.dispose();
     this._dsFactory.clear();
     this._edgeContext.dispose();
-    this.alignmentUI.turnOff();
+    this._alignmentContext.turnOff();
     this.dragContext.clear();
     this.canvas.unregisterNodeTree(this.rootUI);
   }
@@ -429,14 +440,16 @@ export class MindWired {
     targetNode.spec.view.layout = layoutSpec;
     this.repaint();
   }
-  setEdge(edgeSpec: EdgeSpec, nodeUI: NodeUI) {
+  setEdge(edgeSpec: EdgeSpec, nodeUI?: NodeUI) {
     const targetNode = nodeUI || this.rootUI;
-    targetNode.spec.view.edge = edgeSpec;
+    targetNode.spec.view.edge = mergeEdgeSpec(
+      edgeSpec,
+      targetNode.spec.view.edge
+    );
     this.repaint(nodeUI);
   }
   setScale(scale: number) {
     this.config.ui.scale = scale;
-    console.log(this.config.ui.scale);
     this.repaint();
   }
   /**
@@ -510,7 +523,7 @@ export class MindWired {
         renderName
       ) as RenderingDelegate<any>;
 
-      const { text, iconBadge, thumbnail } = nodeRenderer.delegate;
+      const { text, iconBadge, thumbnail, link } = nodeRenderer.delegate;
       let m: ModelSpec;
       if (text) {
         m = { type: "text", text: text(userData) };
@@ -518,6 +531,8 @@ export class MindWired {
         m = { type: "icon-badge", "icon-badge": iconBadge(userData) };
       } else if (thumbnail) {
         m = { type: "thumbnail", thumbnail: thumbnail(userData) };
+      } else if (link) {
+        m = { type: "link", link: link(userData) };
       }
       return m;
     } else {

@@ -1,4 +1,4 @@
-import { uuid } from "../../service";
+import { uuid } from "../../service/uuid";
 import { type CanvasUI } from "../canvas-ui";
 import { type NodeUI } from "./node-ui";
 import { INodeRenderer, UserDefinedRenderer } from ".";

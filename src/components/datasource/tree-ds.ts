@@ -1,6 +1,6 @@
 //@ts-nocheck
-import { clone } from "../../service";
-import Configuration from "../config";
+import clone from "../../service/clone";
+import { Configuration } from "../config";
 
 const NO_OP = (_) => _;
 const buildTree = (dataSource, dataSet, parentSet) => {

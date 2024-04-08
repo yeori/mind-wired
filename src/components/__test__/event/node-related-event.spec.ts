@@ -1,6 +1,6 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
 import { MindWired } from "@/components/mind-wired";
-import Configuration from "@/components/config";
+import { Configuration } from "@/components/config";
 import { DomUtil } from "@/service/dom";
 import type { NodeSpec } from "@/components/node/node-type";
 import { EVENT, NodeDragEventArg } from "@/mindwired-event";

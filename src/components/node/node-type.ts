@@ -1,4 +1,4 @@
-export type NodeModelType = "text" | "icon-badge" | "thumbnail";
+export type NodeModelType = "text" | "icon-badge" | "thumbnail" | "link";
 /**
  * ```
  * number - same width and height

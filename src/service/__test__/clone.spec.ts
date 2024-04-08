@@ -1,5 +1,6 @@
 import { describe, test, expect } from "vitest";
-import { clone, uuid } from "..";
+import clone from "../clone";
+import { uuid } from "../uuid";
 
 describe("service:uuid", () => {
   test("default 16 length", () => {
