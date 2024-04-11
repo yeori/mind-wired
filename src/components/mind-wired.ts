@@ -564,4 +564,44 @@ export class MindWired {
   registerSchema(schemaSpec: SchemaSpec) {
     this._schemaContext.addSchema(schemaSpec);
   }
+  bindSchema(schema: SchemaSpec | string, nodes?: NodeUI[]) {
+    if (!nodes) {
+      nodes = this.getSelectedNodes();
+    }
+    if (nodes.length === 0) {
+      return;
+    }
+    let spec: SchemaSpec = undefined;
+    if (typeof schema === "string") {
+      spec = this._schemaContext.findSchema((spec) => spec.name === schema);
+    } else {
+      spec = schema;
+    }
+    nodes.forEach((node) => {
+      this.canvas.bindSchema(node, spec);
+    });
+    setTimeout(() => {
+      this._edgeContext.repaint(true);
+    });
+  }
+  unbindSchema(schema: SchemaSpec | string, nodes?: NodeUI[]) {
+    if (!nodes) {
+      nodes = this.getSelectedNodes();
+    }
+    if (nodes.length === 0) {
+      return;
+    }
+    let spec: SchemaSpec = undefined;
+    if (typeof schema === "string") {
+      spec = this._schemaContext.findSchema((spec) => spec.name === schema);
+    } else {
+      spec = schema;
+    }
+    nodes.forEach((node) => {
+      this.canvas.unbindSchema(node, spec);
+    });
+    setTimeout(() => {
+      this._edgeContext.repaint(true);
+    });
+  }
 }

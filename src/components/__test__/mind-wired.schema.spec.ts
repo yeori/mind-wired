@@ -16,6 +16,7 @@ describe("schema", () => {
     const spec = casting.withModel({ text: "root" });
     spec.subs = [
       { model: { text: "Coke", schema: "beverage" }, view: { x: -100, y: 0 } },
+      { model: { text: "Sprite" }, view: { x: 100, y: 0 } },
     ];
     mwd.nodes(spec);
   });
@@ -41,5 +42,28 @@ describe("schema", () => {
     expect(res.node).toBeDefined();
     expect(res.ui).toBeUndefined();
     expect(res.schema).toBeUndefined();
+  });
+
+  test("binding schema", () => {
+    const sprite = mwd.findNode((node) => node.model.text === "Sprite");
+    const beverage = mwd
+      .getSchemaContext()
+      .getSchemas()
+      .find((schema) => (schema.name = "beverage"));
+    mwd.bindSchema(beverage, [sprite]);
+    expect(sprite.model.schema).toBe("beverage");
+
+    mwd.bindSchema(beverage, [sprite]);
+    expect(sprite.model.schema).toBe("beverage");
+  });
+  test("unbind schema", () => {
+    const coke = mwd.findNode((node) => node.model.text === "Coke");
+    mwd.unbindSchema("beverage", [coke]);
+    expect(coke.model.schema).toBeUndefined();
+    // no schema bound
+    const sprite = mwd.findNode((node) => node.model.text === "Sprite");
+    expect(sprite.model.schema).toBeUndefined();
+    mwd.unbindSchema("beverage", [sprite]);
+    expect(sprite.model.schema).toBeUndefined();
   });
 });

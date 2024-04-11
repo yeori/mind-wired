@@ -9,6 +9,9 @@ export class SchemaContext {
   private get canvas() {
     return this._config.getCanvas();
   }
+  findSchema(predicate: (schema: SchemaSpec) => boolean) {
+    return this.getSchemas().find(predicate);
+  }
   addSchema(schemaSpec: SchemaSpec, overwriteIfExist: boolean = false) {
     if (this._map.has(schemaSpec.name) && !overwriteIfExist) {
       throw new Error(`schema [${schemaSpec.name}] exists.`);

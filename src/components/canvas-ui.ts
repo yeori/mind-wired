@@ -718,4 +718,38 @@ export class CanvasUI {
       styleEl.remove();
     }
   }
+  bindSchema(node: NodeUI, schemaSpec: SchemaSpec) {
+    const { model } = node.spec;
+    const { name } = schemaSpec;
+    const classes: string[] = model.schema
+      ? model.schema.split(" ").map((clazz) => clazz.trim())
+      : [];
+    if (classes.includes(name)) {
+      return;
+    }
+    classes.push(name);
+    model.schema = classes.join(" ").trim();
+
+    const $bodyEl = this.getNodeBody(node);
+    node.$el.classList.add(name);
+    $bodyEl.classList.add(name);
+  }
+  unbindSchema(node: NodeUI, schemaSpec: SchemaSpec) {
+    const { model } = node.spec;
+    if (!model.schema) {
+      return;
+    }
+    const { name } = schemaSpec;
+    const classes: string[] = model.schema
+      .split(" ")
+      .map((clazz) => clazz.trim())
+      .filter((clazz) => clazz.length > 0 && clazz !== name);
+    model.schema = classes.join(" ").trim();
+    if (model.schema.length === 0) {
+      delete model.schema;
+    }
+    const $bodyEl = this.getNodeBody(node);
+    node.$el.classList.remove(name);
+    $bodyEl.classList.remove(name);
+  }
 }

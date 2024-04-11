@@ -132,11 +132,11 @@ For examples,
 - Node `Spain(100, 0)` is positioned to the right of the root node.
 - Three cities of `Madrid, Barcelona, Valencia` are also positioned to the right of the parent node `Spain`
 
-### 2.2. Svelte
+## 2.2. Svelte
 
 - See [Client Svelte](https://github.com/yeori/mind-wired/wiki/001.client-Svelte)
 
-### 2.3. Vue
+## 2.3. Vue
 
 - See [Client Vue3](https://github.com/yeori/mind-wired/wiki/002.client-Vue3)
 
@@ -536,7 +536,7 @@ When you drag node `Right` to the left side of the root node, child nodes `cat` 
 
 **Layout** can help moving all descendant nodes to the opposite side when a node moves.
 
-4 layouts are predefind.
+4 layouts are predefined.
 
 - X-AXIS
 - Y-AXIS
@@ -611,7 +611,7 @@ If root node has no layout, layout `DEFAULT` is assign, which does nothing.
 
 #### node.selected
 
-triggered when nodes has been selected(activate sate).
+triggered when nodes have been selected(activate sate).
 
 ```ts
 import {..., type NodeEventArg} from "@mind-wired/core";
@@ -644,7 +644,7 @@ window.onload = async () => {
 
 #### node.created
 
-triggered when nodes has been created(for example `Enter`, or `Shift+Enter`)
+triggered when nodes have been created(for example `Enter`, or `Shift+Enter`)
 
 ```ts
 window.onload = async () => {
@@ -658,7 +658,7 @@ window.onload = async () => {
 
 #### node.updated
 
-triggered when node has been updated by
+triggered when nodes have been updated by
 
 - dragging, (x, y) changed. (type : `'pos'`)
 - changing parent(type: `'path'`)
@@ -685,7 +685,7 @@ window.onload = async () => {
 
 #### node.deleted
 
-triggered when nodes has been deleted(pressing `delete` key, `fn+delete` in mac)
+triggered when nodes have been deleted(pressing `delete` key, `fn+delete` in mac)
 
 ```ts
 window.onload = async () => {
