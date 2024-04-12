@@ -7,7 +7,7 @@
 # 1. installing
 
 ```
-npm install @mind-wired/core@0.2.0-alpha.2
+npm install @mind-wired/core@0.2.0-alpha.3
 ```
 
 # 2. Client type
@@ -649,7 +649,7 @@ triggered when nodes have been created(for example `Enter`, or `Shift+Enter`)
 ```ts
 window.onload = async () => {
   ...
-  mwd.listen("node.created", async (e: NodeEventArg) => {
+  mwd.listen("node.created", (e: NodeEventArg) => {
     const {type, nodes} = e;
     console.log(type, nodes);
   })
@@ -660,28 +660,32 @@ window.onload = async () => {
 
 triggered when nodes have been updated by
 
-- dragging, (x, y) changed. (type : `'pos'`)
+- offset (x, y) changed(type : `'pos'`)
 - changing parent(type: `'path'`)
 - content updated(type: `'model'`)
+- schema (un)bound(type: `schema`)
+- folding state changed (type: `folding`)
 
 ```ts
 window.onload = async () => {
   ...
-  mwd.listen("node.updated", async (e: NodeEventArg) => {
-    const {type, nodes} = e; // type: 'pos' | 'path' | 'model'
+  mwd.listen("node.updated", (e: NodeEventArg) => {
+    const {type, nodes} = e; // type: 'pos' | 'path' | 'model' | 'schema' | 'folding'
     console.log(type, nodes);
   })
 };
 ```
 
 - nodes - updated nodes
-- type - one of `path`, `pos`, `model`
+- type - cause of updates, `path`, `pos`, `model`, `schema`, `folding`
 
-`type` have one of three values.
+`type` have one of five values.
 
 1. `path` - means the nodes have changed parent(by dragging control icon).
 1. `pos` - means the nodes move by dragging
 1. `model` - content has updated(text, icon, etc)
+1. `schema` - a schema has been (un)bounded to node
+1. `folding` - folding state has been changed of node
 
 #### node.deleted
 
@@ -690,14 +694,85 @@ triggered when nodes have been deleted(pressing `delete` key, `fn+delete` in mac
 ```ts
 window.onload = async () => {
   ...
-  mwd.listen("node.deleted", async (e: NodeEventArg) => {
-    const { type, nodes } = e; // type: 'delete'
-    console.log(type, nodes);
+  mwd.listen("node.deleted", (e: NodeDeletionArg) => {
+    const { type, nodes, updated } = e; // type: 'delete'
+    console.log(type, nodes, updated);
   })
 };
 ```
 
+- Children `node[]` of deleted node `P` are attached to parent of node `P`, keeping their position on viewport. `NodeDeletionArg.updated` references children `node[]`
+
 If deleted node has children, they are moved to **node.parent**, which triggers `node.updated` event
+
+## 5.2. Schema Event
+
+| event name       | description                   |
+| ---------------- | ----------------------------- |
+| `schema.created` | new schema(s) is(are) created |
+| `schema.updated` | schemas are updated           |
+| `schema.deleted` | schemas are deleted           |
+
+#### schema.created
+
+triggered when new schemas are created.
+
+```ts
+window.onload = async () => {
+  ...
+  mwd.listen("schema.created", (e: SchemaEventArg) => {
+    const { type, schemas } = e; // type: 'create'
+    console.log(type, schemas);
+  })
+};
+
+// or
+import { EVENT } from '@mind-wired/core'
+mwd.listenStrict(EVENT.SCHEMA.CREATED, (e: SchemaEventArg) => {
+    const { type, schemas } = e; // type: 'create'
+    console.log(type, schemas);
+});
+```
+
+#### schema.updated
+
+triggered when schemas are updated.
+
+```ts
+window.onload = async () => {
+  ...
+  mwd.listen("schema.updated", (e: SchemaEventArg) => {
+    const { type, schemas } = e; // type: 'create'
+    console.log(type, schemas);
+  })
+};
+
+// or
+mwd.listenStrict(EVENT.SCHEMA.UPDATED, (e: SchemaEventArg) => {
+    const { type, schemas } = e; // type: 'update'
+    console.log(type, schemas);
+});
+```
+
+#### schema.deleted
+
+triggered when schemas are updated.
+
+```ts
+window.onload = async () => {
+  ...
+  mwd.listen("schema.deleted", (e: SchemaEventArg) => {
+    const { type, schemas } = e; // type: 'delete'
+    console.log(type, schemas);
+  })
+};
+
+// or
+mwd.listenStrict(EVENT.SCHEMA.DELETED, (e: SchemaEventArg) => {
+    const { type, schemas } = e; // type: 'update'
+    console.log(type, schemas);
+});
+```
 
 ## 6. Short Key
 
@@ -760,7 +835,7 @@ window.onload = async () => {
     }).listen("node.created", async (e: NodeEventArg) => {
       const data = await mwd.exportWith();
       sendToBackend(data)
-    }).listen("node.deleted", async (e: NodeEventArg) => {
+    }).listen("node.deleted", async (e: NodeDeletionArg) => {
       const data = await mwd.exportWith();
       sendToBackend(data)
     });

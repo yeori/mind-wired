@@ -1,6 +1,6 @@
 {
   "name": "@mind-wired/core",
-  "version": "0.2.0-alpha.2",
+  "version": "0.2.0-alpha.3",
   "description": "Javascript based mindmap library. It provides dragging, aligment, styling(node, edge) and editing functionality.",
   "private": false,
   "type": "module",
