@@ -38,12 +38,11 @@ import type {
   NodeEditingArg,
   NodeEvent,
   NodeEventArg,
-  NodeFoldingArg,
   ViewportDragEvent,
   ViewportDragEventArg,
   ViewportEvent,
 } from "../mindwired-event";
-import { SchemaContext } from "./node/schema-context";
+import { SchemaContext, SchemaUtil } from "./node/schema-context";
 import { ExportContext, type ExportParam, type ExportResponse } from "./export";
 import { INodeLayoutManager } from "./layout/node-layout-manager";
 import { installDefaultEdgeRenderers } from "./edge/edge-context";
@@ -159,6 +158,22 @@ export class MindWired {
     installDefaultEdgeRenderers(this._edgeContext);
 
     this._schemaContext = new SchemaContext(config);
+    this._schemaContext.subscribe((e) => {
+      if (e.detail) {
+        const { detail } = e;
+        setTimeout(() => {
+          this._edgeContext.repaint(true);
+          const { type } = detail;
+          const eventType =
+            type === "create"
+              ? "CREATED"
+              : type === "update"
+              ? "UPDATED"
+              : "DELETED";
+          this.config.emit(EVENT.SCHEMA[eventType].CLIENT, detail);
+        });
+      }
+    });
 
     this.config
       .listen(EVENT.DRAG.VIEWPORT, (e: ViewportDragEventArg) => {
@@ -235,9 +250,6 @@ export class MindWired {
         } else {
           this.nodeEditingContext.close();
         }
-      })
-      .listen(EVENT.NODE.FOLDED, ({ node, folded }: NodeFoldingArg) => {
-        this.setFoldingState([node], folded);
       })
       .listen(EVENT.NODE.UPDATED, ({ nodes }: NodeEventArg) => {
         nodes.forEach((node) => node.repaint());
@@ -356,7 +368,7 @@ export class MindWired {
    *
    * @param parentNode new parent of the given nodes
    * @param nodes nodes whoses parent is changed
-   * @param trigger if true, send event 'node.updated'
+   * @param trigger if true, event 'node.updated' is triggered
    */
   moveNodes(parentNode: NodeUI, nodes: NodeUI[], trigger: boolean = false) {
     const childNodes = nodes.filter((node) => node.parent !== parentNode);
@@ -423,8 +435,9 @@ export class MindWired {
     }
     if (deleted.length > 0) {
       this._edgeContext.deleteEdges(deleted);
-      this.config.emit(EVENT.NODE.DELETED.CLIENT, {
+      this.config.emit(EVENT.NODE.DELETED2.CLIENT, {
         nodes: deleted,
+        updated,
         type: "delete",
       });
     }
@@ -453,17 +466,22 @@ export class MindWired {
     this.repaint();
   }
   /**
-   * update the given nodes' visibility
+   * update  visibilityof of the given node's children
    * @param nodes
-   * @param folding if true(false), node is hidden(visible).
+   * @param folding if true(false), children of the node are hidden(visible).
    */
   setFoldingState(nodes: NodeUI[], folding: boolean) {
-    nodes.forEach((node) => {
-      node.setFolding(folding);
+    const updatedNodes = nodes.filter((node) => {
+      const changed = node.setFolding(folding);
       this.canvas.updateFoldingNodes(node);
       this._edgeContext.setEdgeVisible(node, !folding, false);
+      return changed;
     });
     this._edgeContext.repaint();
+    this.config.emit(EVENT.NODE.UPDATED.CLIENT, {
+      type: "folding",
+      nodes: updatedNodes,
+    });
   }
   repaint(nodeUI?: NodeUI) {
     nodeUI = nodeUI || this.rootUI;
@@ -480,6 +498,27 @@ export class MindWired {
     this.config.ebus.listen(event, callback);
     return this;
   }
+  /**
+   * register event listener
+   * @template A detail type of mind-wired event
+   * @param event
+   * @param callback
+   * @returns
+   * @example
+   * mwd.listenStrict(EVENT.NODE.CREATED, (e:NodeEventArg) => {
+   *  const {type, nodes} = e // type: 'create', nodes: [NodeUI]
+   * })
+   *
+   * @example
+   * mwd.listenStrict(EVENT.NODE.EDITING, (e:NodeEditingArg) => {
+   *  const {node, editing} = e // node: NodeUI, editing:boolean
+   *   if(editing) {
+   *     // editing state in on
+   *   } else {
+   *     // editing state is off
+   *   }
+   * })
+   */
   listenStrict<A>(
     event:
       | NodeEvent<A>
@@ -488,6 +527,9 @@ export class MindWired {
       | NodeDragEvent<A>,
     callback: (arg: A) => void
   ) {
+    if (event === EVENT.NODE.DELETED) {
+      event = EVENT.NODE.DELETED2;
+    }
     const e = event.CLIENT || event;
     this.config.ebus.listen(e, callback);
     return this;
@@ -565,43 +607,51 @@ export class MindWired {
     this._schemaContext.addSchema(schemaSpec);
   }
   bindSchema(schema: SchemaSpec | string, nodes?: NodeUI[]) {
-    if (!nodes) {
-      nodes = this.getSelectedNodes();
-    }
+    nodes = nodes || this.getSelectedNodes();
     if (nodes.length === 0) {
       return;
     }
-    let spec: SchemaSpec = undefined;
-    if (typeof schema === "string") {
-      spec = this._schemaContext.findSchema((spec) => spec.name === schema);
-    } else {
-      spec = schema;
-    }
-    nodes.forEach((node) => {
-      this.canvas.bindSchema(node, spec);
-    });
-    setTimeout(() => {
-      this._edgeContext.repaint(true);
-    });
+    const spec: SchemaSpec = SchemaUtil.toSchema(schema, this._schemaContext);
+    const updated = nodes.filter((node) => this._bindSchema(spec, node, true));
+    this._notifySchemaBinding(updated);
   }
   unbindSchema(schema: SchemaSpec | string, nodes?: NodeUI[]) {
-    if (!nodes) {
-      nodes = this.getSelectedNodes();
-    }
+    nodes = nodes || this.getSelectedNodes();
     if (nodes.length === 0) {
       return;
     }
-    let spec: SchemaSpec = undefined;
-    if (typeof schema === "string") {
-      spec = this._schemaContext.findSchema((spec) => spec.name === schema);
-    } else {
-      spec = schema;
+    const spec: SchemaSpec = SchemaUtil.toSchema(schema, this._schemaContext);
+    const updated = nodes.filter((node) => this._bindSchema(spec, node, false));
+    this._notifySchemaBinding(updated);
+  }
+  toggleSchema(schema: SchemaSpec | string, nodes?: NodeUI[]) {
+    nodes = nodes || this.getSelectedNodes();
+    if (nodes.length === 0) {
+      return;
     }
-    nodes.forEach((node) => {
-      this.canvas.unbindSchema(node, spec);
+    const spec: SchemaSpec = SchemaUtil.toSchema(schema, this._schemaContext);
+    const updated = nodes.filter((node) => {
+      const existing = SchemaUtil.has(node.spec.model, spec);
+      return this._bindSchema(spec, node, !existing);
     });
-    setTimeout(() => {
-      this._edgeContext.repaint(true);
-    });
+    this._notifySchemaBinding(updated);
+  }
+  private _notifySchemaBinding(nodes: NodeUI[]) {
+    if (nodes.length > 0) {
+      setTimeout(() => {
+        this._edgeContext.repaint(true);
+        this.config.emit(EVENT.NODE.UPDATED.CLIENT, {
+          type: "schema",
+          nodes,
+        });
+      });
+    }
+  }
+  private _bindSchema(schema: SchemaSpec, node: NodeUI, binding: boolean) {
+    if (binding) {
+      return this.canvas.bindSchema(node, schema);
+    } else {
+      return this.canvas.unbindSchema(node, schema);
+    }
   }
 }

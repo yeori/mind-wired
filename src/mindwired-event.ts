@@ -1,4 +1,4 @@
-import type { NodeUI } from "./components/node";
+import type { NodeUI, SchemaSpec } from "./components/node";
 import type { Point } from "./service/geom";
 
 export type MindWiredEvent<T> = {
@@ -63,7 +63,9 @@ export type NodeEventArg = {
     | "delete"
     | "path"
     | "pos"
-    | "model";
+    | "model"
+    | "schema"
+    | "folding";
 };
 export type NodeSelectArg = {
   nodes: NodeUI[];
@@ -82,6 +84,23 @@ export type NodeMoveArg = {
   node: NodeUI;
   prevParent: NodeUI;
 };
+/**
+ * deleted nodes and affected nodes
+ *
+ * @prop nodes - deleted nodes
+ * @prop updated - updated nodes(children of deleted ones)
+ */
+export type NodeDeletionArg = {
+  /**
+   * deleted nodes
+   */
+  nodes: NodeUI[];
+  /**
+   * affected nodes by deletion(for example, children)
+   */
+  updated: NodeUI[];
+  type: "delete";
+};
 export type NodeEvent<T> = MindWiredEvent<T> & {
   CLIENT: MindWiredEvent<T>;
 };
@@ -95,9 +114,14 @@ export type NodeBranch = {
    */
   CREATED: NodeEvent<NodeEventArg>;
   /**
-   * node(s) deleted
+   * node(s) deleted. It is redirected to `EVENT.NODE.DELETED2`
+   * @deprecated use `EVENT.NODE.DELETED2`
    */
   DELETED: NodeEvent<NodeEventArg>;
+  /**
+   * node(s) deleted
+   */
+  DELETED2: NodeEvent<NodeDeletionArg>;
   /**
    * node(s) updated
    */
@@ -112,10 +136,13 @@ export type NodeBranch = {
   EDITING: NodeEvent<NodeEditingArg>;
   /**
    * folding state of a node
+   * @deprecated use `EVENT.NODE.UPDATED`
    */
   FOLDED: NodeEvent<NodeFoldingArg>;
   /**
    * node's parent changed
+   *
+   * @internal used for internal. use `EVENT.NODE.UPDATED` instead
    */
   MOVED: NodeEvent<NodeMoveArg>;
 };
@@ -128,11 +155,22 @@ export type ViewportBranch = {
   RESIZED: ViewportEvent<ViewportEventArg>;
   CLICKED: ViewportEvent<ViewportEventArg>;
 };
+
+export type SchemaEventArg = {
+  type: "update" | "create" | "delete";
+  schemas: SchemaSpec[];
+};
+export type SchemaBranch = {
+  CREATED: NodeEvent<SchemaEventArg>;
+  UPDATED: NodeEvent<SchemaEventArg>;
+  DELETED: NodeEvent<SchemaEventArg>;
+};
 export type EventRoot = {
   DRAG: DragBranch;
   // SELECTION: SelectionBranch;
   NODE: NodeBranch;
   VIEWPORT: ViewportBranch;
+  SCHEMA: SchemaBranch;
 };
 
 export const EVENT: EventRoot = {
@@ -150,6 +188,14 @@ export const EVENT: EventRoot = {
       },
     },
     DELETED: {
+      name: "node.deleted_old",
+      desc: "node has been deleted",
+      CLIENT: {
+        name: "node.deleted_old.client",
+        desc: "client-side node deletion event",
+      },
+    },
+    DELETED2: {
       name: "node.deleted",
       desc: "node has been deleted",
       CLIENT: {
@@ -214,6 +260,23 @@ export const EVENT: EventRoot = {
     CLICKED: {
       name: "viewport.clicked",
       desc: "viewport has been clicked",
+    },
+  },
+  SCHEMA: {
+    CREATED: {
+      name: "schema.created",
+      desc: "",
+      CLIENT: { name: "schema.created.client", desc: "" },
+    },
+    UPDATED: {
+      name: "schema.updated",
+      desc: "",
+      CLIENT: { name: "schema.updated.client", desc: "" },
+    },
+    DELETED: {
+      name: "schema.deleted",
+      desc: "",
+      CLIENT: { name: "schema.deleted.client", desc: "" },
     },
   },
 };

@@ -82,25 +82,36 @@ export class EdgeContext {
         this.repaint();
       })
       .listen(EVENT.NODE.MOVED, ({ node, prevParent }: NodeMoveArg) => {
-        const pos = filterIndex(
-          this.edges,
-          (e: Edge) => e.src === prevParent && e.dst === node
-        );
-        if (pos.length > 0) {
-          pos.reverse().forEach((index) => this.edges.splice(index, 1));
-        }
-        const e = new Edge(node.parent!, node);
-        this.edges.push(e);
+        this._deleteBetween(prevParent, node);
+        this._addEdge(node.parent!, node);
         this.repaint();
       });
   }
   listRenderers(): IEdgeRenderer[] {
     return [...this.renderers.values()];
   }
-  addEdge(src: NodeUI, dst: NodeUI) {
+
+  private _addEdge(src: NodeUI, dst: NodeUI) {
     const e = new Edge(src, dst);
     this.edges.push(e);
+  }
+  addEdge(src: NodeUI, dst: NodeUI) {
+    this._addEdge(src, dst);
     this.repaint();
+  }
+  private _deleteBetween(src: NodeUI, dst: NodeUI) {
+    const pos = filterIndex(
+      this.edges,
+      (e: Edge) => e.src === src && e.dst === dst
+    );
+    return pos.reverse().flatMap((index) => this.edges.splice(index, 1));
+  }
+  deleteBetween(src: NodeUI, dst: NodeUI): Edge[] {
+    const deleted = this._deleteBetween(src, dst);
+    if (deleted.length > 0) {
+      this.repaint();
+    }
+    return deleted;
   }
   /**
    * deletes edges matching the nodes

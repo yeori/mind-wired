@@ -248,9 +248,14 @@ export class NodeUI {
     }
     return this.subs[this.subs.length - 1];
   }
+  /**
+   * change folding state
+   * @param folding if true, children of this node are hidden, else visible
+   * @returns true if folding state is changed, false if not changed
+   */
   setFolding(folding: boolean) {
     if (this.folding === folding) {
-      return;
+      return false;
     }
     // this.folding = folding;
     if (folding) {
@@ -259,10 +264,7 @@ export class NodeUI {
       delete this.spec.view.folding;
     }
     this.repaint();
-    this.sharedConfig.emit(EVENT.NODE.FOLDED, {
-      node: this,
-      folded: this.folding,
-    });
+    return true;
   }
   /**
    *

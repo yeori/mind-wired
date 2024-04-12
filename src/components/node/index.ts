@@ -10,7 +10,11 @@ export { NodeEditingContext } from "./node-editing-context";
 export { NodeRenderingContext } from "./node-rendering-context";
 export * from "./node-type";
 export * from "./node-ui";
-export { SchemaContext } from "./schema-context";
+export {
+  SchemaContext,
+  type SchemaOperationParam,
+  type EventRef,
+} from "./schema-context";
 export * from "./renderer";
 export * from "./editor";
 export type NodeState = {

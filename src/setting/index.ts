@@ -1,4 +1,4 @@
-import { NodeSpec } from "../components/node/node-type";
+import { NodeSpec, SchemaSpec } from "../components/node/node-type";
 import { Point } from "../service/geom";
 
 export { Point };
@@ -177,8 +177,12 @@ export type UISetting = {
    */
   useDefaultIcon?: boolean;
 };
-
+/**
+ * map initialization parameters
+ *
+ */
 export type InitParam = {
   el: HTMLElement | CssSelectorForm;
   ui: UISetting;
+  schema?: SchemaSpec[];
 };

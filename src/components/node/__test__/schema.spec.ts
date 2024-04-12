@@ -37,7 +37,7 @@ describe("SchemaContext", () => {
     // republishing
     schema.style.color = "blue";
     schema.style.padding = "4px";
-    ctx.addSchema(schema, true);
+    ctx.addSchema(schema, { overwriteIfExist: true });
 
     style = document.head.querySelector("#mwd-schema-sample");
     styles = parseStyleBody(style.textContent.trim());

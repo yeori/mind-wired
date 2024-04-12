@@ -669,7 +669,9 @@ export class CanvasUI {
       installFoldingIcon(nodeEl, rect, this.config, (foldingEl) => {
         dom.event.click(foldingEl, (e) => {
           e.stopPropagation();
-          nodeUI.setFolding(false);
+          const mwd = this.config.mindWired();
+          mwd.setFoldingState([nodeUI], false);
+          // nodeUI.setFolding(false);
         });
       });
     } else {
@@ -718,14 +720,14 @@ export class CanvasUI {
       styleEl.remove();
     }
   }
-  bindSchema(node: NodeUI, schemaSpec: SchemaSpec) {
+  bindSchema(node: NodeUI, schemaSpec: SchemaSpec): boolean {
     const { model } = node.spec;
     const { name } = schemaSpec;
     const classes: string[] = model.schema
       ? model.schema.split(" ").map((clazz) => clazz.trim())
       : [];
     if (classes.includes(name)) {
-      return;
+      return false;
     }
     classes.push(name);
     model.schema = classes.join(" ").trim();
@@ -733,11 +735,12 @@ export class CanvasUI {
     const $bodyEl = this.getNodeBody(node);
     node.$el.classList.add(name);
     $bodyEl.classList.add(name);
+    return true;
   }
-  unbindSchema(node: NodeUI, schemaSpec: SchemaSpec) {
+  unbindSchema(node: NodeUI, schemaSpec: SchemaSpec): boolean {
     const { model } = node.spec;
     if (!model.schema) {
-      return;
+      return false;
     }
     const { name } = schemaSpec;
     const classes: string[] = model.schema
@@ -751,5 +754,6 @@ export class CanvasUI {
     const $bodyEl = this.getNodeBody(node);
     node.$el.classList.remove(name);
     $bodyEl.classList.remove(name);
+    return true;
   }
 }

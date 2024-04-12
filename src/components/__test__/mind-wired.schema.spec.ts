@@ -1,7 +1,8 @@
-import { describe, test, expect, beforeEach } from "vitest";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import type { Configuration } from "../config";
 import { casting, mockConfig } from "@/__test__/test-util";
 import { MindWired } from "../mind-wired";
+import { EVENT } from "@/mindwired-event";
 
 describe("schema", () => {
   let config: Configuration;
@@ -65,5 +66,22 @@ describe("schema", () => {
     expect(sprite.model.schema).toBeUndefined();
     mwd.unbindSchema("beverage", [sprite]);
     expect(sprite.model.schema).toBeUndefined();
+  });
+  test("remove schema", () => {
+    const ctx = mwd.getSchemaContext();
+    expect(ctx.getSchemas().length).toBe(1);
+    ctx.removeSchema("beverage");
+    expect(ctx.getSchemas().length).toBe(0);
+  });
+  test("schema bound event", () => {
+    const sprite = mwd.findNode((node) => node.model.text === "Sprite");
+    const { mock } = vi.spyOn(config, "emit");
+    mwd.listenStrict(EVENT.NODE.UPDATED, () => {});
+
+    vi.useFakeTimers();
+    mwd.bindSchema("beverage", [sprite]);
+
+    vi.advanceTimersToNextTimer();
+    expect(mock.results.length).toBe(1);
   });
 });

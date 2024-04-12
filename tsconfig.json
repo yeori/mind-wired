@@ -4,7 +4,8 @@
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
     "moduleResolution": "Node",
-    "declaration": true,
+    "declaration": false,
+    "outDir": "dist",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
@@ -25,5 +26,11 @@
       "@test/*": ["./test/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.scss"]
+  "include": [
+    "vite.config.ts",
+    "vitest.config.ts",
+    "src/**/*.ts",
+    "src/**/*.scss",
+    "test/**/*.ts"
+  ]
 }

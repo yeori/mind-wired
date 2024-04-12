@@ -5,9 +5,10 @@ import "./assets/extra/mind-wired-editor.scss";
 import { InitParam } from "./setting";
 import { DomUtil } from "./service/dom";
 
+export * from "./service";
+export * from "./mindwired-event";
 export * from "./setting";
 export * from "./components";
-export * from "./mindwired-event";
 
 const injectCanvas = (el: HTMLElement, dom: DomUtil) => {
   const canvas = dom.tag.canvas();
@@ -35,6 +36,12 @@ const init = (param: InitParam) => {
       const configObj = Configuration.parse(param, dom);
       configObj.dom = dom;
       const mrd = new MindWired(configObj);
+      if (param.schema) {
+        const ctx = mrd.getSchemaContext();
+        param.schema.forEach((schema) => {
+          ctx.addSchema(schema, { skipEvent: true });
+        });
+      }
       success(mrd);
     } else {
       failure({ cause: "no_css_selector" });
