@@ -7,7 +7,7 @@
 # 1. installing
 
 ```
-npm install @mind-wired/core@0.2.0-alpha.3
+npm install @mind-wired/core
 ```
 
 # 2. Client type
