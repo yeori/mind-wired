@@ -134,15 +134,15 @@ For examples,
 
 ## 2.2. Svelte
 
-- See [Client Svelte](https://github.com/yeori/mind-wired/wiki/001.client-Svelte)
+- See [/docs/svelte.md](https://github.com/yeori/mind-wired/tree/docs/svelte.md)
 
 ## 2.3. Vue
 
-- See [Client Vue3](https://github.com/yeori/mind-wired/wiki/002.client-Vue3)
+- See [/docs/vue3.md](https://github.com/yeori/mind-wired/tree/docs/vue.md)
 
 ## 2.4. UMD
 
-- See [Client Umd](https://github.com/yeori/mind-wired/wiki/003.client-umd)
+- See [/docs/umd.md](https://github.com/yeori/mind-wired/tree/docs/umd.md)
 
 # 3. Style
 
@@ -179,7 +179,7 @@ To define your node styles, create a css(scss) file
 
 - `assets/mindmap.css` - you can name it as you want
 
-Then, import the css file
+Then, import the (s)css file
 
 ```ts
 /* /src/main.ts */
@@ -337,22 +337,41 @@ Schema can be specified in each node
     view: {...},
     subs: [
       {
-        model: { text: "Canada", schema: 'city' },
+        model: { text: "Canada", schema: 'country' },
         view: {...},
         subs: [...],
       },
       {
-        model: { text: "Spain", schema: 'city' },
+        model: { text: "Spain", schema: 'country' },
         view: {...},
         subs: [...],
       },
     ],
   },
 }
+
+// schemas
+const schema = [{
+  name: 'country',
+  style: { // optional
+    fontSize: '1rem',
+    border: '1px solid #2323FF',
+    color: '#2323FF',
+    borderRadius: '6px'
+  }
+}]
 ```
 
 - path - `model.schema` in each `NodeSpec`
 - type: `string`
+
+> If you have your schema, pass them to `initMindWired`
+>
+> ```ts
+> const yourSchemap: [...]
+> initMindWired({ el: mapEl!, ui, schema: yourSchema })
+>   .then((mwd: MindWired) => { ... });
+> ```
 
 It is rendered as class value
 
@@ -361,11 +380,11 @@ It is rendered as class value
   <div class="mwd-node">
     <div class="mwd-body level-0">..Countries...</div>
     <div class="mwd-subs">
-      <div class="mwd-node city">
-        <div class="mwd-body city level-1">..Canada..</div>
+      <div class="mwd-node country">
+        <div class="mwd-body country level-1">..Canada..</div>
       </div>
-      <div class="mwd-node city">
-        <div class="mwd-body city level-1">..Span..</div>
+      <div class="mwd-node country">
+        <div class="mwd-body country level-1">..Span..</div>
         ...
       </div>
     </div>
@@ -374,19 +393,91 @@ It is rendered as class value
 ```
 
 - class `city`(schema) is assigned at `.mwd-node` and `.mwd-body`
+- `<style>...</style>` for schemas are injected into `<head/>`
+
+#### Dynamic Schema Style
+
+If schema has property `style` defined, `<style>...</style>` for each schema is created in `<head/>`
+
+```html
+<!-- automatically created from property schema.style -->
+<head>
+  <style id="...">
+    [data-mind-wired-viewport] .mwd-node.country > .mwd-body {
+      font-size: 1rem;
+      border: 1px dashed #2323ff;
+      color: #2323ff;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+```
+
+#### Static Schema Style
+
+You can define style for schema without property `style`.
+
+```ts
+const yourSchema = [
+  {name: 'coutnry', style: {...}},
+  {name: 'city'}
+]
+```
+
+- schema `city` has no style.
 
 Nodes with schema `city` can be styled like this
 
 ```css
 /* assets/mindmap.css */
 [data-mind-wired-viewport] .mwd-node.city > .mwd-body.city {
-  background-color: gold;
-  font-size: 1.2rem;
+  color: #777;
+  box-shadow: 0 0 8px #0000002d, 0 0 2px #00000041;
 }
 ```
 
 - Child Combinator syntax(`.parent > .child`) should be used.
 - [https://developer.mozilla.org/en-US/docs/Web/CSS/Child_combinator](https://developer.mozilla.org/en-US/docs/Web/CSS/Child_combinator)
+
+### 3.3.3. Style per node
+
+You can define separate CSS styles for each node, which add or override styles defined by level and schema.
+
+```ts
+return Promise.resolve({
+  node: {
+    model: { text: "Countries\nand\nCities" },
+    view: {...},
+    subs: [
+      {
+        model: { text: "Canada", schema: 'country'},
+        ...
+      },
+      {
+        model: { text: "Spain", schema: 'country' },
+        view: { x: 100, y: 0,
+          style: {
+            backgroundColor: '#9a7baf',
+            color: 'white',
+            border:'none'
+          }
+        },
+      },
+      {
+        model: { text: "South Korea", schema: 'country' },
+        ...
+      },
+    ],
+  },
+  schema : [{
+    name: 'country',
+    style: {...}
+    }]
+});
+```
+
+- Three countries share schema `country`.
+- `Spain` has additional style at `view.style`, which override background(`#9a7baf`), font color(`white`) and border(`none`)
 
 ## 3.4. EdgeSpec
 

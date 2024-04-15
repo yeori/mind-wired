@@ -439,6 +439,24 @@ export class DomUtil {
   types: {
     method: (obj: any) => boolean;
   };
+  renderStyle(
+    el: HTMLElement,
+    style: Partial<CSSStyleDeclaration>,
+    clearStyle: boolean = true
+  ) {
+    if (clearStyle) {
+      for (let i = el.style.length - 1; i >= 0; i--) {
+        const prop = el.style[i];
+        el.style.removeProperty(prop);
+      }
+    }
+    Object.keys(style).forEach((key) => {
+      const value = style[key];
+      if (value) {
+        el.style[key] = value;
+      }
+    });
+  }
   valid: ValidUtil;
   constructor() {
     this.tag = tag;

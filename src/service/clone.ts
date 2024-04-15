@@ -9,7 +9,7 @@ const isFunction = (o: any): boolean => typeof o === "function";
  * @returns
  */
 const notDefined = (obj: any): boolean => obj === undefined || obj === null;
-const deepCopy = (src: any) => {
+const deepCopy = <T = any>(src: T) => {
   if (
     src === undefined ||
     src === null ||
@@ -18,7 +18,7 @@ const deepCopy = (src: any) => {
   ) {
     return src;
   }
-  const dst = Array.isArray(src) ? [] : ({} as any);
+  const dst = (Array.isArray(src) ? [] : {}) as T;
   Object.keys(src).forEach((prop) => {
     const value = deepCopy(src[prop]);
     dst[prop] = value;

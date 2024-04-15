@@ -448,17 +448,25 @@ export class MindWired {
   getSelectedNodes() {
     return this.nodeSelectionModel.getNodes();
   }
-  setLayout(layoutSpec: NodeLayout, nodeUI: NodeUI) {
+  setLayout(layoutSpec: NodeLayout | undefined, nodeUI: NodeUI) {
     const targetNode = nodeUI || this.rootUI;
-    targetNode.spec.view.layout = layoutSpec;
+    if (layoutSpec) {
+      targetNode.spec.view.layout = layoutSpec;
+    } else {
+      delete targetNode.spec.view.layout;
+    }
     this.repaint();
   }
-  setEdge(edgeSpec: EdgeSpec, nodeUI?: NodeUI) {
+  setEdge(edgeSpec: EdgeSpec | undefined, nodeUI?: NodeUI) {
     const targetNode = nodeUI || this.rootUI;
-    targetNode.spec.view.edge = mergeEdgeSpec(
-      edgeSpec,
-      targetNode.spec.view.edge
-    );
+    if (edgeSpec) {
+      targetNode.spec.view.edge = mergeEdgeSpec(
+        edgeSpec,
+        targetNode.spec.view.edge
+      );
+    } else {
+      delete targetNode.spec.view.edge;
+    }
     this.repaint(nodeUI);
   }
   setScale(scale: number) {

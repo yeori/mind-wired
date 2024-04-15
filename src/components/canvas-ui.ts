@@ -614,7 +614,11 @@ export class CanvasUI {
     const levelClassName: string = this.config.nodeLevelClassName(nodeUI);
     dom.clazz.add($body, levelClassName);
     $body.dataset.level = `${nodeUI.level()}`;
-
+    // 5. additional style
+    const { style } = nodeUI.view;
+    if (style) {
+      dom.renderStyle($body, style);
+    }
     const mwd = this.config.mindWired();
     const nodeRenderer = mwd.getNodeRender(nodeUI.model);
     const model = mwd.translateModel(nodeUI.model);

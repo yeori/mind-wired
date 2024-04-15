@@ -16,7 +16,14 @@ describe("schema", () => {
     });
     const spec = casting.withModel({ text: "root" });
     spec.subs = [
-      { model: { text: "Coke", schema: "beverage" }, view: { x: -100, y: 0 } },
+      {
+        model: { text: "Coke", schema: "beverage" },
+        view: {
+          x: -100,
+          y: 0,
+          style: { backgroundColor: "black", color: "white" },
+        },
+      },
       { model: { text: "Sprite" }, view: { x: 100, y: 0 } },
     ];
     mwd.nodes(spec);
@@ -83,5 +90,11 @@ describe("schema", () => {
 
     vi.advanceTimersToNextTimer();
     expect(mock.results.length).toBe(1);
+  });
+  test("Coke has additional style", () => {
+    const coke = mwd.findNode((node) => node.model.text === "Coke");
+    const { backgroundColor, color } = coke.$bodyEl.style;
+    expect(backgroundColor).toBe("black");
+    expect(color).toBe("white");
   });
 });

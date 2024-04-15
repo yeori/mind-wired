@@ -114,6 +114,7 @@ export type ViewSpec = {
   layout?: NodeLayout;
   edge?: EdgeSpec;
   folding?: boolean;
+  style?: Partial<CSSStyleDeclaration>;
 };
 
 export type NodeSpec = {
