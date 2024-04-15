@@ -134,15 +134,15 @@ For examples,
 
 ## 2.2. Svelte
 
-- See [/docs/svelte.md](https://github.com/yeori/mind-wired/tree/docs/svelte.md)
+- See [/docs/svelte.md](https://github.com/yeori/mind-wired/tree/master/docs/svelte.md)
 
 ## 2.3. Vue
 
-- See [/docs/vue3.md](https://github.com/yeori/mind-wired/tree/docs/vue.md)
+- See [/docs/vue3.md](https://github.com/yeori/mind-wired/tree/master/docs/vue.md)
 
 ## 2.4. UMD
 
-- See [/docs/umd.md](https://github.com/yeori/mind-wired/tree/docs/umd.md)
+- See [/docs/umd.md](https://github.com/yeori/mind-wired/tree/master/docs/umd.md)
 
 # 3. Style
 
